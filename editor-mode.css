@@ -1,0 +1,73 @@
+.editor-toolbar {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 226, 173, 0.24);
+  border-radius: 16px;
+  background: rgba(20, 14, 10, 0.92);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.editor-toggle-button {
+  border: 1px solid rgba(255, 226, 173, 0.22);
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(98, 64, 33, 0.96), rgba(56, 35, 18, 0.96));
+  color: #f8f3ea;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.editor-toggle-button[hidden] {
+  display: none !important;
+}
+
+.editor-toolbar[hidden] {
+  display: none !important;
+}
+
+.editor-toolbar-label {
+  color: #f8f3ea;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.editor-toolbar-button {
+  border: 1px solid rgba(255, 226, 173, 0.22);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, rgba(98, 64, 33, 0.96), rgba(56, 35, 18, 0.96));
+  color: #f8f3ea;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editor-mode-active .editor-draggable {
+  cursor: grab !important;
+  outline: 2px dashed rgba(246, 183, 86, 0.52);
+  outline-offset: 6px;
+}
+
+.editor-mode-active .editor-draggable.editor-dragging {
+  cursor: grabbing !important;
+  z-index: 9998 !important;
+  filter: brightness(1.06);
+}
+
+.editor-no-select,
+.editor-no-select * {
+  user-select: none !important;
+}
