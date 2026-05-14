@@ -3898,6 +3898,7 @@
       }
       #shopView .key-panel,
       #shopView #randomKeysPanel,
+      #shopView #sorteosPanel,
       #shopView #equipmentPanel {
         width: 100%;
       }
@@ -3971,7 +3972,8 @@
         max-width: 100%;
         margin: 0 auto;
       }
-      #equipmentPanel .shop-grid {
+      #equipmentPanel .shop-grid,
+      #sorteosPanel .shop-grid {
         width: 302px;
         max-width: 100%;
         margin: 0 auto;
@@ -3981,7 +3983,8 @@
         align-content: start;
         align-items: start;
       }
-      #equipmentPanel .shop-item-cell {
+      #equipmentPanel .shop-item-cell,
+      #sorteosPanel .shop-item-cell {
         width: 146px;
         min-height: 292px;
         height: 292px;
@@ -3995,40 +3998,48 @@
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
         overflow: hidden;
       }
-      #equipmentPanel .shop-item-cell.is-owned {
+      #equipmentPanel .shop-item-cell.is-owned,
+      #sorteosPanel .shop-item-cell.is-owned {
         border-color: rgba(200, 255, 176, 0.26);
         background: linear-gradient(180deg, rgba(33, 45, 26, 0.88), rgba(22, 30, 18, 0.84));
       }
-      #equipmentPanel .shop-item-panel {
+      #equipmentPanel .shop-item-panel,
+      #sorteosPanel .shop-item-panel {
         min-height: 0;
         height: auto;
         padding: 0;
         gap: 6px;
         overflow: hidden;
       }
-      #equipmentPanel .shop-item-cell.is-owned .shop-item-panel {
+      #equipmentPanel .shop-item-cell.is-owned .shop-item-panel,
+      #sorteosPanel .shop-item-cell.is-owned .shop-item-panel {
         background: transparent;
       }
-      #equipmentPanel .shop-item-action {
+      #equipmentPanel .shop-item-action,
+      #sorteosPanel .shop-item-action {
         padding: 0;
         display: grid;
         background: transparent;
         border: 0;
         border-radius: 0;
       }
-      #equipmentPanel .shop-item-cell.is-owned .shop-item-action {
+      #equipmentPanel .shop-item-cell.is-owned .shop-item-action,
+      #sorteosPanel .shop-item-cell.is-owned .shop-item-action {
         background: transparent;
       }
-      #equipmentPanel .item-badge {
+      #equipmentPanel .item-badge,
+      #sorteosPanel .item-badge {
         width: 44px;
         height: 44px;
         border-radius: 12px;
       }
-      #equipmentPanel .item-badge img {
+      #equipmentPanel .item-badge img,
+      #sorteosPanel .item-badge img {
         width: 30px;
         height: 30px;
       }
-      #equipmentPanel .item-name {
+      #equipmentPanel .item-name,
+      #sorteosPanel .item-name {
         font-size: 0.72rem;
         line-height: 1.04;
         min-height: 30px;
@@ -4037,11 +4048,13 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
-      #equipmentPanel .item-price {
+      #equipmentPanel .item-price,
+      #sorteosPanel .item-price {
         padding: 5px 8px;
         font-size: 0.62rem;
       }
-      #equipmentPanel .item-effect {
+      #equipmentPanel .item-effect,
+      #sorteosPanel .item-effect {
         font-size: 0.56rem;
         line-height: 1.12;
         min-height: 52px;
@@ -4050,7 +4063,8 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
-      #equipmentPanel .owned {
+      #equipmentPanel .owned,
+      #sorteosPanel .owned {
         font-size: 0.56rem;
         line-height: 1.08;
         min-height: 26px;
@@ -4059,7 +4073,8 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
-      #equipmentPanel .buy-button {
+      #equipmentPanel .buy-button,
+      #sorteosPanel .buy-button {
         width: 100%;
         min-height: 32px;
         padding: 6px 6px;
@@ -5626,6 +5641,7 @@
           <div class="shop-tabs-shell">
             <div class="menu-tabs shop-tabs">
               <button id="tabRandomKeys" class="tab-button is-active" type="button">Random Key</button>
+              <button id="tabSorteos" class="tab-button" type="button">Sorteos</button>
               <button id="tabEquipment" class="tab-button" type="button">Comprar Equipamiento</button>
             </div>
           </div>
@@ -5665,6 +5681,9 @@
                   <div id="randomKeyClaimsList" class="claims-list"></div>
                 </section>
               </div>
+            </section>
+            <section id="sorteosPanel" class="shop-panel" hidden>
+              <div id="sorteosGrid" class="shop-grid"></div>
             </section>
             <section id="equipmentPanel" class="shop-panel" hidden>
               <div id="shopGrid" class="shop-grid"></div>
@@ -6351,10 +6370,13 @@
     const duelMessage = document.getElementById("duelMessage");
     const pcCount = document.getElementById("pcCount");
     const tabRandomKeys = document.getElementById("tabRandomKeys");
+    const tabSorteos = document.getElementById("tabSorteos");
     const tabEquipment = document.getElementById("tabEquipment");
     const randomKeysPanel = document.getElementById("randomKeysPanel");
+    const sorteosPanel = document.getElementById("sorteosPanel");
     const equipmentPanel = document.getElementById("equipmentPanel");
     const shopGrid = document.getElementById("shopGrid");
+    const sorteosGrid = document.getElementById("sorteosGrid");
     const dustCount = document.getElementById("dustCount");
     const equipmentDustCount = document.getElementById("equipmentDustCount");
     const inventoryDustCount = document.getElementById("inventoryDustCount");
@@ -6461,7 +6483,7 @@
     let currentNick = "";
     let currentInventory = {};
     let currentPc = 0;
-    let activeTab = "keys";
+    let activeTab = "randomKeys";
     let selectedGearKey = "";
     let currentLogosTab = "found";
     let musicEnabled = true;
@@ -7937,13 +7959,16 @@
       renderMenuRanking();
     }
     function setActiveTab(nextTab) {
-      activeTab = nextTab === "equipment" ? "equipment" : "randomKeys";
+      activeTab = nextTab === "equipment" || nextTab === "sorteos" ? nextTab : "randomKeys";
       state.activeTab = activeTab;
       const showingRandomKeys = activeTab === "randomKeys";
+      const showingSorteos = activeTab === "sorteos";
       const showingEquipment = activeTab === "equipment";
       tabRandomKeys.classList.toggle("is-active", showingRandomKeys);
+      tabSorteos.classList.toggle("is-active", showingSorteos);
       tabEquipment.classList.toggle("is-active", showingEquipment);
       randomKeysPanel.hidden = !showingRandomKeys;
+      sorteosPanel.hidden = !showingSorteos;
       equipmentPanel.hidden = !showingEquipment;
     }
     function getRequestedKeyAmount() {
@@ -7958,8 +7983,11 @@
       keyPurchaseSummary.textContent = "";
       buyKeysButton.disabled = true;
     }
-    function renderShop() {
-      shopGrid.innerHTML = items.map((item) => {
+    function renderShopItemGrid(target, sourceItems) {
+      if (!target) {
+        return;
+      }
+      target.innerHTML = sourceItems.map((item) => {
         const owned = getShopOwnedCount(item.key);
         const maxPerUser = Math.max(0, Number(item.maxPerUser || 0));
         const reachedMax = maxPerUser > 0 && owned >= maxPerUser;
@@ -7987,6 +8015,10 @@
           </article>
         `;
       }).join("");
+    }
+    function renderShop() {
+      renderShopItemGrid(shopGrid, items.filter((item) => !item.maxPerUser));
+      renderShopItemGrid(sorteosGrid, items.filter((item) => item.maxPerUser));
     }
     function formatClaimDate(value) {
       const date = new Date(value);
@@ -9848,6 +9880,7 @@
     craftChestKeyButton.addEventListener("click", craftChestKey);
     usePerricitaCheckbox.addEventListener("change", renderUpgradePanel);
     tabRandomKeys.addEventListener("click", () => setActiveTab("randomKeys"));
+    tabSorteos.addEventListener("click", () => setActiveTab("sorteos"));
     tabEquipment.addEventListener("click", () => setActiveTab("equipment"));
     openShopButton.addEventListener("click", () => {
       showAppSection("shop");
