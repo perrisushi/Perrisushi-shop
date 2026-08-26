@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PerriRPG</title>
+  <link rel="stylesheet" href="./perrirpg.css">
+</head>
+<body>
+  <main id="rpgApp" class="rpg-app is-loading">
+    <header class="rpg-header">
+      <div class="rpg-brand"><span>◈</span><strong>PerriRPG</strong></div>
+      <div class="rpg-account"><small id="rpgNick">Cargando usuario</small><strong><span>✦</span> <b id="rpgPg">0</b> PG</strong></div>
+    </header>
+
+    <nav class="rpg-main-tabs" aria-label="Secciones de PerriRPG">
+      <button type="button" data-main-tab="shop" class="active">Tienda</button>
+      <button type="button" data-main-tab="combat">Combate</button>
+    </nav>
+
+    <section id="rpgShop" class="rpg-view shop-view">
+      <nav class="rpg-subtabs" aria-label="Tienda y equipo">
+        <button type="button" data-shop-tab="catalog" class="active">Comprar</button>
+        <button type="button" data-shop-tab="equipment">Equipo</button>
+      </nav>
+
+      <div id="rpgCatalogView" class="shop-content">
+        <nav id="rpgFilters" class="rpg-filters" aria-label="Filtros del catálogo"></nav>
+        <div class="catalog-layout">
+          <section id="rpgCatalog" class="rpg-catalog" aria-live="polite"></section>
+          <aside id="rpgDetail" class="rpg-detail"></aside>
+        </div>
+      </div>
+
+      <div id="rpgEquipmentView" class="equipment-content" hidden>
+        <section class="build-summary">
+          <header><span>ATRIBUTOS EQUIPADOS</span><strong id="rpgBuildState">NORMAL</strong></header>
+          <div id="rpgStats" class="stats-grid"></div>
+        </section>
+        <section class="equipment-block">
+          <h2>Armadura</h2>
+          <div id="rpgArmorSlots" class="armor-slots"></div>
+        </section>
+        <section class="equipment-block">
+          <h2>Objetos para el combate</h2>
+          <p class="equipment-help">Activa los objetos que quieres tener disponibles durante el combate.</p>
+          <div id="rpgLoadout" class="loadout-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="rpgCombat" class="rpg-view combat-view" hidden>
+      <div class="battle-stage">
+        <header class="enemy-hud">
+          <span>REY CANGROSIO IV</span>
+          <div><small>HP <b id="enemyHpText">5000 / 5000</b></small><div class="hp-track enemy-track"><i id="enemyHpBar"></i></div><div id="enemyStatuses" class="status-list">Sin alteraciones</div></div>
+        </header>
+        <div class="enemy-screen"><img id="enemySprite" src="./assets/perrirpg/idle-1.png" alt="Rey Cangrosio IV"></div>
+      </div>
+      <section class="player-interface">
+        <header class="player-hud">
+          <div><small id="playerKind">VIAJERO <b id="playerHpText">0 / 0</b></small><div class="hp-track player-track"><i id="playerHpBar"></i></div></div>
+          <div id="playerStatuses" class="status-list">Sin efectos activos</div>
+        </header>
+        <div class="command-panel">
+          <nav id="combatMenu" class="combat-menu" aria-label="Acciones del jugador"></nav>
+          <section class="combat-log">
+            <header><span id="combatRound">Turno de combate 1</span><b id="combatPhase">Tu decisión</b></header>
+            <div id="combatMessages" class="combat-messages"></div>
+            <div class="action-queue">
+              <span id="actionOne">Primera acción</span><span id="actionTwo">Segunda acción opcional</span>
+              <button id="clearActions" type="button">Borrar</button><button id="useActions" type="button">Usar</button>
+            </div>
+          </section>
+        </div>
+      </section>
+      <div id="combatResult" class="combat-result" hidden><div><span id="combatResultTag">VICTORIA</span><h2 id="combatResultTitle">El umbral se abre</h2><button id="newCombat" type="button">Nuevo combate</button></div></div>
+    </section>
+
+    <div id="rpgToast" class="rpg-toast" role="status" hidden></div>
+    <div id="rpgBlocking" class="rpg-blocking"><div class="rpg-spinner"></div><p id="rpgBlockingText">Conectando con tu inventario...</p></div>
+  </main>
+  <script src="./perrirpg.js" defer></script>
+</body>
+</html>
