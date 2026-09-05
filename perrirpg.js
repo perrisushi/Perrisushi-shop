@@ -63,7 +63,8 @@
     queue: [],
     combatMenu: "root",
     animationIndex: 0,
-    animationTimer: 0
+    animationTimer: 0,
+    combatClearPromise: Promise.resolve()
   };
 
   function toast(message, bad = false) {
@@ -129,6 +130,7 @@
       const data = await api("publicShopRpgState");
       if (!data?.ok) throw new Error(data?.error || "rpg_state_failed");
       applyServerState(data);
+      setBlocking(false);
     } catch (error) {
       if (error.message === "session_expired") {
         setBlocking(true, "La sesión ha caducado. Vuelve a iniciar sesión.");
@@ -318,7 +320,7 @@
   function newCombat() {
     const build = calculateBuild();
     state.combat = {
-      round: 1, phase: "player", result: null,
+      round: 1, phase: "resolving", result: null,
       player: { ...build, hp: build.hp, grace: build.undead, statuses: build.undead ? [{ id: "undead", label: "Undead", turns: 0 }] : [] },
       enemy: { hp: 5000, maxHp: 5000, physicalAttack: 20, spiritualAttack: 15, physicalDefense: 60, spiritualDefense: 30, royalShellUsed: false, statuses: [] },
       log: [build.undead ? "El Karma consume tu vida. Despiertas como Undead: supera 0 HP esta ronda." : "El Rey Cangrosio IV bloquea el camino.", "Elige tu primera acción. Después puedes usarla o añadir una segunda."]
@@ -329,7 +331,11 @@
     $("#combatReward").hidden = true;
     setEnemyPose("idle-1");
     renderCombat();
-    saveCombat();
+    void saveCombat().then((data) => {
+      if (!data?.ok || !state.combat || state.combat.result) return;
+      state.combat.phase = "player";
+      renderCombat();
+    });
   }
 
   function hpPercent(value, max) { return clamp((Math.max(0, value) / Math.max(1, max)) * 100, 0, 100); }
@@ -546,6 +552,12 @@
     const combat = state.combat;
     try {
       const data = await api("publicShopRpgSaveCombat", { combat: { round: combat.round, playerHp: combat.player.hp, playerMaxHp: combat.player.maxHp, enemyHp: combat.enemy.hp, enemyMaxHp: combat.enemy.maxHp, undead: combat.player.undead, playerStatuses: combat.player.statuses, enemyStatuses: combat.enemy.statuses, log: combat.log } });
+      if (!data?.ok) {
+        toast("El servidor rechazó un estado de combate no válido. Inicia una partida nueva.", true);
+        discardCombat();
+        showMainTab("shop");
+        return null;
+      }
       if (data?.bossDefeated) {
         toast("¡Logro desbloqueado: Me gusta el marisco!");
         const reward = data.bossReward;
@@ -563,7 +575,11 @@
 
   async function clearRemoteCombat() {
     if (!state.sessionToken) return;
-    try { await api("publicShopRpgClearCombat"); } catch (error) {}
+    const pendingClear = state.combatClearPromise
+      .catch(() => undefined)
+      .then(() => api("publicShopRpgClearCombat"));
+    state.combatClearPromise = pendingClear;
+    try { await pendingClear; } catch (error) {}
   }
 
   async function finalizeCombat() {
@@ -648,7 +664,7 @@
     const button = $("#confirmCombat");
     button.disabled = true;
     try {
-      await api("publicShopRpgClearCombat");
+      await clearRemoteCombat();
       state.combat = null;
       newCombat();
       cancelCombatRequest();
