@@ -27,7 +27,6 @@ body {
   background-color: rgba(0, 0, 0, 0) !important;
 }
 
-.duel-app.is-mobile-cover .duel-arena,
 .duel-app.is-mobile-cover .duel-arena.is-equipment {
   width: 1747px;
   height: 974px;

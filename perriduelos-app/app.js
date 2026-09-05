@@ -131,7 +131,7 @@ async function refreshRemoteEquipmentInventory() {
 }
 
 const arenaBackgrounds = {
-  duel: "./fondo-perriduelos.png",
+  duel: "./fondo-perriduelos.png?v=20260905-8",
   equipment: "./fondo-perriduelo-tienda.png"
 };
 
@@ -749,9 +749,7 @@ function resizePerriDuelosApp() {
   const widthScale = viewportWidth / (isMobileLandscape ? 1747 : APP_DESIGN_WIDTH);
   const heightScale = viewportHeight / (isMobileLandscape ? 974 : APP_DESIGN_HEIGHT);
   const uniformScale = Math.max(.1, Math.min(widthScale, heightScale));
-  const isEquipmentMode = duelArena?.classList.contains("is-equipment");
-  const mobileDuelWidthBoost = isMobileLandscape && !isEquipmentMode ? 1.18 : 1;
-  const horizontalScale = Math.max(.1, isMobileLandscape ? widthScale * mobileDuelWidthBoost : uniformScale);
+  const horizontalScale = Math.max(.1, isMobileLandscape ? widthScale : uniformScale);
   const verticalScale = Math.max(.1, isMobileLandscape ? heightScale : uniformScale);
   currentAppScale = horizontalScale;
   currentAppScaleY = verticalScale;
