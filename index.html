@@ -6534,7 +6534,7 @@
             <button id="backToMinigamesFromPerriPet" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="perripet-frame-shell">
-            <iframe id="perriPetFrame" class="perripet-frame" src="./perripet-app/index.html?v=20260905-4" title="PerriPet" allow="fullscreen" allowfullscreen allowtransparency="true"></iframe>
+            <iframe id="perriPetFrame" class="perripet-frame" src="./perripet-app/index.html?v=20260905-5" title="PerriPet" allow="fullscreen" allowfullscreen allowtransparency="true"></iframe>
           </div>
         </section>
         <section id="perriDuelosView" class="content-view view" hidden>
@@ -11670,7 +11670,11 @@
     perriRpgFrame.addEventListener("load", sendPerriRpgSession);
     function sendPerriPetSession() {
       if (!perriPetFrame || !perriPetFrame.contentWindow || !state.sessionToken) return;
-      perriPetFrame.contentWindow.postMessage({ type: "perripet-session", sessionToken: state.sessionToken }, window.location.origin);
+      perriPetFrame.contentWindow.postMessage({
+        type: "perripet-session",
+        sessionToken: state.sessionToken,
+        inventory: state.inventory || {}
+      }, window.location.origin);
     }
     function shouldOfferPerriPetFullscreen() {
       const touchDevice = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;

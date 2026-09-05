@@ -3770,8 +3770,10 @@ async function publicShopPerriPetState(sessionToken) {
     ok: true,
     nick: sessionResult.nick,
     snapshot,
+    inventory,
     shared: {
       gems: Math.max(0, toNumber(inventory.polvoGema)),
+      polvoGema: Math.max(0, toNumber(inventory.polvoGema)),
       perriCoins: Math.max(0, toNumber(inventory.pc)),
       scrap: Math.max(0, toNumber(inventory.chatarra)),
       revision: serverRevision,
@@ -3964,8 +3966,10 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
 
   return {
     ok: true,
+    inventory: savedInventory,
     shared: {
       gems: safeSnapshot.pet.coins,
+      polvoGema: safeSnapshot.pet.coins,
       perriCoins: safeSnapshot.pet.perriCoins,
       scrap: safeSnapshot.pet.scrap,
       revision: serverRevision,
