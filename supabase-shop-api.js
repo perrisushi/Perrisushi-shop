@@ -831,6 +831,27 @@ async function persistInventoryRow(nick, inventory) {
   return rowToInventory(inventoryToRow(normalizedNick, inventory));
 }
 
+async function patchInventoryFields(nick, fields) {
+  const normalizedNick = await ensurePlayer(nick);
+  const patch = {
+    updated_at: nowIso()
+  };
+
+  Object.entries(fields || {}).forEach(([key, value]) => {
+    if (INVENTORY_KEYS.includes(key)) {
+      patch[toSnakeCase(key)] = toNumber(value);
+    }
+  });
+
+  const updatedRows = await updateRows("shop_inventories", patch, {
+    nick: `eq.${normalizedNick}`
+  }, { returning: "representation" });
+
+  return Array.isArray(updatedRows) && updatedRows[0]
+    ? rowToInventory(updatedRows[0])
+    : getInventory(normalizedNick);
+}
+
 async function expireInventoryChestRows(nick) {
   const normalizedNick = normalizeNick(nick);
   if (!normalizedNick) {
@@ -5931,8 +5952,12 @@ async function adminUpgradeEquipment(nick, gearType, usePerricita) {
 }
 
 async function withAttackLock(attackerNick, defenderNick, worker) {
-  const keys = [normalizeNick(attackerNick), normalizeNick(defenderNick)].filter(Boolean).sort((a, b) => a.localeCompare(b));
-  return withNickLock(keys.join("|"), worker);
+  const keys = [...new Set([normalizeNickKey(attackerNick), normalizeNickKey(defenderNick)].filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+  const acquireNextLock = (index) => index >= keys.length
+    ? worker()
+    : withNickLock(keys[index], () => acquireNextLock(index + 1));
+  return acquireNextLock(0);
 }
 
 async function adminPerformAttack(attackerNick, defenderNick, weapon, shieldType, outcome, force) {
@@ -6012,8 +6037,20 @@ async function adminPerformAttack(attackerNick, defenderNick, weapon, shieldType
       nextDefenderInventory.pc = toNumber(nextDefenderInventory.pc) + transferredPc;
     }
 
-    const savedAttackerInventory = await saveInventory(normalizedAttackerNick, nextAttackerInventory);
-    const savedDefenderInventory = await saveInventory(normalizedDefenderNick, nextDefenderInventory);
+    if (normalizedOutcome === "Impacto") {
+      await issueInventoryChestRows(normalizedAttackerNick, "perriCofresMinijuego", 1);
+    }
+    const attackerPatch = {
+      duelo: nextAttackerInventory.duelo,
+      pc: nextAttackerInventory.pc
+    };
+    if (normalizedOutcome === "Impacto") {
+      attackerPatch.perriCofresMinijuego = nextAttackerInventory.perriCofresMinijuego;
+    }
+    const savedAttackerInventory = await patchInventoryFields(normalizedAttackerNick, attackerPatch);
+    const savedDefenderInventory = await patchInventoryFields(normalizedDefenderNick, {
+      pc: nextDefenderInventory.pc
+    });
     const attackerProfile = await getProfile(normalizedAttackerNick);
     const defenderProfile = await getProfile(normalizedDefenderNick);
     await touchPublicUser(normalizedAttackerNick, savedAttackerInventory, attackerProfile);
