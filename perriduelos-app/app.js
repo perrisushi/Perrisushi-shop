@@ -115,6 +115,20 @@ function notifyPerriDuelosInventoryUpdated(inventory) {
   window.parent.postMessage({ type: "perriduelos-inventory-updated", inventory }, window.location.origin);
 }
 
+async function refreshRemoteEquipmentInventory() {
+  if (!perriDuelosWebState.sessionToken) return;
+  try {
+    const result = await callPerriDuelosApi("publicShopRefresh", {
+      sessionToken: perriDuelosWebState.sessionToken
+    });
+    if (!result?.ok || !result.inventory || typeof result.inventory !== "object") return;
+    equipmentState.inventory = { ...result.inventory };
+    renderEquipmentSystem();
+  } catch (error) {
+    // Se conserva el ultimo inventario recibido si la sincronizacion no esta disponible.
+  }
+}
+
 const arenaBackgrounds = {
   duel: "./fondo-perriduelos.png",
   equipment: "./fondo-perriduelo-tienda.png"
@@ -729,10 +743,16 @@ function resizePerriDuelosApp() {
   if (!duelApp) return;
   const viewportWidth = window.visualViewport?.width || window.innerWidth;
   const viewportHeight = window.visualViewport?.height || window.innerHeight;
-  currentAppScale = Math.max(.1, Math.min(
-    viewportWidth / APP_DESIGN_WIDTH,
-    viewportHeight / APP_DESIGN_HEIGHT
-  ));
+  const isMobileLandscape = window.matchMedia("(pointer: coarse)").matches
+    && viewportWidth > viewportHeight;
+  const scaleWidth = isMobileLandscape ? 1747 : APP_DESIGN_WIDTH;
+  const scaleHeight = isMobileLandscape ? 974 : APP_DESIGN_HEIGHT;
+  const widthScale = viewportWidth / scaleWidth;
+  const heightScale = viewportHeight / scaleHeight;
+  currentAppScale = Math.max(.1, isMobileLandscape
+    ? Math.max(widthScale, heightScale)
+    : Math.min(widthScale, heightScale));
+  duelApp.classList.toggle("is-mobile-cover", isMobileLandscape);
   duelApp.style.setProperty("--app-scale", String(currentAppScale));
 }
 
@@ -937,6 +957,7 @@ window.addEventListener("message", (event) => {
   equipmentState.upgradeHandler = runRemoteEquipmentUpgrade;
   if (duelAttackerName) duelAttackerName.textContent = perriDuelosWebState.nick || "Tu usuario";
   renderEquipmentSystem();
+  refreshRemoteEquipmentInventory();
   if (sessionChanged) {
     const savedDuel = readActiveDuel();
     if (savedDuel) {
