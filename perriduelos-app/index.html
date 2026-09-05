@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="transparent">
   <title>PerriDuelos</title>
-  <link rel="stylesheet" href="./styles.css?v=20260905-10">
+  <link rel="stylesheet" href="./styles.css?v=20260905-11">
 </head>
 <body>
   <main class="duel-app">
-    <section class="duel-arena" aria-label="Campo de PerriDuelos" data-ticket-cost="1" data-attack-time-limit="1800" data-defender-selection="random-locked">
+    <section class="duel-arena" aria-label="Campo de PerriDuelos" data-ticket-cost="1" data-defender-selection="random-locked">
       <img class="duel-frame" src="./fondo-perriduelos.png?v=20260905-9" alt="" aria-hidden="true" data-duel-frame>
 
       <nav class="duel-tabs" role="tablist" aria-label="Secciones de PerriDuelos">
@@ -27,7 +27,8 @@
           <ul>
             <li>Cada ataque consume <strong>1 Ticket de Duelo</strong>.</li>
             <li>El defensor se elige <strong>al azar</strong> y no puede cambiarse.</li>
-            <li>Tienes <strong>30 minutos</strong> para atacar; si caduca el tiempo, pierdes el ticket.</li>
+            <li>El rival queda <strong>bloqueado</strong> hasta que combatas contra él.</li>
+            <li>El Ticket de Duelo se consume únicamente al pulsar <strong>Atacar</strong>.</li>
             <li>El arma, el escudo y las piezas equipadas determinan las probabilidades de ataque y defensa.</li>
             <li>Si ganas, robas hasta <strong>400 PC</strong> y recibes un cofre de minijuego.</li>
             <li>Si pierdes, entregas hasta <strong>200 PC</strong> al defensor.</li>
@@ -154,8 +155,7 @@
           </div>
         </div>
         <div class="duel-external-controls">
-          <p id="duelAttackerNote" class="combat-note" title="El Ticket de Duelo se pierde si no atacas dentro de los 30 minutos." hidden>1 ticket; se pierde si caduca.</p>
-          <span id="duelAttackTimer" class="combat-state">30:00 PARA ATACAR</span>
+          <p id="duelAttackerNote" class="combat-note" hidden></p>
           <button id="duelAttackButton" class="duel-attack-button" type="button">Atacar</button>
         </div>
         <strong id="duelAttackerResult" class="duel-result" aria-live="polite" hidden></strong>
@@ -218,6 +218,6 @@
       </article>
     </section>
   </main>
-  <script src="./app.js?v=20260905-10"></script>
+  <script src="./app.js?v=20260905-13"></script>
 </body>
 </html>

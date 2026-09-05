@@ -45,7 +45,6 @@ const duelAttackerStatus = document.getElementById("duelAttackerStatus");
 const duelDefenderStatus = document.getElementById("duelDefenderStatus");
 const duelAttackerNote = document.getElementById("duelAttackerNote");
 const duelDefenderNote = document.getElementById("duelDefenderNote");
-const duelAttackTimer = document.getElementById("duelAttackTimer");
 const duelDefenderState = document.getElementById("duelDefenderState");
 const attackerPanel = document.querySelector(".fighter-panel--attacker");
 const defenderPanel = document.querySelector(".fighter-panel--defender");
@@ -75,8 +74,7 @@ function saveActiveDuel() {
     window.localStorage.setItem(getActiveDuelStorageKey(), JSON.stringify({
       targetToken: perriDuelosWebState.targetToken,
       defenderNick: duelDefenderName?.textContent || "",
-      defenderInventory: perriDuelosWebState.defenderInventory || {},
-      deadline: localDuelState.deadline
+      defenderInventory: perriDuelosWebState.defenderInventory || {}
     }));
   } catch (error) {}
 }
@@ -178,7 +176,6 @@ const localDuelRewardRules = {
 };
 
 const localDuelState = {
-  deadline: 0,
   busy: false,
   roundComplete: false,
   autoResetPending: false,
@@ -215,9 +212,7 @@ function getLockedLocalDefender() {
 function loadLocalDuelUsers() {
   if (duelAttackerName) duelAttackerName.textContent = "Cargando usuario...";
   if (duelDefenderName) duelDefenderName.textContent = "Esperando rival...";
-  localDuelState.deadline = 0;
   renderLocalDuelEquipment();
-  if (duelAttackTimer) duelAttackTimer.textContent = "30:00 PARA ATACAR";
 }
 
 const equipmentGearItems = [
@@ -447,51 +442,6 @@ function getCurrentLocalDuelContext() {
   };
 }
 
-async function finishExpiredLocalDuel() {
-  if (localDuelState.roundComplete || localDuelState.busy) return;
-  const expiredTargetToken = perriDuelosWebState.targetToken;
-  perriDuelosWebState.targetToken = "";
-  clearActiveDuel();
-  localDuelState.roundComplete = true;
-  hideLocalDuelResults();
-  duelAttackerStatus.textContent = "CANCELADO";
-  duelDefenderStatus.textContent = "LIBERADO";
-  duelAttackerNote.textContent = "El tiempo terminó y se perdió 1 ticket.";
-  duelDefenderNote.textContent = "El duelo ha caducado sin ataque.";
-  duelAttackTimer.textContent = "00:00 PARA ATACAR";
-  duelDefenderState.textContent = "DUELO CANCELADO";
-  duelAttackButton.textContent = "Atacar";
-  setLocalDuelOutcomeClass(duelAttackerStatus, "is-duel-danger");
-  setLocalDuelOutcomeClass(duelDefenderStatus);
-  setLocalDuelOutcomeClass(attackerPanel, "is-duel-danger");
-  setLocalDuelOutcomeClass(defenderPanel);
-  renderLocalDuelEquipment();
-  if (!expiredTargetToken || !perriDuelosWebState.sessionToken) return;
-  try {
-    const result = await callPerriDuelosApi("publicShopExpireDuelTarget", {
-      sessionToken: perriDuelosWebState.sessionToken,
-      targetToken: expiredTargetToken
-    });
-    if (result?.attackerInventory) {
-      equipmentState.inventory = { ...result.attackerInventory };
-      notifyPerriDuelosInventoryUpdated(equipmentState.inventory);
-      renderEquipmentSystem();
-    }
-  } catch (error) {
-    // El servidor volverá a validar la caducidad cuando se solicite el siguiente rival.
-  }
-}
-
-function updateLocalDuelTimer() {
-  if (!duelAttackTimer || localDuelState.roundComplete || localDuelState.busy || !localDuelState.deadline) return;
-  const remainingMs = Math.max(0, localDuelState.deadline - Date.now());
-  const totalSeconds = Math.ceil(remainingMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  duelAttackTimer.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")} PARA ATACAR`;
-  if (remainingMs <= 0) finishExpiredLocalDuel();
-}
-
 async function startNextLocalDuel() {
   window.clearTimeout(localDuelState.resultResetTimer);
   localDuelState.resultResetTimer = 0;
@@ -517,7 +467,6 @@ async function startNextLocalDuel() {
     perriDuelosWebState.nick = String(result.attackerNick || perriDuelosWebState.nick || "");
     duelAttackerName.textContent = perriDuelosWebState.nick || "Tu usuario";
     duelDefenderName.textContent = String(result.defenderNick || "Rival");
-    localDuelState.deadline = Date.now() + (30 * 60 * 1000);
     saveActiveDuel();
     duelAttackerStatus.textContent = "LISTO";
     duelDefenderStatus.textContent = "ASIGNADO";
@@ -526,7 +475,6 @@ async function startNextLocalDuel() {
     duelDefenderState.textContent = "";
     duelAttackButton.textContent = "Atacar";
     notifyPerriDuelosInventoryUpdated(equipmentState.inventory);
-    updateLocalDuelTimer();
   } catch (error) {
     localDuelState.roundComplete = true;
     duelAttackerStatus.textContent = "SIN DUELO";
@@ -948,6 +896,12 @@ window.addEventListener("message", (event) => {
   if (event.data.type === "perriduelos-close") {
     window.clearTimeout(localDuelState.resultResetTimer);
     localDuelState.resultResetTimer = 0;
+    if (localDuelState.autoResetPending) {
+      localDuelState.autoResetPending = false;
+      localDuelState.roundComplete = false;
+      hideLocalDuelResults();
+      renderLocalDuelEquipment();
+    }
     return;
   }
   if (event.data.type !== "perriduelos-session") return;
@@ -964,20 +918,10 @@ window.addEventListener("message", (event) => {
   renderEquipmentSystem();
   refreshRemoteEquipmentInventory();
   if (sessionChanged) {
-    const savedDuel = readActiveDuel();
-    if (savedDuel) {
-      perriDuelosWebState.targetToken = String(savedDuel.targetToken || "");
-      perriDuelosWebState.defenderInventory = { ...(savedDuel.defenderInventory || {}) };
-      localDuelState.deadline = Number(savedDuel.deadline || 0);
-      localDuelState.roundComplete = false;
-      if (duelDefenderName) duelDefenderName.textContent = String(savedDuel.defenderNick || "Rival asignado");
-      duelAttackerStatus.textContent = "LISTO";
-      duelDefenderStatus.textContent = "ASIGNADO";
-      renderEquipmentSystem();
-      if (localDuelState.deadline <= Date.now()) finishExpiredLocalDuel();
-      else updateLocalDuelTimer();
-      return;
-    }
+    clearActiveDuel();
+    perriDuelosWebState.targetToken = "";
+    perriDuelosWebState.defenderInventory = null;
+    localDuelState.roundComplete = false;
   }
   if (!perriDuelosWebState.targetToken
     && !localDuelState.roundComplete
@@ -989,7 +933,6 @@ window.addEventListener("message", (event) => {
 
 window.addEventListener("resize", handlePerriDuelosResize);
 window.visualViewport?.addEventListener("resize", handlePerriDuelosResize);
-window.setInterval(updateLocalDuelTimer, 1000);
 resizePerriDuelosApp();
 requestAnimationFrame(alignEquipmentTab);
 renderEquipmentSystem();

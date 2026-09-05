@@ -1067,13 +1067,6 @@ body {
   gap: clamp(3px, .35cqw, 6px);
 }
 
-#duelAttackTimer {
-  position: relative;
-  top: 5px;
-  padding: .304em .52em .24em;
-  font-size: clamp(.272rem, .384cqw, .448rem);
-}
-
 .duel-attack-button {
   width: 100%;
   min-height: clamp(20px, 1.84cqw, 30px);
