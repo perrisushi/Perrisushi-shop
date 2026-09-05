@@ -634,8 +634,8 @@ body {
 .duel-help-button {
   top: auto;
   right: auto;
-  bottom: 5px;
-  left: 5px;
+  bottom: 20px;
+  left: 75px;
 }
 
 .duel-help-modal {
@@ -786,6 +786,7 @@ body {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  transform-origin: center center;
 }
 
 .fighter-panel__interface {
@@ -800,12 +801,13 @@ body {
 
 .fighter-panel--attacker {
   left: calc(16.3% - 20px);
+  transform: translate(-40px, 40px) scale(1.287);
 }
 
 .fighter-panel--defender {
   width: calc(29.5% + 30px);
   right: calc(16.3% - 30px);
-  transform: translateX(-40px);
+  transform: translate(0, 40px) scale(1.287);
 }
 
 .fighter-panel__header {
@@ -944,7 +946,7 @@ body {
 .primary-gear {
   min-width: 0;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: clamp(7px, .7cqw, 12px);
   padding: clamp(5px, .55cqw, 9px) clamp(7px, .7cqw, 12px);
@@ -1058,7 +1060,7 @@ body {
 .duel-external-controls {
   position: absolute;
   z-index: 5;
-  right: clamp(10px, 1.2cqw, 20px);
+  right: calc(clamp(10px, 1.2cqw, 20px) + 10px);
   bottom: clamp(8px, .9cqw, 15px);
   width: clamp(86px, 6.88cqw, 132px);
   display: grid;
@@ -1125,7 +1127,7 @@ body {
 .duel-result {
   position: absolute;
   z-index: 4;
-  bottom: clamp(7px, .7cqw, 12px);
+  bottom: calc(clamp(7px, .7cqw, 12px) + 20px);
   left: 50%;
   display: flex;
   align-items: baseline;
