@@ -749,7 +749,9 @@ function resizePerriDuelosApp() {
   const widthScale = viewportWidth / (isMobileLandscape ? 1747 : APP_DESIGN_WIDTH);
   const heightScale = viewportHeight / (isMobileLandscape ? 974 : APP_DESIGN_HEIGHT);
   const uniformScale = Math.max(.1, Math.min(widthScale, heightScale));
-  const horizontalScale = Math.max(.1, isMobileLandscape ? widthScale : uniformScale);
+  const isEquipmentMode = duelArena?.classList.contains("is-equipment");
+  const mobileDuelWidthBoost = isMobileLandscape && !isEquipmentMode ? 1.18 : 1;
+  const horizontalScale = Math.max(.1, isMobileLandscape ? widthScale * mobileDuelWidthBoost : uniformScale);
   const verticalScale = Math.max(.1, isMobileLandscape ? heightScale : uniformScale);
   currentAppScale = horizontalScale;
   currentAppScaleY = verticalScale;
@@ -798,7 +800,10 @@ function selectDuelTab(tabName) {
     duelFrame.src = arenaBackgrounds[tabName] || arenaBackgrounds.duel;
   }
 
-  requestAnimationFrame(alignEquipmentTab);
+  requestAnimationFrame(() => {
+    resizePerriDuelosApp();
+    alignEquipmentTab();
+  });
 }
 
 duelTabs.forEach((tab, index) => {
