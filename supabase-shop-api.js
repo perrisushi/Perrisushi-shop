@@ -190,6 +190,39 @@ const PERRIPET_RPG_ITEM_IDS = {
   criticalPotion: "potion-critical",
   masteryPotion: "potion-master"
 };
+const PERRIPET_LOOT_SALE_PRICES = {
+  "loot-acorn": 5,
+  "loot-broken-sword": 8,
+  "loot-normal-chest": 10,
+  "loot-bear-claw": 30,
+  "loot-bear-hide": 15,
+  "loot-dragon-horn": 50,
+  "loot-gold-chest": 100
+};
+const PERRIPET_RPG_SHOP_PRICES = {
+  mageRing: 25,
+  arcaneStaff: 100,
+  metalShield: 100,
+  oakShield: 25,
+  royalSword: 100,
+  shiningSword: 25,
+  goldenSpear: 100,
+  worldbreaker: 100,
+  executionerGreatsword: 25,
+  shuriken: 25,
+  mediumRedPotion: 20,
+  largeRedPotion: 100,
+  armorPotion: 20,
+  criticalPotion: 20,
+  masteryPotion: 20
+};
+const PERRIPET_FARM_GROWTH_MS = 24 * 60 * 60 * 1000;
+const PERRIPET_FARM_WATER_MS = 30 * 60 * 1000;
+const PERRIPET_ENEMY_MAX_LOOT = {
+  goblin: { "loot-acorn": 2, "loot-broken-sword": 1, "loot-normal-chest": 1 },
+  bear: { "loot-acorn": 3, "loot-bear-claw": 1, "loot-bear-hide": 1 },
+  dragon: { "loot-broken-sword": 1, "loot-normal-chest": 2, "loot-dragon-horn": 1, "loot-gold-chest": 1 }
+};
 const PERRIRPG_DIRECT_SHOP_ITEM_IDS = new Set([
   "sword-worn",
   "greatsword-rusted",
@@ -1977,14 +2010,15 @@ async function withNickLock(nick, worker) {
     release = resolve;
   });
 
-  nickLocks.set(key, previous.finally(() => current));
+  const queued = previous.finally(() => current);
+  nickLocks.set(key, queued);
   await previous;
 
   try {
     return await worker();
   } finally {
     release();
-    if (nickLocks.get(key) === current) {
+    if (nickLocks.get(key) === queued) {
       nickLocks.delete(key);
     }
   }
@@ -3719,15 +3753,19 @@ async function publicShopPerriPetState(sessionToken) {
     await saveInventory(sessionResult.nick, inventory);
   }
   const snapshot = applyPerriPetInventoryToSnapshot(storedState.snapshot || { version: 1, pet: {}, farm: {}, encounters: [] }, perriPetInventory);
+  const serverRevision = String(snapshot.pet?.serverRevision || crypto.randomUUID());
   snapshot.pet = {
     ...snapshot.pet,
+    serverRevision,
     coins: Math.max(0, toNumber(inventory.polvoGema)),
     perriCoins: Math.max(0, toNumber(inventory.pc)),
     scrap: Math.max(0, toNumber(inventory.chatarra)),
     rpgInventory,
     testFundsGrantVersion: 1
   };
-  if (storedState.legacy) await savePerriPetStateRow(sessionResult.nick, snapshot);
+  if (storedState.legacy || storedState.snapshot?.pet?.serverRevision !== serverRevision) {
+    await savePerriPetStateRow(sessionResult.nick, snapshot);
+  }
   return {
     ok: true,
     nick: sessionResult.nick,
@@ -3736,10 +3774,49 @@ async function publicShopPerriPetState(sessionToken) {
       gems: Math.max(0, toNumber(inventory.polvoGema)),
       perriCoins: Math.max(0, toNumber(inventory.pc)),
       scrap: Math.max(0, toNumber(inventory.chatarra)),
+      revision: serverRevision,
       perriPetInventory,
       rpgInventory
     }
   };
+}
+
+function getVerifiedPerriPetHarvests(previousSnapshot, incomingSnapshot) {
+  const previousPlots = Array.isArray(previousSnapshot?.farm?.plots) ? previousSnapshot.farm.plots : [];
+  const incomingPlots = Array.isArray(incomingSnapshot?.farm?.plots) ? incomingSnapshot.farm.plots : [];
+  const harvests = { "fruit-purple": 0, "fruit-yellow": 0 };
+  previousPlots.forEach((previousPlot, index) => {
+    const incomingPlot = incomingPlots[index];
+    if (!previousPlot?.planted || incomingPlot?.planted) return;
+    const elapsedMs = Math.max(0, Date.now() - Number(previousPlot.updatedAt || Date.now()));
+    const wateredMs = (Math.max(0, Math.min(100, Number(previousPlot.water || 0))) / 100) * PERRIPET_FARM_WATER_MS;
+    const verifiedGrowth = Math.min(
+      PERRIPET_FARM_GROWTH_MS,
+      Math.max(0, Number(previousPlot.growthMs || 0)) + Math.min(elapsedMs, wateredMs)
+    );
+    if (verifiedGrowth < PERRIPET_FARM_GROWTH_MS) return;
+    const rewardKey = previousPlot.cropType === "red" ? "fruit-yellow" : "fruit-purple";
+    harvests[rewardKey] += 1;
+  });
+  return harvests;
+}
+
+function getVerifiedPerriPetLoot(previousSnapshot, incomingSnapshot) {
+  const previousEncounters = Array.isArray(previousSnapshot?.encounters) ? previousSnapshot.encounters : [];
+  const incomingEncounters = Array.isArray(incomingSnapshot?.encounters) ? incomingSnapshot.encounters : [];
+  const allowedLoot = Object.fromEntries(Object.keys(PERRIPET_LOOT_SALE_PRICES).map((itemId) => [itemId, 0]));
+  previousEncounters.forEach((previousEncounter) => {
+    const incomingEncounter = incomingEncounters.find((entry) => Number(entry?.slotId) === Number(previousEncounter?.slotId));
+    if (previousEncounter?.status !== "ready" || incomingEncounter?.status !== "cooldown") return;
+    const enemies = Array.isArray(previousEncounter.enemies) ? previousEncounter.enemies.slice(0, 3) : [];
+    enemies.forEach((enemyId) => {
+      const loot = PERRIPET_ENEMY_MAX_LOOT[String(enemyId || "")] || {};
+      Object.entries(loot).forEach(([itemId, amount]) => {
+        allowedLoot[itemId] = toNumber(allowedLoot[itemId]) + toNumber(amount);
+      });
+    });
+  });
+  return allowedLoot;
 }
 
 async function publicShopPerriPetSave(sessionToken, snapshot) {
@@ -3758,6 +3835,7 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
     return { ok: false, error: "invalid_perripet_state" };
   }
 
+  return withNickLock(`perripet:${sessionResult.nick}`, async () => {
   const previousState = await getPerriPetStoredState(sessionResult.nick);
   const previousSnapshot = previousState.snapshot;
   const inventory = await getInventory(sessionResult.nick);
@@ -3767,19 +3845,71 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
   const previousPet = previousSnapshot?.pet && typeof previousSnapshot.pet === "object" ? previousSnapshot.pet : null;
   const syncBase = safeSnapshot.syncBase && typeof safeSnapshot.syncBase === "object" ? safeSnapshot.syncBase : null;
   const basePet = syncBase || previousPet;
+  const currentRevision = String(previousPet?.serverRevision || "");
+  const baseRevision = String(syncBase?.revision || "");
+
+  if (currentRevision && baseRevision !== currentRevision) {
+    const syncedRpgInventory = await getPerriPetRpgInventory(sessionResult.nick);
+    const authoritativeSnapshot = applyPerriPetInventoryToSnapshot(
+      previousSnapshot || { version: 1, pet: {}, farm: {}, encounters: [] },
+      currentPerriPetInventory
+    );
+    authoritativeSnapshot.pet = {
+      ...(authoritativeSnapshot.pet || {}),
+      serverRevision: currentRevision,
+      coins: Math.max(0, toNumber(inventory.polvoGema)),
+      perriCoins: Math.max(0, toNumber(inventory.pc)),
+      scrap: Math.max(0, toNumber(inventory.chatarra)),
+      rpgInventory: syncedRpgInventory,
+      testFundsGrantVersion: 1
+    };
+    return {
+      ok: false,
+      error: "perripet_state_conflict",
+      snapshot: authoritativeSnapshot,
+      shared: {
+        gems: authoritativeSnapshot.pet.coins,
+        perriCoins: authoritativeSnapshot.pet.perriCoins,
+        scrap: authoritativeSnapshot.pet.scrap,
+        revision: currentRevision,
+        perriPetInventory: currentPerriPetInventory,
+        rpgInventory: syncedRpgInventory
+      }
+    };
+  }
 
   if (basePet) {
-    const gemDelta = Math.trunc(toNumber(incomingPet.coins) - toNumber(syncBase ? syncBase.gems : previousPet.coins));
-    const pcDelta = Math.trunc(toNumber(incomingPet.perriCoins) - toNumber(syncBase ? syncBase.perriCoins : previousPet.perriCoins));
-    const scrapDelta = Math.trunc(toNumber(incomingPet.scrap) - toNumber(syncBase ? syncBase.scrap : previousPet.scrap));
-    inventory.polvoGema = Math.max(0, toNumber(inventory.polvoGema) + gemDelta);
-    inventory.pc = Math.max(0, toNumber(inventory.pc) + pcDelta);
-    inventory.chatarra = Math.max(0, toNumber(inventory.chatarra) + scrapDelta);
+    const requestedGemDelta = Math.trunc(toNumber(incomingPet.coins) - toNumber(syncBase ? syncBase.gems : previousPet.coins));
 
     const previousPerriPetInventory = syncBase?.perriPetInventory && typeof syncBase.perriPetInventory === "object"
       ? syncBase.perriPetInventory
       : perriPetInventoryFromSnapshot(previousSnapshot);
     const incomingPerriPetInventory = perriPetInventoryFromSnapshot(safeSnapshot);
+    const positiveDelta = (itemId) => Math.max(0, toNumber(incomingPerriPetInventory[itemId]) - toNumber(previousPerriPetInventory[itemId]));
+    const spentDelta = (itemId) => Math.max(0, toNumber(previousPerriPetInventory[itemId]) - toNumber(incomingPerriPetInventory[itemId]));
+    const verifiedHarvests = getVerifiedPerriPetHarvests(previousSnapshot, safeSnapshot);
+    const verifiedLoot = getVerifiedPerriPetLoot(previousSnapshot, safeSnapshot);
+    const unverifiedHarvest = ["fruit-purple", "fruit-yellow"]
+      .some((itemId) => positiveDelta(itemId) > toNumber(verifiedHarvests[itemId]));
+    const unverifiedLoot = Object.keys(PERRIPET_LOOT_SALE_PRICES)
+      .some((itemId) => positiveDelta(itemId) > toNumber(verifiedLoot[itemId]));
+    const requiredGemSpend = (positiveDelta("capsule-g") * 500)
+      + (positiveDelta("egg-green") * 500)
+      + (positiveDelta("food-normal") * 10)
+      + (positiveDelta("food-prime") * 100);
+    if (requestedGemDelta > 0 || Math.max(0, -requestedGemDelta) < requiredGemSpend || unverifiedHarvest || unverifiedLoot) {
+      return { ok: false, error: "invalid_perripet_economy" };
+    }
+    inventory.polvoGema = Math.max(0, toNumber(inventory.polvoGema) + requestedGemDelta);
+    inventory.pc = Math.max(
+      0,
+      toNumber(inventory.pc) + ((spentDelta("fruit-purple") + spentDelta("fruit-yellow")) * 100)
+    );
+    const lootSaleRevenue = Object.entries(PERRIPET_LOOT_SALE_PRICES)
+      .reduce((total, [itemId, price]) => total + (spentDelta(itemId) * price), 0);
+    const farmPurchaseCost = ((positiveDelta("seed-green") + positiveDelta("seed-red")) * 10)
+      + (positiveDelta("plot-unlock") * 1000)
+      + (positiveDelta("watering-can-gold") * 100);
     for (const itemId of PERRIPET_ITEM_IDS) {
       const delta = Math.trunc(toNumber(incomingPerriPetInventory[itemId]) - toNumber(previousPerriPetInventory[itemId]));
       currentPerriPetInventory[itemId] = Math.max(0, toNumber(currentPerriPetInventory[itemId]) + delta);
@@ -3790,6 +3920,16 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       : previousPet?.rpgInventory && typeof previousPet.rpgInventory === "object" ? previousPet.rpgInventory : {};
     const incomingRpg = incomingPet.rpgInventory && typeof incomingPet.rpgInventory === "object" ? incomingPet.rpgInventory : {};
     const currentRpg = await getPerriPetRpgInventory(sessionResult.nick);
+    let rpgPurchaseCost = 0;
+    for (const [perriPetId, catalogId] of Object.entries(PERRIPET_RPG_ITEM_IDS)) {
+      const increase = Math.max(0, Math.trunc(toNumber(incomingRpg[perriPetId]) - toNumber(previousRpg[perriPetId])));
+      if (increase <= 0) continue;
+      rpgPurchaseCost += increase * Math.max(0, Number(PERRIPET_RPG_SHOP_PRICES[perriPetId] || 0));
+    }
+    const availableScrap = toNumber(inventory.chatarra) + lootSaleRevenue;
+    if (farmPurchaseCost + rpgPurchaseCost > availableScrap) {
+      return { ok: false, error: "invalid_perripet_economy" };
+    }
     for (const [perriPetId, catalogId] of Object.entries(PERRIPET_RPG_ITEM_IDS)) {
       const increase = Math.max(0, Math.trunc(toNumber(incomingRpg[perriPetId]) - toNumber(previousRpg[perriPetId])));
       if (increase <= 0) continue;
@@ -3800,14 +3940,17 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
         updated_at: nowIso()
       }, "nick,item_id", { returning: "minimal" });
     }
+    inventory.chatarra = availableScrap - farmPurchaseCost - rpgPurchaseCost;
   }
 
   const savedInventory = basePet ? await saveInventory(sessionResult.nick, inventory) : inventory;
   const syncedPerriPetInventory = await savePerriPetInventory(sessionResult.nick, currentPerriPetInventory);
   const syncedRpgInventory = await getPerriPetRpgInventory(sessionResult.nick);
   applyPerriPetInventoryToSnapshot(safeSnapshot, syncedPerriPetInventory);
+  const serverRevision = crypto.randomUUID();
   safeSnapshot.pet = {
     ...safeSnapshot.pet,
+    serverRevision,
     coins: Math.max(0, toNumber(savedInventory.polvoGema)),
     perriCoins: Math.max(0, toNumber(savedInventory.pc)),
     scrap: Math.max(0, toNumber(savedInventory.chatarra)),
@@ -3825,10 +3968,12 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       gems: safeSnapshot.pet.coins,
       perriCoins: safeSnapshot.pet.perriCoins,
       scrap: safeSnapshot.pet.scrap,
+      revision: serverRevision,
       perriPetInventory: syncedPerriPetInventory,
       rpgInventory: syncedRpgInventory
     }
   };
+  });
 }
 
 async function publicShopRpgPurchase(sessionToken, itemId, quantity) {
@@ -3876,6 +4021,7 @@ async function publicShopRpgSetLoadout(sessionToken, itemId, enabled) {
 async function publicShopRpgConsume(sessionToken, itemId) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) return sessionResult;
+  return withNickLock(`rpg-combat:${sessionResult.nick}`, async () => {
   const catalogItem = await fetchRow("shop_rpg_catalog", {
     filters: { item_id: `eq.${String(itemId || "").trim()}`, enabled: "eq.true" }
   });
@@ -3886,6 +4032,7 @@ async function publicShopRpgConsume(sessionToken, itemId) {
   });
   if (!result?.ok) return result || { ok: false, error: "rpg_consume_failed" };
   return { ok: true, consumption: result };
+  });
 }
 
 function boundedNumber(value, min, max, fallback) {
@@ -3893,12 +4040,21 @@ function boundedNumber(value, min, max, fallback) {
   return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
 }
 
+function maximumVerifiedRpgWeaponDamage(catalogItem) {
+  if (!catalogItem || String(catalogItem.kind || "") !== "weapon") return 0;
+  const stats = catalogItem.stats && typeof catalogItem.stats === "object" ? catalogItem.stats : {};
+  const baseDamage = Math.max(0, Number(stats.damage || 0));
+  const hits = Math.max(1, Math.min(10, Number(stats.hits || 1)));
+  return Math.ceil((baseDamage + 250) * hits * 3);
+}
+
 async function publicShopRpgSaveCombat(sessionToken, combat) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) return sessionResult;
   const safeCombat = combat && typeof combat === "object" ? combat : {};
+  return withNickLock(`rpg-combat:${sessionResult.nick}`, async () => {
   const previousCombat = await fetchRow("shop_rpg_combat_state", {
-    select: "enemy_hp",
+    select: "enemy_hp,enemy_max_hp,player_hp,player_max_hp,round_number,updated_at",
     filters: { nick: `eq.${sessionResult.nick}` }
   });
   const row = {
@@ -3914,6 +4070,44 @@ async function publicShopRpgSaveCombat(sessionToken, combat) {
     combat_log: Array.isArray(safeCombat.log) ? safeCombat.log.slice(-20).map((entry) => String(entry).slice(0, 500)) : [],
     updated_at: nowIso()
   };
+  if (!previousCombat && (row.enemy_max_hp !== 5000 || row.enemy_hp !== 5000 || row.player_max_hp > 5000 || row.player_hp > row.player_max_hp)) {
+    return { ok: false, error: "invalid_rpg_combat_state" };
+  }
+  if (previousCombat) {
+    const previousRound = Math.max(1, Math.floor(Number(previousCombat.round_number || 1)));
+    const previousEnemyHp = Math.max(0, Number(previousCombat.enemy_hp || 0));
+    const previousEnemyMaxHp = Math.max(1, Number(previousCombat.enemy_max_hp || 5000));
+    const previousPlayerHp = Number(previousCombat.player_hp || 0);
+    const previousPlayerMaxHp = Math.max(1, Number(previousCombat.player_max_hp || 1));
+    if (row.round_number < previousRound || row.round_number > previousRound + 1
+      || row.enemy_max_hp !== previousEnemyMaxHp || row.enemy_hp > previousEnemyHp
+      || row.player_max_hp !== previousPlayerMaxHp || row.player_hp > row.player_max_hp) {
+      return { ok: false, error: "invalid_rpg_combat_state" };
+    }
+    const consumedRows = await fetchRows("shop_rpg_ledger", {
+      filters: {
+        nick: `eq.${sessionResult.nick}`,
+        action: "eq.consume",
+        created_at: `gt.${String(previousCombat.updated_at || "")}`
+      },
+      orderBy: "created_at.asc",
+      limit: 20
+    });
+    const catalogRows = await fetchRows("shop_rpg_catalog", { filters: { enabled: "eq.true" } });
+    const catalogById = Object.fromEntries(catalogRows.map((item) => [String(item.item_id || ""), item]));
+    const maximumDamage = consumedRows.reduce(
+      (total, entry) => total + maximumVerifiedRpgWeaponDamage(catalogById[String(entry.item_id || "")]),
+      0
+    );
+    const maximumHealing = consumedRows.reduce((total, entry) => {
+      const item = catalogById[String(entry.item_id || "")];
+      return total + (String(item?.kind || "") === "potion" ? Math.max(0, Number(item?.stats?.heal || 0)) : 0);
+    }, 0);
+    if (previousEnemyHp - row.enemy_hp > maximumDamage
+      || row.player_hp > Math.min(row.player_max_hp, previousPlayerHp + maximumHealing + Math.ceil(maximumDamage * 0.1))) {
+      return { ok: false, error: "unverified_rpg_combat_result" };
+    }
+  }
   await upsertRow("shop_rpg_combat_state", row, "nick", { returning: "minimal" });
   const bossDefeatedNow = Boolean(previousCombat) && Number(previousCombat.enemy_hp || 0) > 0 && row.enemy_hp <= 0;
   if (!bossDefeatedNow) return { ok: true };
@@ -3935,13 +4129,16 @@ async function publicShopRpgSaveCombat(sessionToken, combat) {
     profile: achievementResult.profile,
     achievementSystem: achievementResult.achievementSystem
   };
+  });
 }
 
 async function publicShopRpgClearCombat(sessionToken) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) return sessionResult;
-  await deleteRows("shop_rpg_combat_state", { nick: `eq.${sessionResult.nick}` }, { returning: "minimal" });
-  return { ok: true };
+  return withNickLock(`rpg-combat:${sessionResult.nick}`, async () => {
+    await deleteRows("shop_rpg_combat_state", { nick: `eq.${sessionResult.nick}` }, { returning: "minimal" });
+    return { ok: true };
+  });
 }
 
 async function publicShopSetLogo(sessionToken, logoId) {
@@ -4762,7 +4959,6 @@ function createDuelTargetToken(attackerNick, defenderNick) {
   const payload = Buffer.from(JSON.stringify({
     attacker: normalizeNickKey(attackerNick),
     defender: normalizeNick(defenderNick),
-    expiresAt: Date.now() + (30 * 60 * 1000),
     nonce: crypto.randomBytes(8).toString("hex")
   })).toString("base64url");
   const signature = crypto.createHmac("sha256", SUPABASE_SERVICE_ROLE_KEY).update(payload).digest("base64url");
@@ -4781,7 +4977,7 @@ function readDuelTargetTokenPayload(token, attackerNick) {
     if (data.attacker !== normalizeNickKey(attackerNick)) return null;
     const defender = normalizeNick(data.defender);
     if (!defender || normalizeNickKey(defender) === normalizeNickKey(attackerNick)) return null;
-    return { ...data, defender, expiresAt: Number(data.expiresAt || 0) };
+    return { ...data, defender };
   } catch (error) {
     return null;
   }
@@ -4789,7 +4985,33 @@ function readDuelTargetTokenPayload(token, attackerNick) {
 
 function readDuelTargetToken(token, attackerNick) {
   const data = readDuelTargetTokenPayload(token, attackerNick);
-  return data && data.expiresAt >= Date.now() ? data.defender : null;
+  return data ? data.defender : null;
+}
+
+function getActiveDuelTargetOperationId(attackerNick) {
+  return `duel_active_${sha256(normalizeNickKey(attackerNick))}`;
+}
+
+async function getActiveDuelTarget(attackerNick) {
+  const stored = await getStoredOperation(getActiveDuelTargetOperationId(attackerNick));
+  return stored && stored.targetToken ? stored : null;
+}
+
+async function saveActiveDuelTarget(attackerNick, target = null) {
+  const response = target && target.targetToken
+    ? {
+        targetToken: String(target.targetToken),
+        defenderNick: normalizeNick(target.defenderNick),
+        expiresAt: Number(target.expiresAt || 0)
+      }
+    : { targetToken: "", defenderNick: "", expiresAt: 0 };
+  await storeOperation(
+    getActiveDuelTargetOperationId(attackerNick),
+    "duel_active_target",
+    attackerNick,
+    response
+  );
+  return response;
 }
 
 async function selectRandomDuelOpponent(attackerNick) {
@@ -4806,49 +5028,69 @@ async function publicShopGetDuelTarget(sessionToken) {
   if (!sessionResult.ok) {
     return sessionResult;
   }
+  return withNickLock(`duel-target:${sessionResult.nick}`, async () => {
+    const activeTarget = await getActiveDuelTarget(sessionResult.nick);
+    if (activeTarget) {
+      const activePayload = readDuelTargetTokenPayload(activeTarget.targetToken, sessionResult.nick);
+      if (activePayload) {
+        const attackerInventory = await getInventory(sessionResult.nick);
+        return {
+          ok: true,
+          nick: sessionResult.nick,
+          attackerNick: sessionResult.nick,
+          defenderNick: activePayload.defender,
+          targetToken: activeTarget.targetToken,
+          attackerInventory,
+          defenderInventory: await getInventory(activePayload.defender),
+          duelCount: toNumber(attackerInventory.duelo),
+          dailyFreePlays: await getDailyFreePlayState(sessionResult.nick),
+          resumed: true
+        };
+      }
+      await saveActiveDuelTarget(sessionResult.nick, null);
+    }
 
-  const normalizedDefenderNick = await selectRandomDuelOpponent(sessionResult.nick);
-  if (!normalizedDefenderNick) {
+    const normalizedDefenderNick = await selectRandomDuelOpponent(sessionResult.nick);
+    if (!normalizedDefenderNick) {
+      return {
+        ok: false,
+        error: "no_duel_opponents",
+        nick: sessionResult.nick,
+        attackerInventory: await getInventory(sessionResult.nick),
+        dailyFreePlays: await getDailyFreePlayState(sessionResult.nick)
+      };
+    }
+
+    const targetToken = createDuelTargetToken(sessionResult.nick, normalizedDefenderNick);
+    await saveActiveDuelTarget(sessionResult.nick, {
+      targetToken,
+      defenderNick: normalizedDefenderNick,
+      expiresAt: 0
+    });
+    const attackerInventory = await getInventory(sessionResult.nick);
     return {
-      ok: false,
-      error: "no_duel_opponents",
+      ok: true,
       nick: sessionResult.nick,
-      attackerInventory: await getInventory(sessionResult.nick),
+      attackerNick: sessionResult.nick,
+      defenderNick: normalizedDefenderNick,
+      targetToken,
+      attackerInventory,
+      defenderInventory: await getInventory(normalizedDefenderNick),
+      duelCount: toNumber(attackerInventory.duelo),
       dailyFreePlays: await getDailyFreePlayState(sessionResult.nick)
     };
-  }
-
-  const attackerInventory = await getInventory(sessionResult.nick);
-  const defenderInventory = await getInventory(normalizedDefenderNick);
-  const dailyFreePlays = await getDailyFreePlayState(sessionResult.nick);
-  return {
-    ok: true,
-    nick: sessionResult.nick,
-    attackerNick: sessionResult.nick,
-    defenderNick: normalizedDefenderNick,
-    targetToken: createDuelTargetToken(sessionResult.nick, normalizedDefenderNick),
-    attackerInventory,
-    defenderInventory,
-    duelCount: toNumber(attackerInventory.duelo),
-    dailyFreePlays
-  };
+  });
 }
 
 async function publicShopExpireDuelTarget(sessionToken, targetToken) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) return sessionResult;
-  const targetData = readDuelTargetTokenPayload(targetToken, sessionResult.nick);
-  if (!targetData) return { ok: false, error: "invalid_duel_target" };
-  if (targetData.expiresAt > Date.now()) return { ok: false, error: "duel_target_not_expired" };
-
-  const operationId = `duel_${sha256(String(targetToken || ""))}`;
-  return withNickLock(operationId, async () => runIdempotentOperation(operationId, "publicShopPerformAttack", sessionResult.nick, async () => {
-    const inventory = await getInventory(sessionResult.nick);
-    inventory.duelo = Math.max(0, toNumber(inventory.duelo) - 1);
-    const attackerInventory = await saveInventory(sessionResult.nick, inventory);
-    await appendActivity(sessionResult.nick, "Ataque", "Caducado", "Se pierde 1 Ticket de Duelo por superar los 30 minutos.");
-    return { ok: true, expired: true, attackerInventory };
-  }));
+  return {
+    ok: true,
+    expired: false,
+    disabled: true,
+    attackerInventory: await getInventory(sessionResult.nick)
+  };
 }
 
 async function publicShopPerformAttack(sessionToken, targetToken) {
@@ -4856,19 +5098,33 @@ async function publicShopPerformAttack(sessionToken, targetToken) {
   if (!sessionResult.ok) {
     return sessionResult;
   }
-
-  const normalizedDefenderNick = readDuelTargetToken(targetToken, sessionResult.nick);
-  if (!normalizedDefenderNick) {
-    return {
-      ok: false,
-      error: "invalid_duel_target",
-      nick: sessionResult.nick,
-      attackerInventory: await getInventory(sessionResult.nick)
-    };
-  }
-
   const operationId = `duel_${sha256(String(targetToken || ""))}`;
-  return withNickLock(operationId, async () => runIdempotentOperation(operationId, "publicShopPerformAttack", sessionResult.nick, async () => {
+  const storedResult = await getStoredOperation(operationId);
+  if (storedResult) {
+    return storedResult.expired
+      ? { ok: false, error: "invalid_duel_target", expired: true, attackerInventory: storedResult.attackerInventory }
+      : storedResult;
+  }
+  return withNickLock(`duel-target:${sessionResult.nick}`, async () => {
+    const activeTarget = await getActiveDuelTarget(sessionResult.nick);
+    if (!activeTarget || activeTarget.targetToken !== String(targetToken || "")) {
+      return {
+        ok: false,
+        error: "invalid_duel_target",
+        nick: sessionResult.nick,
+        attackerInventory: await getInventory(sessionResult.nick)
+      };
+    }
+    const normalizedDefenderNick = readDuelTargetToken(targetToken, sessionResult.nick);
+    if (!normalizedDefenderNick) {
+      return {
+        ok: false,
+        error: "invalid_duel_target",
+        nick: sessionResult.nick,
+        attackerInventory: await getInventory(sessionResult.nick)
+      };
+    }
+    const response = await runIdempotentOperation(operationId, "publicShopPerformAttack", sessionResult.nick, async () => {
 
   if (normalizeNickKey(normalizedDefenderNick) === normalizeNickKey(sessionResult.nick)) {
     return {
@@ -4923,7 +5179,10 @@ async function publicShopPerformAttack(sessionToken, targetToken) {
     notifications: notificationsState[0] || undefined,
     unreadNotificationCount: notificationsState[1] || undefined
   };
-  }));
+    });
+    if (response?.ok) await saveActiveDuelTarget(sessionResult.nick, null);
+    return response;
+  });
 }
 
 async function publicShopRedeemRandomKey(sessionToken, redeemId) {
