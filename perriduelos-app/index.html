@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#16030a">
+  <title>PerriDuelos</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="duel-app">
+    <section class="duel-arena" aria-label="Campo de PerriDuelos" data-ticket-cost="1" data-attack-time-limit="1800" data-defender-selection="random-locked">
+      <img class="duel-frame" src="./fondo-perriduelos.png" alt="" aria-hidden="true" data-duel-frame>
+
+      <nav class="duel-tabs" role="tablist" aria-label="Secciones de PerriDuelos">
+        <button id="duelTab" class="duel-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="attackerDuelPanel defenderDuelPanel" data-duel-tab="duel">Duelo</button>
+        <button id="equipmentTab" class="duel-tab" type="button" role="tab" aria-selected="false" aria-controls="equipmentWorkspace" tabindex="-1" data-duel-tab="equipment">Equipamiento</button>
+      </nav>
+      <button id="duelExitButton" class="duel-tab duel-exit-tab" type="button" aria-label="Volver al menú de minijuegos">Salir</button>
+
+      <div id="duelHelpModal" class="duel-help-modal" role="dialog" aria-modal="true" aria-labelledby="duelHelpTitle" hidden>
+        <button class="duel-help-modal__backdrop" type="button" aria-label="Cerrar ayuda" data-close-duel-help></button>
+        <article class="equipment-help-card duel-help-card">
+          <button id="duelHelpClose" class="equipment-help-card__close" type="button" aria-label="Cerrar ayuda" data-close-duel-help>×</button>
+          <span class="equipment-help-card__eyebrow">GUÍA RÁPIDA</span>
+          <h2 id="duelHelpTitle">Cómo funcionan los duelos</h2>
+          <ul>
+            <li>Cada ataque consume <strong>1 Ticket de Duelo</strong>.</li>
+            <li>El defensor se elige <strong>al azar</strong> y no puede cambiarse.</li>
+            <li>Tienes <strong>30 minutos</strong> para atacar; si caduca el tiempo, pierdes el ticket.</li>
+            <li>El arma, el escudo y las piezas equipadas determinan las probabilidades de ataque y defensa.</li>
+            <li>Si ganas, robas hasta <strong>400 PC</strong> y recibes un cofre de minijuego.</li>
+            <li>Si pierdes, entregas hasta <strong>200 PC</strong> al defensor.</li>
+          </ul>
+        </article>
+      </div>
+
+      <section id="equipmentWorkspace" class="equipment-workspace" role="tabpanel" aria-labelledby="equipmentTab">
+        <button id="equipmentHelpButton" class="equipment-help-button" type="button" aria-label="Cómo funciona el equipamiento" aria-haspopup="dialog" aria-controls="equipmentHelpModal">?</button>
+
+        <header class="equipment-store__header">
+          <div>
+            <span class="equipment-store__eyebrow">INVENTARIO DE COMBATE</span>
+            <h1>Equipamiento</h1>
+          </div>
+          <div class="equipment-resources" aria-label="Recursos para mejorar equipo">
+            <span><img src="./assets/gemas-moneda.png" alt="">Gemas <strong id="equipmentGemCount">—</strong></span>
+            <span><img src="./assets/perricita.png" alt="">Perricitas <strong id="equipmentPerricitaCount">—</strong></span>
+          </div>
+        </header>
+
+        <div class="equipment-store__layout">
+          <section class="equipment-catalog" aria-labelledby="equipmentCatalogTitle">
+            <div class="equipment-section-heading">
+              <div>
+                <span>TUS OBJETOS</span>
+                <h2 id="equipmentCatalogTitle">Equipo de duelo</h2>
+              </div>
+            </div>
+            <div id="equipmentGearGrid" class="equipment-gear-grid"></div>
+          </section>
+
+          <aside id="equipmentUpgradeCard" class="equipment-upgrade-card" aria-label="Mejora de equipamiento">
+            <div id="equipmentUpgradeDetails" class="equipment-upgrade-details" hidden>
+              <div class="equipment-upgrade-copy">
+                <span id="equipmentUpgradeType">ARMA</span>
+                <h2 id="equipmentUpgradeName">Espada Lv 1</h2>
+                <p id="equipmentUpgradeNext">Siguiente: Espada Lv 2</p>
+              </div>
+              <div id="equipmentUpgradeVisual" class="equipment-upgrade-visual">
+                <img id="equipmentUpgradeImage" src="./assets/espada.png" alt="Objeto seleccionado">
+              </div>
+              <dl class="equipment-upgrade-stats">
+                <div><dt>Coste</dt><dd><img src="./assets/gemas-moneda.png" alt=""><strong id="equipmentUpgradeCost">2000 G</strong></dd></div>
+                <div><dt>Probabilidad</dt><dd><strong id="equipmentUpgradeChance">35%</strong></dd></div>
+              </dl>
+              <label class="equipment-perricita-toggle">
+                <input id="equipmentUsePerricita" type="checkbox">
+                <span><img src="./assets/perricita.png" alt="">Usar Perricita <small id="equipmentPerricitaBonus">+50%</small></span>
+              </label>
+              <button id="equipmentUpgradeButton" class="equipment-upgrade-button" type="button" disabled>Mejorar</button>
+            </div>
+          </aside>
+        </div>
+
+        <footer id="equipmentSystemMessage" class="equipment-system-message" aria-live="polite"></footer>
+
+        <div id="equipmentHelpModal" class="equipment-help-modal" role="dialog" aria-modal="true" aria-labelledby="equipmentHelpTitle" hidden>
+          <button class="equipment-help-modal__backdrop" type="button" aria-label="Cerrar ayuda" data-close-equipment-help></button>
+          <article class="equipment-help-card">
+            <button id="equipmentHelpClose" class="equipment-help-card__close" type="button" aria-label="Cerrar ayuda" data-close-equipment-help>×</button>
+            <span class="equipment-help-card__eyebrow">GUÍA RÁPIDA</span>
+            <h2 id="equipmentHelpTitle">Mejorar equipamiento</h2>
+            <ul>
+              <li>Selecciona la <strong>espada</strong> o el <strong>escudo</strong> para ver su mejora.</li>
+              <li>Los niveles cuestan <strong>2000, 3000 y 5000 Gemas</strong>.</li>
+              <li>La probabilidad base es del <strong>35%, 20% y 10%</strong>.</li>
+              <li>Una <strong>Perricita</strong> aumenta la probabilidad, pero se consume en el intento.</li>
+              <li>Si fallas, pierdes los recursos, aunque el objeto <strong>no baja de nivel</strong>.</li>
+              <li>Las <strong>piezas de traje</strong> no se pueden mejorar.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <article class="fighter-panel fighter-panel--attacker" aria-labelledby="attackerTitle">
+        <button id="duelHelpButton" class="equipment-help-button duel-help-button" type="button" aria-label="Cómo funcionan los duelos" aria-haspopup="dialog" aria-controls="duelHelpModal">?</button>
+        <div class="fighter-panel__interface">
+          <header class="fighter-panel__header">
+            <p class="fighter-panel__eyebrow">JUGADOR</p>
+            <h1 id="attackerTitle">ATACANTE</h1>
+          </header>
+          <div class="fighter-panel__body" data-duel-side="attacker">
+          <section id="attackerDuelPanel" class="fighter-panel__pane combat-pane" role="tabpanel" aria-labelledby="duelTab" data-duel-panel="duel">
+            <div class="combatant-row">
+              <div class="combatant-copy">
+                <span class="combatant-kicker">Tu combatiente</span>
+                <strong id="duelAttackerName" class="combatant-name">Perrisushi</strong>
+              </div>
+              <span id="duelAttackerStatus" class="combatant-status">LISTO</span>
+            </div>
+
+            <div class="primary-gear">
+              <span class="primary-gear__icon primary-gear__icon--sword" aria-hidden="true"></span>
+              <div class="primary-gear__copy">
+                <span>Arma de ataque</span>
+                <strong id="duelAttackerWeaponName">Sin equipar</strong>
+              </div>
+              <span id="duelAttackerWeaponLevel" class="primary-gear__level">Nv. —</span>
+            </div>
+
+            <div class="combat-stats" aria-label="Resumen del atacante">
+              <div><span>Poder</span><strong id="duelAttackerPower">—</strong></div>
+              <div><span>Traje</span><strong id="duelAttackerSuitCount">0/5</strong></div>
+              <div><span>Tickets</span><strong id="duelAttackerTicketCount">—</strong></div>
+            </div>
+
+          </section>
+
+          <section id="attackerEquipmentPanel" class="fighter-panel__pane equipment-pane" role="tabpanel" aria-labelledby="equipmentTab" data-duel-panel="equipment" hidden>
+            <div class="equipment-heading">
+              <div><span>CONFIGURACIÓN</span><strong>Equipo de ataque</strong></div>
+              <span class="equipment-count">0/6</span>
+            </div>
+            <div class="equipment-slots" aria-label="Equipo del atacante">
+              <button class="equipment-slot equipment-slot--primary" type="button" data-slot-name="Arma"><span class="slot-symbol slot-symbol--sword" aria-hidden="true"></span><small>Arma</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Casco"><span class="slot-symbol">C</span><small>Casco</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Guantes"><span class="slot-symbol">G</span><small>Guantes</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Pechera"><span class="slot-symbol">P</span><small>Pechera</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Pantalón"><span class="slot-symbol">PT</span><small>Pantalón</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Botas"><span class="slot-symbol">B</span><small>Botas</small></button>
+            </div>
+            <p class="equipment-selection" aria-live="polite">Selecciona un hueco para ver su objeto.</p>
+          </section>
+          </div>
+        </div>
+        <div class="duel-external-controls">
+          <p id="duelAttackerNote" class="combat-note" title="El Ticket de Duelo se pierde si no atacas dentro de los 30 minutos." hidden>1 ticket; se pierde si caduca.</p>
+          <span id="duelAttackTimer" class="combat-state">30:00 PARA ATACAR</span>
+          <button id="duelAttackButton" class="duel-attack-button" type="button">Atacar</button>
+        </div>
+        <strong id="duelAttackerResult" class="duel-result" aria-live="polite" hidden></strong>
+      </article>
+
+      <article class="fighter-panel fighter-panel--defender" aria-labelledby="defenderTitle">
+        <div class="fighter-panel__interface">
+          <header class="fighter-panel__header">
+            <p class="fighter-panel__eyebrow">RIVAL</p>
+            <h2 id="defenderTitle">DEFENSOR</h2>
+          </header>
+          <div class="fighter-panel__body" data-duel-side="defender">
+          <section id="defenderDuelPanel" class="fighter-panel__pane combat-pane" role="tabpanel" aria-labelledby="duelTab" data-duel-panel="duel">
+            <div class="combatant-row">
+              <div class="combatant-copy">
+                <span class="combatant-kicker">Asignado al azar</span>
+                <strong id="duelDefenderName" class="combatant-name">Seleccionando rival...</strong>
+              </div>
+              <span id="duelDefenderStatus" class="combatant-status combatant-status--waiting">ASIGNADO</span>
+            </div>
+
+            <div class="primary-gear">
+              <span class="primary-gear__icon primary-gear__icon--shield" aria-hidden="true"></span>
+              <div class="primary-gear__copy">
+                <span>Defensa principal</span>
+                <strong id="duelDefenderShieldName">Sin escudo</strong>
+              </div>
+              <span id="duelDefenderShieldLevel" class="primary-gear__level">Nv. —</span>
+            </div>
+
+            <div class="combat-stats" aria-label="Resumen del defensor">
+              <div><span>Defensa</span><strong id="duelDefenderDefense">—</strong></div>
+              <div><span>Traje</span><strong id="duelDefenderSuitCount">0/5</strong></div>
+              <div><span>PC en juego</span><strong id="duelDefenderPcAtStake">—</strong></div>
+            </div>
+
+            <div class="combat-footer">
+              <p id="duelDefenderNote" class="combat-note" hidden>Puede estar conectado o desconectado.</p>
+              <span id="duelDefenderState" class="combat-state combat-state--waiting" hidden>RIVAL BLOQUEADO</span>
+            </div>
+          </section>
+
+          <section id="defenderEquipmentPanel" class="fighter-panel__pane equipment-pane" role="tabpanel" aria-labelledby="equipmentTab" data-duel-panel="equipment" hidden>
+            <div class="equipment-heading">
+              <div><span>CONFIGURACIÓN</span><strong>Equipo de defensa</strong></div>
+              <span class="equipment-count">0/6</span>
+            </div>
+            <div class="equipment-slots" aria-label="Equipo del defensor">
+              <button class="equipment-slot equipment-slot--primary" type="button" data-slot-name="Escudo"><span class="slot-symbol slot-symbol--shield" aria-hidden="true"></span><small>Escudo</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Casco"><span class="slot-symbol">C</span><small>Casco</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Guantes"><span class="slot-symbol">G</span><small>Guantes</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Pechera"><span class="slot-symbol">P</span><small>Pechera</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Pantalón"><span class="slot-symbol">PT</span><small>Pantalón</small></button>
+              <button class="equipment-slot" type="button" data-slot-name="Botas"><span class="slot-symbol">B</span><small>Botas</small></button>
+            </div>
+            <p class="equipment-selection" aria-live="polite">Selecciona un hueco para ver su objeto.</p>
+          </section>
+          </div>
+        </div>
+        <strong id="duelDefenderResult" class="duel-result" aria-live="polite" hidden></strong>
+      </article>
+    </section>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>
