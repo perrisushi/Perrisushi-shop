@@ -131,7 +131,7 @@ async function refreshRemoteEquipmentInventory() {
 }
 
 const arenaBackgrounds = {
-  duel: "./fondo-perriduelos.png?v=20260905-8",
+  duel: "./fondo-perriduelos.png?v=20260905-9",
   equipment: "./fondo-perriduelo-tienda.png"
 };
 
