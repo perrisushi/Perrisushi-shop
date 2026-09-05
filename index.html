@@ -3335,6 +3335,34 @@
       aspect-ratio: auto;
       background: #10201d;
     }
+    #perriDuelosView {
+      grid-template-rows: minmax(0, 1fr);
+      align-content: stretch;
+      justify-items: stretch;
+      padding: 0;
+    }
+    .perriduelos-frame-shell {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .perriduelos-frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #16030a;
+    }
+    .perriduelos-frame:fullscreen,
+    .perriduelos-frame:-webkit-full-screen {
+      width: 100vw;
+      height: 100dvh;
+      max-width: none;
+      max-height: none;
+      background: #16030a;
+    }
     .perripet-fullscreen-card {
       gap: 16px;
     }
@@ -6280,6 +6308,17 @@
               </div>
             </article>
           </div>
+          <div id="perriDuelosFullscreenModal" class="notification-modal" hidden>
+            <div id="perriDuelosFullscreenBackdrop" class="notification-modal-backdrop"></div>
+            <article class="notification-modal-card perripet-fullscreen-card" role="dialog" aria-modal="true" aria-labelledby="perriDuelosFullscreenTitle" aria-describedby="perriDuelosFullscreenMessage">
+              <h2 id="perriDuelosFullscreenTitle" class="notification-modal-title">Abrir PerriDuelos</h2>
+              <p id="perriDuelosFullscreenMessage" class="notification-modal-message">¿Quieres jugar en pantalla completa?</p>
+              <div class="perripet-fullscreen-actions">
+                <button id="perriDuelosOpenNormalButton" class="buy-button ghost-button" type="button">No</button>
+                <button id="perriDuelosOpenFullscreenButton" class="buy-button" type="button">Sí</button>
+              </div>
+            </article>
+          </div>
           <div id="perriCasillasRewardModal" class="notification-modal" hidden>
             <div id="perriCasillasRewardBackdrop" class="notification-modal-backdrop"></div>
             <article class="notification-modal-card perricasillas-reward-card" role="dialog" aria-modal="true" aria-labelledby="perriCasillasRewardTitle">
@@ -6430,11 +6469,8 @@
               <button id="openCardsFromMinigames" class="minigames-entry" type="button" aria-label="Abrir Cartas" hidden style="display: none;">
                 <img src="./assets/menu-cartas.png" alt="">
               </button>
-              <button id="openDuelsFromMinigames" class="minigames-entry" type="button" aria-label="Abrir Duelo">
-                <img src="./assets/menu-duelos.png" alt="">
-              </button>
-              <button id="openEquipmentFromMinigames" class="minigames-entry" type="button" aria-label="Abrir Equipamiento">
-                <img src="./assets/menu-equipamiento.png" alt="">
+              <button id="openDuelsFromMinigames" class="minigames-entry" type="button" aria-label="Abrir PerriDuelos">
+                <img src="./assets/menu-duelos.png" alt="PerriDuelos">
               </button>
               <button id="openPerriCasillasFromMinigames" class="minigames-entry" type="button" aria-label="Abrir PerriCasillas">
                 <img src="./assets/boton-perricasilla.png" alt="">
@@ -6462,6 +6498,11 @@
           </div>
           <div class="perripet-frame-shell">
             <iframe id="perriPetFrame" class="perripet-frame" src="./perripet-app/index.html?v=20260905-2" title="PerriPet" allow="fullscreen" allowfullscreen allowtransparency="true"></iframe>
+          </div>
+        </section>
+        <section id="perriDuelosView" class="content-view view" hidden>
+          <div class="perriduelos-frame-shell">
+            <iframe id="perriDuelosFrame" class="perriduelos-frame" src="./perriduelos-app/index.html?v=20260905-1" title="PerriDuelos" allow="fullscreen" allowfullscreen allowtransparency="true"></iframe>
           </div>
         </section>
         <section id="perriCasillasView" class="content-view view perricasillas-view" hidden>
@@ -6660,7 +6701,6 @@
             <div class="resource-group">
               <div class="duel-resource-wrap">
                 <p class="dust-chip"><img class="chip-icon" src="./assets/duelo.png" alt="Duelos">Duelos <strong id="duelHeroCount">0</strong></p>
-                <button id="duelFreePlayBadge" class="free-play-badge" type="button" disabled hidden>Gratis</button>
               </div>
             </div>
           </div>
@@ -6668,7 +6708,7 @@
             <section class="duel-hero">
               <div class="cards-copy">
                 <h1 class="cards-heading">Duelo</h1>
-                <p class="cards-text">El sistema sortea un rival entre todas las cuentas registradas. Se gastara 1 ticket de duelo por intento, salvo tu intento gratis del dia.</p>
+                <p class="cards-text">El sistema sortea un rival entre todas las cuentas registradas. Se gastará 1 Ticket de Duelo por intento.</p>
               </div>
               <div class="duel-controls">
                 <label class="quantity-wrap duel-input-wrap" for="duelDefenderInput">
@@ -7098,8 +7138,7 @@
       activeNotificationId: "",
       notificationsLoading: false,
       dailyFreePlays: {
-        cardsAvailable: false,
-        duelAvailable: false
+        cardsAvailable: false
       },
       dailyPass: null,
       dailyPassReady: false,
@@ -7222,6 +7261,12 @@
     const perriPetFullscreenBackdrop = document.getElementById("perriPetFullscreenBackdrop");
     const perriPetOpenNormalButton = document.getElementById("perriPetOpenNormalButton");
     const perriPetOpenFullscreenButton = document.getElementById("perriPetOpenFullscreenButton");
+    const perriDuelosView = document.getElementById("perriDuelosView");
+    const perriDuelosFrame = document.getElementById("perriDuelosFrame");
+    const perriDuelosFullscreenModal = document.getElementById("perriDuelosFullscreenModal");
+    const perriDuelosFullscreenBackdrop = document.getElementById("perriDuelosFullscreenBackdrop");
+    const perriDuelosOpenNormalButton = document.getElementById("perriDuelosOpenNormalButton");
+    const perriDuelosOpenFullscreenButton = document.getElementById("perriDuelosOpenFullscreenButton");
     const perriCasillasView = document.getElementById("perriCasillasView");
     const usersView = document.getElementById("usersView");
     const cardsView = document.getElementById("cardsView");
@@ -7255,7 +7300,6 @@
     const openLogoSystemButton = document.getElementById("openLogoSystemButton");
     const openCardsFromMinigames = document.getElementById("openCardsFromMinigames");
     const openDuelsFromMinigames = document.getElementById("openDuelsFromMinigames");
-    const openEquipmentFromMinigames = document.getElementById("openEquipmentFromMinigames");
     const openPerriCasillasFromMinigames = document.getElementById("openPerriCasillasFromMinigames");
     const openPerriRpgFromMinigames = document.getElementById("openPerriRpgFromMinigames");
     const openPerriPetFromMinigames = document.getElementById("openPerriPetFromMinigames");
@@ -7324,7 +7368,6 @@
     const loginCard = document.getElementById("loginCard");
     const loginBrandFrame = document.getElementById("loginBrandFrame");
     const duelHeroCount = document.getElementById("duelHeroCount");
-    const duelFreePlayBadge = document.getElementById("duelFreePlayBadge");
     const duelDefenderInput = document.getElementById("duelDefenderInput");
     const duelStartButton = document.getElementById("duelStartButton");
     const duelRefreshButton = document.getElementById("duelRefreshButton");
@@ -8989,6 +9032,7 @@
       const wasChatVisible = chatView && !chatView.hidden;
       const wasPerriRpgVisible = perriRpgView && !perriRpgView.hidden;
       const wasPerriPetVisible = perriPetView && !perriPetView.hidden;
+      const wasPerriDuelosVisible = perriDuelosView && !perriDuelosView.hidden;
       closeMobileSessionMenu();
       updateDesktopBackButton(sectionName);
       appView.classList.toggle("is-menu-screen", sectionName === "menu");
@@ -9002,6 +9046,7 @@
       minigamesView.hidden = sectionName !== "minigames";
       perriRpgView.hidden = sectionName !== "perriRpg";
       perriPetView.hidden = sectionName !== "perriPet";
+      perriDuelosView.hidden = sectionName !== "perriDuelos";
       perriCasillasView.hidden = sectionName !== "perriCasillas";
       usersView.hidden = sectionName !== "users";
       cardsView.hidden = sectionName !== "cards";
@@ -9022,6 +9067,9 @@
       }
       if (wasPerriPetVisible && sectionName !== "perriPet" && perriPetFrame?.contentWindow) {
         perriPetFrame.contentWindow.postMessage({ type: "perripet-close" }, window.location.origin);
+      }
+      if (wasPerriDuelosVisible && sectionName !== "perriDuelos" && perriDuelosFrame?.contentWindow) {
+        perriDuelosFrame.contentWindow.postMessage({ type: "perriduelos-close" }, window.location.origin);
       }
       renderNotifications();
       renderDailyPassPanel();
@@ -9625,7 +9673,7 @@
       renderDuelGearLine(duelAttackerGearLine, currentInventory, attackerName, getDuelPrimaryWeaponState(currentInventory), "Espada");
       renderDuelGearLine(duelDefenderGearLine, state.duelDefenderInventory || {}, defenderName, getDuelPrimaryShieldState(state.duelDefenderInventory || {}), "Escudo");
       duelRefreshButton.disabled = state.loading || state.duelTargetLoading;
-      duelStartButton.disabled = state.loading || state.duelTargetLoading || (Math.max(0, Number(currentInventory.duelo || 0)) <= 0 && !state.dailyFreePlays.duelAvailable) || !state.duelTargetToken;
+      duelStartButton.disabled = state.loading || state.duelTargetLoading || Math.max(0, Number(currentInventory.duelo || 0)) <= 0 || !state.duelTargetToken;
     }
     function renderInventoryView() {
       inventoryGrid.innerHTML = inventoryItems.map((item) => `
@@ -9681,17 +9729,13 @@
     function normalizeDailyFreePlays(payload) {
       const source = payload && typeof payload === "object" ? payload : {};
       return {
-        cardsAvailable: Boolean(source.cardsAvailable),
-        duelAvailable: Boolean(source.duelAvailable)
+        cardsAvailable: Boolean(source.cardsAvailable)
       };
     }
     function applyDailyFreePlays(payload) {
       state.dailyFreePlays = normalizeDailyFreePlays(payload);
       if (cardsFreePlayBadge) {
         cardsFreePlayBadge.hidden = !state.dailyFreePlays.cardsAvailable;
-      }
-      if (duelFreePlayBadge) {
-        duelFreePlayBadge.hidden = !state.dailyFreePlays.duelAvailable;
       }
     }
     function formatDailyPassDate(value) {
@@ -10380,16 +10424,12 @@
       if (state.loading) {
         return;
       }
-      const hasFreePlay = Boolean(state.dailyFreePlays.duelAvailable);
-      if (Math.max(0, Number(currentInventory.duelo || 0)) <= 0 && !hasFreePlay) {
+      if (Math.max(0, Number(currentInventory.duelo || 0)) <= 0) {
         duelMessage.textContent = "No tienes Duelos para atacar.";
         return;
       }
 
       state.loading = true;
-      if (hasFreePlay) {
-        applyDailyFreePlays({ ...state.dailyFreePlays, duelAvailable: false });
-      }
       closeDuelRewardModal();
       resetDuelOutcomeState();
       duelMessage.textContent = "Lanzando ataque...";
@@ -10411,8 +10451,6 @@
           }
           if (data?.dailyFreePlays) {
             applyDailyFreePlays(data.dailyFreePlays);
-          } else if (hasFreePlay) {
-            applyDailyFreePlays({ ...state.dailyFreePlays, duelAvailable: true });
           }
           if (data?.defenderInventory) {
             state.duelDefenderInventory = data.defenderInventory;
@@ -10448,8 +10486,8 @@
           duelDefenderOutcome.classList.add("is-lose");
           const chestGranted = Boolean(data.minigameChestGranted);
           duelMessage.textContent = chestGranted
-            ? `${nick}${data.freePlayUsed ? " usa su gratis diaria, " : " "}impacta, roba ${Math.max(0, Number(data.transferredPc || 0))} PC a ${defenderNick} y consigue 1 Perricofre de minijuego.`
-            : `${nick}${data.freePlayUsed ? " usa su gratis diaria, " : " "}impacta, roba ${Math.max(0, Number(data.transferredPc || 0))} PC a ${defenderNick}.`;
+            ? `${nick} impacta, roba ${Math.max(0, Number(data.transferredPc || 0))} PC a ${defenderNick} y consigue 1 Perricofre de minijuego.`
+            : `${nick} impacta y roba ${Math.max(0, Number(data.transferredPc || 0))} PC a ${defenderNick}.`;
           if (chestGranted) {
             openDuelRewardModal(Array.isArray(data.duelRewards) ? data.duelRewards : [], Math.max(0, Number(data.transferredPc || 0)));
           }
@@ -10473,9 +10511,6 @@
         updateStatus("online");
         renderDuelView();
       } catch (error) {
-        if (hasFreePlay) {
-          applyDailyFreePlays({ ...state.dailyFreePlays, duelAvailable: true });
-        }
         updateStatus("offline");
         duelMessage.textContent = "Error al ejecutar el ataque.";
       } finally {
@@ -10596,7 +10631,7 @@
       state.duelDefenderInventory = null;
       state.duelTargetToken = "";
       state.duelTargetLoading = false;
-      state.dailyFreePlays = { cardsAvailable: false, duelAvailable: false };
+      state.dailyFreePlays = { cardsAvailable: false };
       state.dailyPass = null;
       state.dailyPassReady = false;
       state.dailyPassClaimLoading = false;
@@ -11515,18 +11550,73 @@
       }
       refreshInventory(false);
     });
+    function sendPerriDuelosSession() {
+      if (!perriDuelosFrame || !perriDuelosFrame.contentWindow || !state.sessionToken) return;
+      perriDuelosFrame.contentWindow.postMessage({
+        type: "perriduelos-session",
+        sessionToken: state.sessionToken,
+        nick: getOwnerNick(),
+        inventory: currentInventory
+      }, window.location.origin);
+    }
+    function shouldOfferPerriDuelosFullscreen() {
+      const touchDevice = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
+      const compactScreen = window.matchMedia("(max-width: 900px)").matches || Math.min(screen.width, screen.height) <= 900;
+      return touchDevice && compactScreen;
+    }
+    function openPerriDuelosNormally() {
+      perriDuelosFullscreenModal.hidden = true;
+      showAppSection("perriDuelos");
+      sendPerriDuelosSession();
+    }
+    async function openPerriDuelosFullscreen() {
+      perriDuelosFullscreenModal.hidden = true;
+      showAppSection("perriDuelos");
+      sendPerriDuelosSession();
+      try {
+        const requestFullscreen = perriDuelosFrame.requestFullscreen || perriDuelosFrame.webkitRequestFullscreen;
+        if (requestFullscreen) await Promise.resolve(requestFullscreen.call(perriDuelosFrame));
+      } catch (error) {
+        // Si el navegador rechaza la pantalla completa, PerriDuelos permanece abierto normalmente.
+      }
+      try {
+        if (screen.orientation && typeof screen.orientation.lock === "function") {
+          await screen.orientation.lock("landscape");
+        }
+      } catch (error) {
+        // En navegadores sin bloqueo de orientación, el usuario puede girar el dispositivo manualmente.
+      }
+    }
+    function leavePerriDuelos() {
+      try {
+        if (screen.orientation && typeof screen.orientation.unlock === "function") screen.orientation.unlock();
+      } catch (error) {}
+      try {
+        const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          Promise.resolve(exitFullscreen.call(document)).catch(() => undefined);
+        }
+      } catch (error) {}
+      if (currentAppSection === "perriDuelos") {
+        const previousSection = appSectionHistory[appSectionHistory.length - 1];
+        if (previousSection === "minigames") {
+          goToPreviousAppSection();
+        } else {
+          showAppSection("minigames", { recordHistory: false });
+        }
+      }
+    }
     openDuelsFromMinigames.addEventListener("click", () => {
-      showAppSection("duel");
-      duelMessage.textContent = "Sorteando rival...";
-      renderDuelView();
-      refreshDuelTarget();
-      refreshInventory(false);
+      if (shouldOfferPerriDuelosFullscreen()) {
+        perriDuelosFullscreenModal.hidden = false;
+        return;
+      }
+      openPerriDuelosNormally();
     });
-    openEquipmentFromMinigames.addEventListener("click", () => {
-      showAppSection("equipment");
-      renderEquipmentView();
-      refreshInventory(false);
-    });
+    perriDuelosOpenNormalButton.addEventListener("click", openPerriDuelosNormally);
+    perriDuelosOpenFullscreenButton.addEventListener("click", openPerriDuelosFullscreen);
+    perriDuelosFullscreenBackdrop.addEventListener("click", openPerriDuelosNormally);
+    perriDuelosFrame.addEventListener("load", sendPerriDuelosSession);
     openPerriCasillasFromMinigames.addEventListener("click", async () => {
       showAppSection("perriCasillas");
       await loadPerriCasillasState();
@@ -11603,6 +11693,14 @@
     perriPetFullscreenBackdrop.addEventListener("click", openPerriPetNormally);
     perriPetFrame.addEventListener("load", sendPerriPetSession);
     window.addEventListener("message", (event) => {
+      if (event.origin === window.location.origin && event.source === perriDuelosFrame.contentWindow && event.data?.type === "perriduelos-ready") sendPerriDuelosSession();
+      if (event.origin === window.location.origin && event.source === perriDuelosFrame.contentWindow && event.data?.type === "perriduelos-inventory-updated") {
+        if (event.data.inventory) updateInventory(event.data.inventory);
+        refreshInventory(false);
+      }
+      if (event.origin === window.location.origin && event.source === perriDuelosFrame.contentWindow && event.data?.type === "perriduelos-exit") {
+        leavePerriDuelos();
+      }
       if (event.origin === window.location.origin && event.source === perriRpgFrame.contentWindow && event.data?.type === "perrirpg-ready") sendPerriRpgSession();
       if (event.origin === window.location.origin && event.source === perriRpgFrame.contentWindow && event.data?.type === "perrirpg-achievement-unlocked") {
         if (event.data.inventory) updateInventory(event.data.inventory);

@@ -2,7 +2,7 @@ const crypto = require("node:crypto");
 
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "");
-const SESSION_TTL_MS = Number(process.env.SHOP_SESSION_TTL_MS || 6 * 60 * 60 * 1000);
+const SESSION_TTL_MS = Number(process.env.SHOP_SESSION_TTL_MS || 30 * 24 * 60 * 60 * 1000);
 const PERRI_CHEST_LINK_BASE_URL = String(process.env.PERRI_CHEST_LINK_BASE_URL || "https://www.perrisushi.com").trim().replace(/\/+$/, "");
 const ACCOUNT_ACTIVATION_LINK_BASE_URL = String(process.env.ACCOUNT_ACTIVATION_LINK_BASE_URL || "https://www.perrisushi.com").trim().replace(/\/+$/, "");
 const REQUEST_PANEL_SECRET = String(process.env.REQUEST_PANEL_SECRET || process.env.PANEL_SOLICITUDES_KEY || "").trim();
@@ -1506,13 +1506,10 @@ function normalizeFreePlayDay(value) {
 function mapDailyFreePlayState(row) {
   const todayKey = getAppDayKey();
   const cardsDay = normalizeFreePlayDay(row?.free_cards_day);
-  const duelDay = normalizeFreePlayDay(row?.free_duelo_day);
   return {
     todayKey,
     cardsAvailable: cardsDay !== todayKey,
-    duelAvailable: duelDay !== todayKey,
-    cardsLastUsedDay: cardsDay,
-    duelLastUsedDay: duelDay
+    cardsLastUsedDay: cardsDay
   };
 }
 
@@ -1536,9 +1533,7 @@ async function consumeDailyFreePlay(nick, gameKey) {
   const todayKey = getAppDayKey();
   const patch = normalizedGameKey === "cards"
     ? { free_cards_day: todayKey, updated_at: nowIso() }
-    : normalizedGameKey === "duel"
-      ? { free_duelo_day: todayKey, updated_at: nowIso() }
-      : null;
+    : null;
   if (!normalizedNick || !patch) {
     return {
       consumed: false,
@@ -4767,14 +4762,14 @@ function createDuelTargetToken(attackerNick, defenderNick) {
   const payload = Buffer.from(JSON.stringify({
     attacker: normalizeNickKey(attackerNick),
     defender: normalizeNick(defenderNick),
-    expiresAt: Date.now() + (15 * 60 * 1000),
+    expiresAt: Date.now() + (30 * 60 * 1000),
     nonce: crypto.randomBytes(8).toString("hex")
   })).toString("base64url");
   const signature = crypto.createHmac("sha256", SUPABASE_SERVICE_ROLE_KEY).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 }
 
-function readDuelTargetToken(token, attackerNick) {
+function readDuelTargetTokenPayload(token, attackerNick) {
   const [payload, signature] = String(token || "").trim().split(".");
   if (!payload || !signature) return null;
   const expectedSignature = crypto.createHmac("sha256", SUPABASE_SERVICE_ROLE_KEY).update(payload).digest("base64url");
@@ -4783,12 +4778,18 @@ function readDuelTargetToken(token, attackerNick) {
   if (signatureBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) return null;
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    if (data.attacker !== normalizeNickKey(attackerNick) || Number(data.expiresAt || 0) < Date.now()) return null;
+    if (data.attacker !== normalizeNickKey(attackerNick)) return null;
     const defender = normalizeNick(data.defender);
-    return defender && normalizeNickKey(defender) !== normalizeNickKey(attackerNick) ? defender : null;
+    if (!defender || normalizeNickKey(defender) === normalizeNickKey(attackerNick)) return null;
+    return { ...data, defender, expiresAt: Number(data.expiresAt || 0) };
   } catch (error) {
     return null;
   }
+}
+
+function readDuelTargetToken(token, attackerNick) {
+  const data = readDuelTargetTokenPayload(token, attackerNick);
+  return data && data.expiresAt >= Date.now() ? data.defender : null;
 }
 
 async function selectRandomDuelOpponent(attackerNick) {
@@ -4833,6 +4834,23 @@ async function publicShopGetDuelTarget(sessionToken) {
   };
 }
 
+async function publicShopExpireDuelTarget(sessionToken, targetToken) {
+  const sessionResult = await requireSession(sessionToken);
+  if (!sessionResult.ok) return sessionResult;
+  const targetData = readDuelTargetTokenPayload(targetToken, sessionResult.nick);
+  if (!targetData) return { ok: false, error: "invalid_duel_target" };
+  if (targetData.expiresAt > Date.now()) return { ok: false, error: "duel_target_not_expired" };
+
+  const operationId = `duel_${sha256(String(targetToken || ""))}`;
+  return withNickLock(operationId, async () => runIdempotentOperation(operationId, "publicShopPerformAttack", sessionResult.nick, async () => {
+    const inventory = await getInventory(sessionResult.nick);
+    inventory.duelo = Math.max(0, toNumber(inventory.duelo) - 1);
+    const attackerInventory = await saveInventory(sessionResult.nick, inventory);
+    await appendActivity(sessionResult.nick, "Ataque", "Caducado", "Se pierde 1 Ticket de Duelo por superar los 30 minutos.");
+    return { ok: true, expired: true, attackerInventory };
+  }));
+}
+
 async function publicShopPerformAttack(sessionToken, targetToken) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) {
@@ -4872,9 +4890,8 @@ async function publicShopPerformAttack(sessionToken, targetToken) {
   }
 
   const attackerInventory = await getInventory(sessionResult.nick);
-  let dailyFreePlays = await getDailyFreePlayState(sessionResult.nick);
-  const useFreePlay = Boolean(dailyFreePlays.duelAvailable);
-  if (!useFreePlay && toNumber(attackerInventory.duelo) <= 0) {
+  const dailyFreePlays = await getDailyFreePlayState(sessionResult.nick);
+  if (toNumber(attackerInventory.duelo) <= 0) {
     return {
       ok: false,
       error: "no_duelo",
@@ -4884,16 +4901,11 @@ async function publicShopPerformAttack(sessionToken, targetToken) {
     };
   }
 
-  if (useFreePlay) {
-    const freePlayResult = await consumeDailyFreePlay(sessionResult.nick, "duel");
-    dailyFreePlays = freePlayResult.state;
-  }
-
   const defenderInventory = await getInventory(normalizedDefenderNick);
   const weaponKey = getEquippedAttackWeaponKey(attackerInventory);
   const shieldKey = getEquippedDefenseShieldKey(defenderInventory);
   const outcome = resolvePublicDuelOutcome(attackerInventory, defenderInventory, weaponKey, shieldKey);
-  const result = await adminPerformAttack(sessionResult.nick, normalizedDefenderNick, weaponKey, shieldKey, outcome, useFreePlay);
+  const result = await adminPerformAttack(sessionResult.nick, normalizedDefenderNick, weaponKey, shieldKey, outcome, false);
   const notificationsState = result?.ok
     ? await Promise.all([
         listNotificationsForNick(sessionResult.nick),
@@ -4907,7 +4919,6 @@ async function publicShopPerformAttack(sessionToken, targetToken) {
     weapon: weaponKey,
     shieldType: shieldKey,
     outcome: result?.outcome || outcome,
-    freePlayUsed: useFreePlay,
     dailyFreePlays,
     notifications: notificationsState[0] || undefined,
     unreadNotificationCount: notificationsState[1] || undefined
@@ -5683,7 +5694,7 @@ async function adminPerformAttack(attackerNick, defenderNick, weapon, shieldType
     let transferredPc = 0;
     let duelRewards = [];
     if (normalizedOutcome === "Impacto") {
-      transferredPc = Math.max(0, Math.min(toNumber(nextDefenderInventory.pc), 1000));
+      transferredPc = Math.max(0, Math.min(toNumber(nextDefenderInventory.pc), 400));
       nextDefenderInventory.pc = Math.max(0, toNumber(nextDefenderInventory.pc) - transferredPc);
       nextAttackerInventory.pc = toNumber(nextAttackerInventory.pc) + transferredPc;
       nextAttackerInventory.perriCofresMinijuego = toNumber(nextAttackerInventory.perriCofresMinijuego) + 1;
@@ -5703,7 +5714,7 @@ async function adminPerformAttack(attackerNick, defenderNick, weapon, shieldType
         });
       }
     } else {
-      transferredPc = Math.max(0, Math.min(toNumber(nextAttackerInventory.pc), 500));
+      transferredPc = Math.max(0, Math.min(toNumber(nextAttackerInventory.pc), 200));
       nextAttackerInventory.pc = Math.max(0, toNumber(nextAttackerInventory.pc) - transferredPc);
       nextDefenderInventory.pc = toNumber(nextDefenderInventory.pc) + transferredPc;
     }
@@ -5955,6 +5966,8 @@ async function handleShopAction(payload) {
       return publicShopOpenInventoryChest(payload.sessionToken, payload.chestOpenId || payload.operationId, payload.chestType);
     case "publicShopGetDuelTarget":
       return publicShopGetDuelTarget(payload.sessionToken);
+    case "publicShopExpireDuelTarget":
+      return publicShopExpireDuelTarget(payload.sessionToken, payload.targetToken);
     case "publicShopPerformAttack":
       return publicShopPerformAttack(payload.sessionToken, payload.targetToken);
       case "publicShopListChatMessages":
