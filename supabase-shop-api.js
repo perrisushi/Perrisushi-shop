@@ -3738,6 +3738,7 @@ async function getPerriPetRpgInventory(nick) {
 async function publicShopPerriPetState(sessionToken) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) return sessionResult;
+  return withNickLock(sessionResult.nick, async () => {
   const [storedState, inventory, rpgInventory, storedPerriPetInventory] = await Promise.all([
     getPerriPetStoredState(sessionResult.nick),
     getInventory(sessionResult.nick),
@@ -3781,6 +3782,7 @@ async function publicShopPerriPetState(sessionToken) {
       rpgInventory
     }
   };
+  });
 }
 
 function getVerifiedPerriPetHarvests(previousSnapshot, incomingSnapshot) {
@@ -3886,8 +3888,6 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
   }
 
   if (basePet) {
-    const requestedGemDelta = Math.trunc(toNumber(incomingPet.coins) - toNumber(syncBase ? syncBase.gems : previousPet.coins));
-
     const previousPerriPetInventory = syncBase?.perriPetInventory && typeof syncBase.perriPetInventory === "object"
       ? syncBase.perriPetInventory
       : perriPetInventoryFromSnapshot(previousSnapshot);
@@ -3904,10 +3904,17 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       + (positiveDelta("egg-green") * 500)
       + (positiveDelta("food-normal") * 10)
       + (positiveDelta("food-prime") * 100);
-    if (requestedGemDelta > 0 || Math.max(0, -requestedGemDelta) < requiredGemSpend || unverifiedHarvest || unverifiedLoot) {
+    const reviveGemSpend = previousPet
+      && previousPet.hasActiveCreature !== false
+      && Number(previousPet.hp) <= 0
+      && Number(incomingPet.hp) > 0
+      ? 5000
+      : 0;
+    const totalGemSpend = requiredGemSpend + reviveGemSpend;
+    if (unverifiedHarvest || unverifiedLoot || totalGemSpend > toNumber(inventory.polvoGema)) {
       return { ok: false, error: "invalid_perripet_economy" };
     }
-    inventory.polvoGema = Math.max(0, toNumber(inventory.polvoGema) + requestedGemDelta);
+    inventory.polvoGema = toNumber(inventory.polvoGema) - totalGemSpend;
     inventory.pc = Math.max(
       0,
       toNumber(inventory.pc) + ((spentDelta("fruit-purple") + spentDelta("fruit-yellow")) * 100)
