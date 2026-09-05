@@ -3837,10 +3837,15 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
     return { ok: false, error: "invalid_perripet_state" };
   }
 
-  return withNickLock(`perripet:${sessionResult.nick}`, async () => {
+  return withNickLock(sessionResult.nick, async () => {
   const previousState = await getPerriPetStoredState(sessionResult.nick);
   const previousSnapshot = previousState.snapshot;
   const inventory = await getInventory(sessionResult.nick);
+  const economyBefore = {
+    polvoGema: toNumber(inventory.polvoGema),
+    pc: toNumber(inventory.pc),
+    chatarra: toNumber(inventory.chatarra)
+  };
   const currentPerriPetState = await getPerriPetInventory(sessionResult.nick);
   const currentPerriPetInventory = currentPerriPetState.inventory;
   const incomingPet = safeSnapshot.pet && typeof safeSnapshot.pet === "object" ? safeSnapshot.pet : {};
@@ -3945,7 +3950,25 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
     inventory.chatarra = availableScrap - farmPurchaseCost - rpgPurchaseCost;
   }
 
-  const savedInventory = basePet ? await saveInventory(sessionResult.nick, inventory) : inventory;
+  let savedInventory = inventory;
+  if (basePet) {
+    // PerriPet guarda su estado con frecuencia. Solo debe escribir las monedas que
+    // realmente hayan cambiado; regrabar la fila completa borraba premios o ajustes
+    // realizados simultáneamente por otros minijuegos o desde Supabase.
+    const economyPatch = {};
+    if (toNumber(inventory.polvoGema) !== economyBefore.polvoGema) economyPatch.polvo_gema = toNumber(inventory.polvoGema);
+    if (toNumber(inventory.pc) !== economyBefore.pc) economyPatch.pc = toNumber(inventory.pc);
+    if (toNumber(inventory.chatarra) !== economyBefore.chatarra) economyPatch.chatarra = toNumber(inventory.chatarra);
+    if (Object.keys(economyPatch).length) {
+      economyPatch.updated_at = nowIso();
+      const updatedRows = await updateRows("shop_inventories", economyPatch, {
+        nick: `eq.${sessionResult.nick}`
+      }, { returning: "representation" });
+      savedInventory = Array.isArray(updatedRows) && updatedRows[0]
+        ? rowToInventory(updatedRows[0])
+        : await getInventory(sessionResult.nick);
+    }
+  }
   const syncedPerriPetInventory = await savePerriPetInventory(sessionResult.nick, currentPerriPetInventory);
   const syncedRpgInventory = await getPerriPetRpgInventory(sessionResult.nick);
   applyPerriPetInventoryToSnapshot(safeSnapshot, syncedPerriPetInventory);
