@@ -4798,12 +4798,16 @@
       }
       #minigamesView .minigames-panel {
         width: min(520px, calc(100vw - 28px));
-        margin: 0 auto;
+        margin: 0;
+        position: absolute;
+        top: max(155px, 30dvh);
+        left: 50%;
+        transform: translateX(-50%);
         min-height: 0;
-        height: 100%;
+        height: auto;
         overflow: hidden;
-        align-content: center;
-        padding: clamp(10px, 2dvh, 22px) 0;
+        align-content: start;
+        padding: 0 0 12px;
         gap: 0;
       }
       #minigamesView .minigames-grid {
