@@ -1,7 +1,7 @@
 :root {
-  color-scheme: dark;
   font-family: Georgia, "Times New Roman", serif;
-  background: transparent;
+  background: none !important;
+  background-color: rgba(0, 0, 0, 0) !important;
   color: #fff4d2;
 }
 
@@ -15,14 +15,16 @@ body {
   min-width: 320px;
   min-height: 100%;
   margin: 0;
-  background: transparent;
+  background: none !important;
+  background-color: rgba(0, 0, 0, 0) !important;
 }
 
 body {
   min-height: 100dvh;
   position: relative;
   overflow: hidden;
-  background: transparent;
+  background: none !important;
+  background-color: rgba(0, 0, 0, 0) !important;
 }
 
 .duel-app.is-mobile-cover .duel-arena,
@@ -36,7 +38,8 @@ body {
 }
 
 .duel-app {
-  --app-scale: 1;
+  --app-scale-x: 1;
+  --app-scale-y: 1;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -46,7 +49,7 @@ body {
   display: grid;
   place-items: center;
   padding: 0;
-  transform: translate(-50%, -50%) scale(var(--app-scale));
+  transform: translate(-50%, -50%) scale(var(--app-scale-x), var(--app-scale-y));
   transform-origin: center;
   container-type: inline-size;
 }

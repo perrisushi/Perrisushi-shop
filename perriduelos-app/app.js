@@ -55,6 +55,7 @@ const duelDefenderResult = document.getElementById("duelDefenderResult");
 const APP_DESIGN_WIDTH = 1920;
 const APP_DESIGN_HEIGHT = 1015;
 let currentAppScale = 1;
+let currentAppScaleY = 1;
 
 const DIRECT_API_URL = "https://www.perrisushi.com/shop-api";
 const perriDuelosWebState = {
@@ -745,15 +746,16 @@ function resizePerriDuelosApp() {
   const viewportHeight = window.visualViewport?.height || window.innerHeight;
   const isMobileLandscape = window.matchMedia("(pointer: coarse)").matches
     && viewportWidth > viewportHeight;
-  const scaleWidth = isMobileLandscape ? 1747 : APP_DESIGN_WIDTH;
-  const scaleHeight = isMobileLandscape ? 974 : APP_DESIGN_HEIGHT;
-  const widthScale = viewportWidth / scaleWidth;
-  const heightScale = viewportHeight / scaleHeight;
-  currentAppScale = Math.max(.1, isMobileLandscape
-    ? Math.max(widthScale, heightScale)
-    : Math.min(widthScale, heightScale));
+  const widthScale = viewportWidth / (isMobileLandscape ? 1747 : APP_DESIGN_WIDTH);
+  const heightScale = viewportHeight / (isMobileLandscape ? 974 : APP_DESIGN_HEIGHT);
+  const uniformScale = Math.max(.1, Math.min(widthScale, heightScale));
+  const horizontalScale = Math.max(.1, isMobileLandscape ? widthScale : uniformScale);
+  const verticalScale = Math.max(.1, isMobileLandscape ? heightScale : uniformScale);
+  currentAppScale = horizontalScale;
+  currentAppScaleY = verticalScale;
   duelApp.classList.toggle("is-mobile-cover", isMobileLandscape);
-  duelApp.style.setProperty("--app-scale", String(currentAppScale));
+  duelApp.style.setProperty("--app-scale-x", String(horizontalScale));
+  duelApp.style.setProperty("--app-scale-y", String(verticalScale));
 }
 
 function alignEquipmentTab() {
@@ -765,7 +767,7 @@ function alignEquipmentTab() {
   equipmentTab.style.left = `${(duelBounds.right - equipmentBounds.left) / currentAppScale}px`;
   if (duelExitButton) {
     duelExitButton.style.width = `${duelBounds.width / currentAppScale}px`;
-    duelExitButton.style.height = `${duelBounds.height / currentAppScale}px`;
+    duelExitButton.style.height = `${duelBounds.height / currentAppScaleY}px`;
   }
 }
 
