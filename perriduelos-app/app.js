@@ -979,7 +979,12 @@ window.addEventListener("message", (event) => {
       return;
     }
   }
-  if (!perriDuelosWebState.targetToken) startNextLocalDuel();
+  if (!perriDuelosWebState.targetToken
+    && !localDuelState.roundComplete
+    && !localDuelState.autoResetPending
+    && !localDuelState.busy) {
+    startNextLocalDuel();
+  }
 });
 
 window.addEventListener("resize", handlePerriDuelosResize);
