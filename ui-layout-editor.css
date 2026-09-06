@@ -306,7 +306,14 @@ body.ui-layout-editing [data-ui-layout] {
   height: 100% !important;
   max-width: none !important;
   max-height: none !important;
+  object-fit: contain !important;
+}
+
+[data-ui-layout].ui-layout-sized > img[class*="frame"],
+[data-ui-layout].ui-layout-sized.menu-frame {
   object-fit: fill !important;
+  background-size: 100% 100% !important;
+  aspect-ratio: auto !important;
 }
 
 [data-ui-layout].ui-layout-sized h1 { font-size: clamp(7px, 11cqmin, 3rem) !important; }
@@ -351,7 +358,8 @@ body.ui-layout-editing [data-ui-layout].ui-layout-selected {
   outline-offset: 1px !important;
 }
 
-body.ui-layout-editing [data-ui-layout].ui-layout-attached {
+body.ui-layout-editing [data-ui-layout].ui-layout-attached,
+body.ui-layout-editing [data-ui-layout].ui-layout-locked {
   outline-color: #45bfff !important;
   box-shadow: 0 0 0 3px rgba(69, 191, 255, .34) !important;
 }

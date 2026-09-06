@@ -1,7 +1,8 @@
 (function () {
   "use strict";
 
-  var DRAFT_PREFIX = "perrisushi-ui-layout-draft-v1:";
+  var LAYOUT_VERSION = 2;
+  var DRAFT_PREFIX = "perrisushi-ui-layout-draft-v3:";
   var editorState = {
     active: false,
     guides: true,
@@ -10,10 +11,12 @@
     attached: null,
     pointer: null,
     layouts: { desktop: {}, mobile: {} },
+    previewMode: null,
     loaded: false
   };
 
   var layoutCanvasScale = 1;
+  var settledApplyTimer = 0;
   var mobileDevice = Boolean(
     navigator.userAgentData && navigator.userAgentData.mobile
   ) || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || "") || (
@@ -21,30 +24,70 @@
     Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 900
   );
 
+  function ensureMobilePreviewStyles() {
+    if (document.getElementById("uiLayoutMobilePreviewStyles")) return;
+    var chunks = [];
+    function scopedSelector(selector) {
+      return selector.split(",").map(function (part) {
+        part = part.trim();
+        if (part.indexOf("body") === 0) return "body.perri-mobile-preview" + part.slice(4);
+        if (part.indexOf(":root") === 0 || part.indexOf("html") === 0) return "body.perri-mobile-preview" + part.replace(/^(:root|html)/, "");
+        return "body.perri-mobile-preview " + part;
+      }).join(",");
+    }
+    function collect(rules) {
+      Array.from(rules || []).forEach(function (rule) {
+        if (rule.type === CSSRule.STYLE_RULE) {
+          chunks.push(scopedSelector(rule.selectorText) + "{" + rule.style.cssText + "}");
+        } else if (rule.cssRules) {
+          collect(rule.cssRules);
+        }
+      });
+    }
+    Array.from(document.styleSheets).forEach(function (sheet) {
+      var rules;
+      try { rules = sheet.cssRules; } catch (error) { return; }
+      Array.from(rules || []).forEach(function (rule) {
+        if (rule.type === CSSRule.MEDIA_RULE && /max-width\s*:\s*720px/i.test(rule.conditionText || "")) {
+          collect(rule.cssRules);
+        }
+      });
+    });
+    var style = document.createElement("style");
+    style.id = "uiLayoutMobilePreviewStyles";
+    style.textContent = chunks.join("\n");
+    document.head.appendChild(style);
+  }
+
   function fitFixedCanvas() {
-    var canvas = mobileDevice
+    ensureMobilePreviewStyles();
+    var useMobile = editorState.previewMode ? editorState.previewMode === "mobile" : mobileDevice;
+    var canvas = useMobile
       ? { width: 390, height: 844 }
-      : { width: 1536, height: 864 };
+      : { width: 1536, height: 901 };
     layoutCanvasScale = Math.min(
       window.innerWidth / canvas.width,
       window.innerHeight / canvas.height
     );
     if (!Number.isFinite(layoutCanvasScale) || layoutCanvasScale <= 0) layoutCanvasScale = 1;
     document.body.classList.add("perri-fixed-canvas");
-    document.body.classList.toggle("perri-mobile-layout", mobileDevice);
-    document.body.classList.toggle("perri-desktop-layout", !mobileDevice);
+    document.body.classList.toggle("perri-mobile-layout", useMobile);
+    document.body.classList.toggle("perri-desktop-layout", !useMobile);
+    document.body.classList.toggle("perri-mobile-preview", Boolean(editorState.previewMode && useMobile));
     document.body.style.setProperty("--perri-canvas-width", canvas.width + "px");
     document.body.style.setProperty("--perri-canvas-height", canvas.height + "px");
     document.body.style.setProperty("--perri-canvas-scale", String(layoutCanvasScale));
   }
 
   var targetDefinitions = [
+    [".session-left-stack", "user-controls", "Controles de usuario"],
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
     [".session-logo-badge", "avatar", "Logo del usuario"],
     ["#notificationDock", "notifications", "Botones de aviso"],
     [".notification-bubble", "notification", "Aviso", true],
+    [".menu-side-tools", "side-tools", "Botones laterales"],
     [".menu-frame", "main-frame", "Marco del menú"],
     [".menu-actions", "home-buttons", "Botones del menú"],
     ["#openProfileButton", "menu-profile", "Botón Mi perfil"],
@@ -57,6 +100,7 @@
     ["#openYoutubeButton", "social-youtube", "Botón YouTube"],
     ["#openChatButton", "side-chat", "Botón Chat"],
     ["#openRequestsPanelButton", "side-panel", "Botón Panel"],
+    ["#profileView,#usersView,#inventoryView,#minigamesView,#shopView,#chatView", "section-panel", "Pantalla de sección"],
     ["#minigamesView .minigames-panel", "minigames-panel", "Panel de minijuegos"],
     ["#minigamesView .minigames-grid", "minigames-grid", "Botones de minijuegos"],
     ["#openDuelsFromMinigames", "game-duels", "PerriDuelos"],
@@ -90,7 +134,7 @@
   ];
 
   function currentMode() {
-    return mobileDevice ? "mobile" : "desktop";
+    return editorState.previewMode || (mobileDevice ? "mobile" : "desktop");
   }
 
   function currentScreen() {
@@ -103,7 +147,7 @@
   }
 
   function canvasRect() {
-    var canvas = document.getElementById("appView");
+    var canvas = document.querySelector(".panel") || document.querySelector(".shell") || document.getElementById("appView");
     if (!canvas) return { left: 0, top: 0, width: 1, height: 1, right: 1, bottom: 1 };
     var rect = canvas.getBoundingClientRect();
     var width = Math.max(1, canvas.clientWidth);
@@ -124,7 +168,7 @@
 
   function visibleTargets() {
     return allTargets().filter(function (element) {
-      return element.getClientRects().length && !element.closest("[hidden]");
+      return element.dataset.uiLayoutEnabled !== "false" && element.getClientRects().length && !element.closest("[hidden]");
     });
   }
 
@@ -146,13 +190,22 @@
       var indexed = definition[3];
       document.querySelectorAll(selector).forEach(function (element, index) {
         if (!element.dataset.uiLayout) {
-          var suffix = element.id ? "-" + element.id : indexed ? "-" + index : "";
-          element.dataset.uiLayout = baseKey + suffix;
+          var key = baseKey;
+          if (baseKey === "notification") {
+            key = ["notice-objects", "notice-social", "notice-announcement"][index] || "notice-" + index;
+          } else if (indexed) {
+            key = baseKey + "-" + index;
+          }
+          element.dataset.uiLayout = key;
         }
         element.dataset.uiLayoutLabel = element.getAttribute("aria-label") || label + (indexed ? " " + (index + 1) : "");
       });
     });
-    if (!editorState.active) applyCurrentLayout();
+    var activeView = document.querySelector(".content-view:not([hidden])");
+    document.querySelectorAll(".content-view[data-ui-layout=\"section-panel\"]").forEach(function (view) {
+      view.dataset.uiLayoutEnabled = view === activeView ? "true" : "false";
+    });
+    if (!editorState.active) scheduleLayoutApply();
   }
 
   function readDraft(modeName) {
@@ -172,15 +225,21 @@
   function normalizePayload(payload) {
     var result = { desktop: {}, mobile: {} };
     if (!payload || typeof payload !== "object") return result;
+    var isAbsoluteV2 = Number(payload.layoutVersion || payload.prototypeLayoutVersion) === LAYOUT_VERSION &&
+      payload.coordinateSystem === "absolute-canvas-ratios";
+    if (!isAbsoluteV2) return result;
     ["desktop", "mobile"].forEach(function (modeName) {
-      if (payload[modeName] && typeof payload[modeName] === "object") {
-        result[modeName] = payload[modeName];
+      var mode = payload[modeName];
+      if (mode && mode.screens && typeof mode.screens === "object") {
+        result[modeName] = mode.screens;
       }
     });
     return result;
   }
 
   function convertPrototypePayload(payload) {
+    return normalizePayload(payload);
+    /* Compatibilidad v1 retirada: las coordenadas relativas antiguas deformaban la web real.
     if (!payload || typeof payload !== "object") return normalizePayload(payload);
     var looksLikePrototype = Boolean(payload.prototypeLayoutVersion) ||
       Boolean(payload.desktop && payload.desktop.__canvas) ||
@@ -237,10 +296,14 @@
       desktop: convertMode(payload.desktop),
       mobile: convertMode(payload.mobile)
     };
+    */
   }
 
   function clearStyle(element) {
     element.style.translate = "";
+    element.style.position = "";
+    element.style.left = "";
+    element.style.top = "";
     element.style.width = "";
     element.style.height = "";
     element.style.visibility = "";
@@ -255,29 +318,41 @@
     delete element.dataset.uiLayoutLockedWith;
   }
 
-  function applyItem(element, item, canvas) {
+  function applyItem(element, item, canvas, phase) {
     if (!item) return;
-    var x = Number(item.xRatio) * canvas.width;
-    var y = Number(item.yRatio) * canvas.height;
+    var leftRatio = Number(item.leftRatio);
+    var topRatio = Number(item.topRatio);
     var width = Number(item.widthRatio) * canvas.width;
     var height = Number(item.heightRatio) * canvas.height;
-    if (Number.isFinite(x) && Number.isFinite(y)) {
-      element.dataset.uiLayoutX = String(x);
-      element.dataset.uiLayoutY = String(y);
-      element.style.translate = x + "px " + y + "px";
-    }
-    if (width > 4) {
+    if (phase !== "position" && width > 4) {
       element.dataset.uiLayoutWidth = String(width);
-      element.style.width = width + "px";
+      element.style.setProperty("width", width + "px", "important");
       element.classList.add("ui-layout-sized");
     }
-    if (height > 4) {
+    if (phase !== "position" && height > 4) {
       element.dataset.uiLayoutHeight = String(height);
-      element.style.height = height + "px";
+      element.style.setProperty("height", height + "px", "important");
       element.classList.add("ui-layout-sized");
     }
-    if (item.hidden) element.dataset.uiLayoutHidden = "true";
-    if (item.lockedWith) element.dataset.uiLayoutLockedWith = String(item.lockedWith);
+    if (phase !== "size" && Number.isFinite(leftRatio) && Number.isFinite(topRatio) && element.getClientRects().length) {
+      /*
+       * Las posiciones guardadas por Maqueta 2 son absolutas respecto al lienzo.
+       * Conservamos el elemento en su jerarquía real y compensamos su posición
+       * visual. Así los hijos no vuelven a sumar la coordenada de sus padres.
+       */
+      var rect = element.getBoundingClientRect();
+      var desiredLeft = canvas.left + leftRatio * canvas.width * layoutCanvasScale;
+      var desiredTop = canvas.top + topRatio * canvas.height * layoutCanvasScale;
+      var offsetX = (desiredLeft - rect.left) / layoutCanvasScale;
+      var offsetY = (desiredTop - rect.top) / layoutCanvasScale;
+      element.dataset.uiLayoutX = String(offsetX);
+      element.dataset.uiLayoutY = String(offsetY);
+      element.style.translate = offsetX + "px " + offsetY + "px";
+    }
+    if (phase !== "position") {
+      if (item.hidden) element.dataset.uiLayoutHidden = "true";
+      if (item.lockedWith) element.dataset.uiLayoutLockedWith = String(item.lockedWith);
+    }
   }
 
   function applyCurrentLayout() {
@@ -286,17 +361,41 @@
     var canvas = canvasRect();
     allTargets().forEach(clearStyle);
     allTargets().forEach(function (element) {
-      applyItem(element, layout[element.dataset.uiLayout], canvas);
+      if (element.dataset.uiLayoutEnabled === "false") return;
+      applyItem(element, layout[element.dataset.uiLayout], canvas, "size");
     });
+    void document.documentElement.offsetHeight;
+    allTargets().forEach(function (element) {
+      if (element.dataset.uiLayoutEnabled === "false") return;
+      applyItem(element, layout[element.dataset.uiLayout], canvas, "position");
+    });
+    refreshPersistentLocks();
     refreshHidden();
+  }
+
+  function scheduleLayoutApply() {
+    if (!editorState.loaded) return;
+    clearTimeout(settledApplyTimer);
+    applyCurrentLayout();
+    requestAnimationFrame(function () {
+      applyCurrentLayout();
+      requestAnimationFrame(applyCurrentLayout);
+    });
+    settledApplyTimer = setTimeout(applyCurrentLayout, 120);
+  }
+
+  function refreshPersistentLocks() {
+    allTargets().forEach(function (element) {
+      element.classList.toggle("ui-layout-locked", Boolean(element.dataset.uiLayoutLockedWith));
+    });
   }
 
   function captureElement(element) {
     var canvas = canvasRect();
     var rect = element.getBoundingClientRect();
     return {
-      xRatio: canvas.width ? Number(element.dataset.uiLayoutX || 0) / canvas.width : 0,
-      yRatio: canvas.height ? Number(element.dataset.uiLayoutY || 0) / canvas.height : 0,
+      leftRatio: canvas.width ? (rect.left - canvas.left) / layoutCanvasScale / canvas.width : 0,
+      topRatio: canvas.height ? (rect.top - canvas.top) / layoutCanvasScale / canvas.height : 0,
       widthRatio: canvas.width ? rect.width / layoutCanvasScale / canvas.width : 0,
       heightRatio: canvas.height ? rect.height / layoutCanvasScale / canvas.height : 0,
       hidden: element.dataset.uiLayoutHidden === "true",
@@ -338,6 +437,7 @@
     editorState.attached = null;
     if (!element) {
       setStatus("Selecciona un elemento");
+      refreshLockButton();
       return;
     }
     element.classList.add("ui-layout-selected");
@@ -346,6 +446,15 @@
     handle.setAttribute("aria-hidden", "true");
     element.appendChild(handle);
     setStatus(element.dataset.uiLayoutLabel || element.dataset.uiLayout);
+    refreshLockButton();
+  }
+
+  function refreshLockButton() {
+    var button = document.getElementById("uiLayoutLockButton");
+    if (!button) return;
+    var linked = linkedElement(editorState.selected);
+    button.textContent = linked ? "Desanclar" : "Anclar";
+    button.disabled = !editorState.selected || (!linked && !editorState.attached);
   }
 
   function candidateTargets(element) {
@@ -409,6 +518,7 @@
     element.classList.add("ui-layout-attached");
     target.classList.add("ui-layout-attached");
     editorState.attached = target;
+    refreshLockButton();
     setStatus("Pegado a " + (target.dataset.uiLayoutLabel || target.dataset.uiLayout));
   }
 
@@ -435,8 +545,8 @@
     var safeHeight = Math.max(16, height);
     element.dataset.uiLayoutWidth = String(safeWidth);
     element.dataset.uiLayoutHeight = String(safeHeight);
-    element.style.width = safeWidth + "px";
-    element.style.height = safeHeight + "px";
+    element.style.setProperty("width", safeWidth + "px", "important");
+    element.style.setProperty("height", safeHeight + "px", "important");
     element.classList.add("ui-layout-sized");
     if (includeLinked !== false) {
       var linked = linkedElement(element);
@@ -462,7 +572,19 @@
       originX: Number(element.dataset.uiLayoutX || 0),
       originY: Number(element.dataset.uiLayoutY || 0),
       width: rect.width / layoutCanvasScale,
-      height: rect.height / layoutCanvasScale
+      height: rect.height / layoutCanvasScale,
+      descendants: handle ? allTargets().filter(function (candidate) {
+        return candidate !== element && element.contains(candidate) && candidate.getClientRects().length;
+      }).map(function (candidate) {
+        var childRect = candidate.getBoundingClientRect();
+        return {
+          element: candidate,
+          left: (childRect.left - rect.left) / layoutCanvasScale,
+          top: (childRect.top - rect.top) / layoutCanvasScale,
+          width: childRect.width / layoutCanvasScale,
+          height: childRect.height / layoutCanvasScale
+        };
+      }) : []
     };
     if (element.setPointerCapture) element.setPointerCapture(event.pointerId);
   }
@@ -473,8 +595,20 @@
     var dx = (event.clientX - pointer.startX) / layoutCanvasScale;
     var dy = (event.clientY - pointer.startY) / layoutCanvasScale;
     if (pointer.type === "resize") {
-      resizeElement(pointer.element, pointer.width + dx, pointer.height + dy, true);
-      setStatus(Math.round(pointer.width + dx) + " × " + Math.round(pointer.height + dy));
+      var newWidth = Math.max(16, pointer.width + dx);
+      var newHeight = Math.max(16, pointer.height + dy);
+      resizeElement(pointer.element, newWidth, newHeight, true);
+      var parentRect = pointer.element.getBoundingClientRect();
+      var scaleX = newWidth / Math.max(1, pointer.width);
+      var scaleY = newHeight / Math.max(1, pointer.height);
+      pointer.descendants.forEach(function (snapshot) {
+        resizeElement(snapshot.element, snapshot.width * scaleX, snapshot.height * scaleY, false);
+        var childRect = snapshot.element.getBoundingClientRect();
+        var desiredLeft = parentRect.left + snapshot.left * scaleX * layoutCanvasScale;
+        var desiredTop = parentRect.top + snapshot.top * scaleY * layoutCanvasScale;
+        moveElement(snapshot.element, (desiredLeft - childRect.left) / layoutCanvasScale, (desiredTop - childRect.top) / layoutCanvasScale, false);
+      });
+      setStatus(Math.round(newWidth) + " × " + Math.round(newHeight));
     } else {
       var currentX = Number(pointer.element.dataset.uiLayoutX || 0);
       var currentY = Number(pointer.element.dataset.uiLayoutY || 0);
@@ -488,6 +622,7 @@
     if (!pointer || pointer.id !== event.pointerId) return;
     if (pointer.type === "move") refreshAttachment(pointer.element, true);
     commitElement(pointer.element);
+    (pointer.descendants || []).forEach(function (snapshot) { commitElement(snapshot.element); });
     var linked = linkedElement(pointer.element);
     if (linked) commitElement(linked);
     editorState.pointer = null;
@@ -514,7 +649,13 @@
 
   function exportLayouts() {
     visibleTargets().forEach(commitElement);
-    var blob = new Blob([JSON.stringify(editorState.layouts, null, 2)], { type: "application/json" });
+    var blob = new Blob([JSON.stringify({
+      layoutVersion: LAYOUT_VERSION,
+      editorImplementation: "maqueta2-complete-v1",
+      coordinateSystem: "absolute-canvas-ratios",
+      desktop: { __canvas: { width: 1536, height: 901 }, screens: editorState.layouts.desktop },
+      mobile: { __canvas: { width: 390, height: 844 }, screens: editorState.layouts.mobile }
+    }, null, 2)], { type: "application/json" });
     var link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "perrisushi-diseno-" + new Date().toISOString().slice(0, 10) + ".json";
@@ -546,11 +687,18 @@
     }
     setStatus("Publicando diseño...");
     try {
+      var payload = {
+        layoutVersion: LAYOUT_VERSION,
+        editorImplementation: "maqueta2-complete-v1",
+        coordinateSystem: "absolute-canvas-ratios",
+        desktop: { __canvas: { width: 1536, height: 901 }, screens: editorState.layouts.desktop },
+        mobile: { __canvas: { width: 390, height: 844 }, screens: editorState.layouts.mobile }
+      };
       var response = await callApi({
         action: "publicShopSaveUiLayouts",
         sessionToken: state.sessionToken,
         panelKey: state.requestsPanelKey,
-        layouts: editorState.layouts
+        layouts: payload
       });
       if (!response.data || !response.data.ok) {
         throw new Error(response.data && response.data.error ? response.data.error : "unknown_error");
@@ -570,6 +718,7 @@
     toolbar.innerHTML =
       "<button class=\"ui-layout-editor-toggle\" type=\"button\" aria-label=\"Minimizar\">−</button>" +
       "<button id=\"uiLayoutEditToggle\" type=\"button\" aria-pressed=\"false\">Mover recuadros</button>" +
+      "<button id=\"uiLayoutPreviewButton\" type=\"button\">Vista móvil</button>" +
       "<button id=\"uiLayoutGuidesToggle\" type=\"button\" aria-pressed=\"true\">Ocultar marcos</button>" +
       "<button id=\"uiLayoutEqualButton\" type=\"button\">Igualar tamaño</button>" +
       "<button id=\"uiLayoutLockButton\" type=\"button\">Anclar</button>" +
@@ -591,6 +740,18 @@
     toolbar.querySelector("#uiLayoutEditToggle").addEventListener("click", function () {
       setEditing(!editorState.active);
     });
+    toolbar.querySelector("#uiLayoutPreviewButton").addEventListener("click", function (event) {
+      visibleTargets().forEach(commitElement);
+      editorState.previewMode = currentMode() === "desktop" ? "mobile" : "desktop";
+      event.currentTarget.textContent = editorState.previewMode === "mobile" ? "Vista PC" : "Vista móvil";
+      selectElement(null);
+      fitFixedCanvas();
+      requestAnimationFrame(function () {
+        markTargets();
+        applyCurrentLayout();
+        setStatus("Editando " + (currentMode() === "mobile" ? "móvil" : "PC") + " · " + currentScreen());
+      });
+    });
     toolbar.querySelector("#uiLayoutGuidesToggle").addEventListener("click", function (event) {
       editorState.guides = !editorState.guides;
       document.body.classList.toggle("ui-layout-guides", editorState.active && editorState.guides);
@@ -600,7 +761,7 @@
     toolbar.querySelector("#uiLayoutEqualButton").addEventListener("click", function () {
       if (!editorState.selected || !editorState.attached) return setStatus("Pega primero el elemento a otro");
       var rect = editorState.attached.getBoundingClientRect();
-      resizeElement(editorState.selected, rect.width, rect.height, false);
+      resizeElement(editorState.selected, rect.width / layoutCanvasScale, rect.height / layoutCanvasScale, false);
       commitElement(editorState.selected);
       setStatus("Tamaño igualado");
     });
@@ -610,17 +771,19 @@
       if (linked) {
         delete linked.dataset.uiLayoutLockedWith;
         delete editorState.selected.dataset.uiLayoutLockedWith;
-        event.currentTarget.textContent = "Anclar";
         commitElement(linked);
         commitElement(editorState.selected);
+        refreshPersistentLocks();
+        refreshLockButton();
         return setStatus("Elementos desanclados");
       }
       if (!editorState.attached) return setStatus("Pega primero el elemento a otro");
       editorState.selected.dataset.uiLayoutLockedWith = editorState.attached.dataset.uiLayout;
       editorState.attached.dataset.uiLayoutLockedWith = editorState.selected.dataset.uiLayout;
-      event.currentTarget.textContent = "Desanclar";
       commitElement(editorState.selected);
       commitElement(editorState.attached);
+      refreshPersistentLocks();
+      refreshLockButton();
       setStatus("Elementos anclados");
     });
     toolbar.querySelector("#uiLayoutHideButton").addEventListener("click", function () {
@@ -665,26 +828,41 @@
     toolbar.hidden = false;
     toolbar.classList.remove("is-collapsed");
     toolbar.querySelector(".ui-layout-editor-toggle").textContent = "−";
+    editorState.previewMode = mobileDevice ? "mobile" : "desktop";
+    var previewButton = toolbar.querySelector("#uiLayoutPreviewButton");
+    if (previewButton) previewButton.textContent = editorState.previewMode === "mobile" ? "Vista PC" : "Vista móvil";
     fitFixedCanvas();
     requestAnimationFrame(function () {
-      applyCurrentLayout();
+      scheduleLayoutApply();
       setEditing(true);
     });
   }
 
   function closeEditor() {
     setEditing(false);
+    editorState.previewMode = null;
+    fitFixedCanvas();
+    scheduleLayoutApply();
     var toolbar = document.getElementById("uiLayoutEditor");
     if (toolbar) toolbar.hidden = true;
   }
 
   async function loadPublished() {
     var remote = null;
+    var defaults = null;
+    try {
+      var defaultsResponse = await fetch("./ui-layout-defaults.json?v=20260907-1", { cache: "no-store" });
+      if (defaultsResponse.ok) defaults = await defaultsResponse.json();
+    } catch (error) {}
     try {
       var response = await callApi({ action: "publicShopGetUiLayouts" });
       if (response.data && response.data.ok) remote = response.data.layouts;
     } catch (error) {}
-    editorState.layouts = normalizePayload(remote);
+    editorState.layouts = normalizePayload(defaults);
+    var normalizedRemote = normalizePayload(remote);
+    if (remote && remote.editorImplementation === "maqueta2-complete-v1" && (Object.keys(normalizedRemote.desktop).length || Object.keys(normalizedRemote.mobile).length)) {
+      editorState.layouts = normalizedRemote;
+    }
     var desktopDraft = readDraft("desktop");
     var mobileDraft = readDraft("mobile");
     if (Object.keys(desktopDraft).length) editorState.layouts.desktop = desktopDraft;
@@ -709,7 +887,7 @@
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function () {
       fitFixedCanvas();
-      applyCurrentLayout();
+      scheduleLayoutApply();
     }, 120);
   });
 
@@ -717,20 +895,42 @@
     clearTimeout(observer.timer);
     observer.timer = setTimeout(markTargets, 60);
   });
-  observer.observe(document.getElementById("appView") || document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["hidden"]
-  });
+  function initializeEditor() {
+    var root = document.getElementById("appView") || document.body;
+    if (!root || typeof root.nodeType !== "number") return;
+    try {
+      observer.observe(root, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["hidden"]
+      });
+    } catch (error) {
+      console.warn("El observador del editor no pudo iniciarse; se usará actualización manual.", error);
+    }
+    fitFixedCanvas();
+    buildToolbar();
+    loadPublished();
+  }
 
-  fitFixedCanvas();
-  buildToolbar();
-  loadPublished();
   window.PerriUiEditor = {
     open: openEditor,
     close: closeEditor,
     refresh: markTargets,
-    apply: applyCurrentLayout
+    apply: scheduleLayoutApply,
+    screenChanged: function () {
+      selectElement(null);
+      markTargets();
+      scheduleLayoutApply();
+    },
+    inspect: function () {
+      return { mode: currentMode(), screen: currentScreen(), canvas: canvasRect(), layouts: editorState.layouts };
+    }
   };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeEditor, { once: true });
+  } else {
+    initializeEditor();
+  }
 })();

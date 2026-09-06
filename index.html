@@ -1091,6 +1091,17 @@
       z-index: 8;
       transition: transform 140ms ease, opacity 140ms ease;
     }
+    .menu-side-tools {
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 120px;
+      height: 220px;
+      z-index: 8;
+    }
+    .menu-side-tools .menu-chat-button,
+    .menu-side-tools .menu-requests-button {
+      left: 0;
+    }
     .menu-chat-button:hover {
       transform: translateY(-2px);
       opacity: 0.94;
@@ -6225,7 +6236,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260906-2">
+  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260907-14">
 </head>
 <body>
   <audio id="backgroundMusic" src="./musica-web.mp3" loop preload="auto"></audio>
@@ -6471,12 +6482,14 @@
                 <a id="openTwitchButton" class="menu-social-button" href="https://www.twitch.tv/perrisushi" target="_blank" rel="noopener noreferrer" aria-label="Twitch"><img src="./assets/boton-twitch-l.png?v=20260906-2" alt=""></a>
                 <a id="openYoutubeButton" class="menu-social-button" href="https://www.youtube.com/@perrisushi" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><img src="./assets/boton-youtube-l.png?v=20260906-2" alt=""></a>
               </div>
-              <button id="openChatButton" class="menu-chat-button" type="button" aria-label="Abrir chat">
-                <img src="./assets/logo-chat.png" alt="">
-              </button>
-              <button id="openRequestsPanelButton" class="menu-requests-button" type="button" aria-label="Abrir panel de solicitudes" hidden>
-                <span>Panel</span>
-              </button>
+              <div class="menu-side-tools">
+                <button id="openChatButton" class="menu-chat-button" type="button" aria-label="Abrir chat">
+                  <img src="./assets/logo-chat.png" alt="">
+                </button>
+                <button id="openRequestsPanelButton" class="menu-requests-button" type="button" aria-label="Abrir panel de solicitudes" hidden>
+                  <span>Panel</span>
+                </button>
+              </div>
               </div>
               <section id="dailyPassPanel" class="daily-pass-floating is-cloaked" hidden>
                 <header class="daily-pass-header">
@@ -9142,6 +9155,7 @@
       renderNotifications();
       renderDailyPassPanel();
       renderRequestsPanelAccessButton();
+      requestAnimationFrame(() => window.PerriUiEditor?.screenChanged?.());
     }
     function goToPreviousAppSection() {
       if (!currentAppSection || currentAppSection === "menu") return;
@@ -12050,6 +12064,6 @@
       }
     });
   </script>
-  <script src="./ui-layout-editor.js?v=20260906-2"></script>
+  <script src="./ui-layout-editor.js?v=20260907-14"></script>
 </body>
 </html>
