@@ -9,7 +9,7 @@
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
   const slotLabels = { helmet: "Casco", torso: "Torso", hands: "Manos", pants: "Pantalones", boots: "Botas", amulet: "Amuleto" };
   const statLabels = { hp: "HP", physicalAttack: "Ataque físico", spiritualAttack: "Ataque espiritual", physicalDefense: "Defensa física", spiritualDefense: "Defensa espiritual", dexterity: "Destreza", critical: "Crítico", karma: "Karma" };
-  const assetVersion = "20260903-7";
+  const assetVersion = "20260906-1";
   const posePath = (name) => `./assets/perrirpg/${name}.png?v=${assetVersion}`;
   const itemArtwork = {
     "sword-worn": "espada-desgastada.png",
@@ -27,12 +27,14 @@
     "shield-broken": "escudo-roto.png",
     "shield-oak": "escudo-roble.png",
     "shield-metal": "escudo-metal.png",
+    "sword-sacred": "espada-sagrada.png",
     "potion-weak": "pocion-chica.png",
     "potion-standard": "pocion-mediana.png",
     "potion-potent": "pocion-grande.png",
     "potion-armor": "pocion-armadura.png",
     "potion-critical": "pocion-critico.png",
-    "potion-master": "pocion-maestria.png"
+    "potion-master": "pocion-maestria.png",
+    "potion-divine": "pocion-divina.png"
   };
   const familyIcons = {
     Espadas: "icono-espada.png",
@@ -144,6 +146,7 @@
       const hits = Number(stats.hits || 1);
       return `${hits > 1 ? `${hits} × ` : ""}${stats.damage || 0} daño ${stats.damageType === "spiritual" ? "espiritual" : "físico"}`;
     }
+    if (item.kind === "potion" && stats.healFull) return "Restaura toda la salud";
     if (item.kind === "potion" && stats.heal) return `+${stats.heal} HP`;
     if (item.kind === "armor") return formatArmorStats(stats);
     return item.effect || "Objeto consumible";
@@ -450,9 +453,11 @@
       message = `${item.name} causa ${total} de daño ${spiritual ? "espiritual" : "físico"}${criticals ? ` · ${criticals} crítico${criticals > 1 ? "s" : ""}` : ""}.`;
       await wait(180); setEnemyPose(enemyShield(combat.enemy) ? "shield-1" : "hurt-1"); await wait(150);
     } else if (item.kind === "potion") {
-      if (item.stats.heal) {
+      if (item.stats.healFull || item.stats.heal) {
         const before = combat.player.hp;
-        combat.player.hp = Math.min(combat.player.maxHp, combat.player.hp + Number(item.stats.heal));
+        combat.player.hp = item.stats.healFull
+          ? combat.player.maxHp
+          : Math.min(combat.player.maxHp, combat.player.hp + Number(item.stats.heal));
         message = `${item.name} recupera ${round(combat.player.hp - before)} HP.`;
       } else {
         const status = item.id === "potion-armor" ? { id: item.id, label: "+30 ambas defensas", strength: 30, turns: 3 } : item.id === "potion-critical" ? { id: item.id, label: "+15% Crítico", strength: 15, turns: 3 } : { id: item.id, label: "+20% Destreza", strength: 20, turns: 3 };
