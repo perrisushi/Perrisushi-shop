@@ -3579,8 +3579,8 @@
       color: #5b1326;
       background: transparent url("./assets/Cara-perricasilla.png") center / contain no-repeat;
       cursor: default;
-      animation: perricasillas-reveal .3s ease both;
     }
+    .perricasillas-cell.is-open.is-revealing { animation: perricasillas-reveal .3s ease both; }
     .perricasillas-cell.is-open::before { display: none; }
     .perricasillas-cell img { position: relative; z-index: 1; width: 43%; height: 43%; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(0,0,0,.25)); }
     .perricasillas-reward-card {
@@ -7206,6 +7206,7 @@
       duelTargetLoading: false,
       perriCasillasCells: [],
       perriCasillasLoadingIndex: -1,
+      perriCasillasRevealIndex: -1,
       perriCasillasLoaded: false,
       perriCasillasLoadError: false,
       perriCasillasPlaysUsed: 0,
@@ -7509,7 +7510,7 @@
       { key: "perriCofres", image: "./assets/perricofre1-cerrado.png", name: "Perricofres", effect: "Se abren directamente desde el inventario y entregan premios del Perricofre." },
       { key: "perriCofresMinijuego", image: "./assets/perricofres-minijuego-cerrado.png", name: "Perricofres de minijuego", effect: "Se consiguen al ganar duelos y se abren directamente desde el inventario." },
       { key: "perricita", image: "./assets/perricita.png", name: "Perricita", effect: "Mejora el porcentaje de exito al intentar mejorar equipo." },
-      { key: "monedas", image: "./assets/moneda.png", name: "Monedas", effect: "Se usa para tirar las Cartas." },
+      { key: "monedas", image: "./assets/moneda.png", name: "Monedas", effect: "Se usa para jugar a PerriCasillas." },
       { key: "duelo", image: "./assets/duelo.png", name: "Duelo", effect: "Se consume al lanzar un ataque en el minijuego de Ataque." },
       { key: "boletoSorteo2", image: "./assets/icono-boleto.png", name: "Boleto de Sorteo 2", effect: "Boleto acumulable para sorteos especiales. Maximo 3 por usuario." },
       { key: "miniSorteo", image: "./assets/icono-boleto.png", name: "MiniSorteo", effect: "Participacion obtenida en PerriCasillas." },
@@ -10153,6 +10154,7 @@
         button.setAttribute("aria-label", `Casilla ${index + 1}`);
         if (cell.opened) {
           button.classList.add("is-open");
+          button.classList.toggle("is-revealing", state.perriCasillasRevealIndex === index);
           button.disabled = true;
           if (cell.reward && cell.reward.image) {
             const image = document.createElement("img");
@@ -10237,6 +10239,13 @@
         }
 
         applyPerriCasillasGame(data.game);
+        state.perriCasillasRevealIndex = index;
+        window.setTimeout(() => {
+          if (state.perriCasillasRevealIndex === index) {
+            state.perriCasillasRevealIndex = -1;
+            renderPerriCasillas();
+          }
+        }, 350);
         updateInventory(data.inventory || currentInventory || {});
         if (data.profile) applyProfile(data.profile);
         perriCasillasResult.classList.remove("has-prize");
