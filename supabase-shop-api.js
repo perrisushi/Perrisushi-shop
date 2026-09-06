@@ -47,8 +47,30 @@ const INVENTORY_KEYS = [
   "botasSushi",
   "boletoSorteo2",
   "miniSorteo",
-  "pinzaReal"
+  "pinzaReal",
+  "aguaDivina",
+  "espadaSagrada",
+  "gemaExperiencia",
+  "incubadoraMejorada",
+  "pocionDivina",
+  "relojCronotiempo",
+  "sacoChatarra"
 ];
+
+const SPECIAL_ITEM_KEYS = new Set([
+  "aguaDivina",
+  "espadaSagrada",
+  "gemaExperiencia",
+  "incubadoraMejorada",
+  "pocionDivina",
+  "relojCronotiempo",
+  "sacoChatarra"
+]);
+
+const PERRIRPG_GLOBAL_ITEM_KEYS = {
+  "sword-sacred": "espadaSagrada",
+  "potion-divine": "pocionDivina"
+};
 
 const SHOP_ITEMS = {
   espada: { label: "Espada", price: 1500, currencyKey: "pc", currencyLabel: "PC" },
@@ -3557,6 +3579,11 @@ async function buildRpgState(nick) {
     getInventory(normalizedNick)
   ]);
 
+  const rpgInventory = Object.fromEntries(inventoryRows.map((row) => [String(row.item_id || ""), Math.max(0, toNumber(row.quantity))]));
+  Object.entries(PERRIRPG_GLOBAL_ITEM_KEYS).forEach(([itemId, inventoryKey]) => {
+    rpgInventory[itemId] = Math.max(0, toNumber(shopInventory[inventoryKey]));
+  });
+
   return {
     nick: normalizedNick,
     pg: toNumber(shopInventory.polvoGema),
@@ -3574,7 +3601,7 @@ async function buildRpgState(nick) {
       starter: Boolean(row.starter),
       purchasable: String(row.kind || "") === "armor" || PERRIRPG_DIRECT_SHOP_ITEM_IDS.has(String(row.item_id || ""))
     })),
-    inventory: Object.fromEntries(inventoryRows.map((row) => [String(row.item_id || ""), Math.max(0, toNumber(row.quantity))])),
+    inventory: rpgInventory,
     equipment: Object.fromEntries(equipmentRows.map((row) => [String(row.slot || ""), String(row.item_id || "")])),
     loadout: loadoutRows.map((row) => String(row.item_id || "")).filter(Boolean),
     combat: combatState ? {
@@ -4061,6 +4088,30 @@ async function publicShopRpgEquipArmor(sessionToken, slot, itemId) {
 async function publicShopRpgSetLoadout(sessionToken, itemId, enabled) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) return sessionResult;
+  const normalizedItemId = String(itemId || "").trim();
+  const globalInventoryKey = PERRIRPG_GLOBAL_ITEM_KEYS[normalizedItemId];
+  if (globalInventoryKey) {
+    return withNickLock(sessionResult.nick, async () => {
+      if (enabled) {
+        const inventory = await getInventory(sessionResult.nick);
+        if (toNumber(inventory[globalInventoryKey]) <= 0) {
+          return { ok: false, error: "item_not_owned" };
+        }
+        await upsertRow("shop_rpg_loadout", {
+          nick: sessionResult.nick,
+          item_id: normalizedItemId,
+          enabled: true,
+          updated_at: nowIso()
+        }, "nick,item_id", { returning: "minimal" });
+      } else {
+        await deleteRows("shop_rpg_loadout", {
+          nick: `eq.${sessionResult.nick}`,
+          item_id: `eq.${normalizedItemId}`
+        }, { returning: "minimal" });
+      }
+      return { ok: true, ...(await buildRpgState(sessionResult.nick)) };
+    });
+  }
   const result = await supabaseRequest("rpc/shop_rpg_set_loadout", {
     method: "POST",
     body: JSON.stringify({
@@ -4081,12 +4132,74 @@ async function publicShopRpgConsume(sessionToken, itemId) {
     filters: { item_id: `eq.${String(itemId || "").trim()}`, enabled: "eq.true" }
   });
   if (!catalogItem || catalogItem.kind === "armor") return { ok: false, error: "invalid_item" };
+  const globalInventoryKey = PERRIRPG_GLOBAL_ITEM_KEYS[String(catalogItem.item_id || "")];
+  if (globalInventoryKey) {
+    return withNickLock(sessionResult.nick, async () => {
+      const inventory = await getInventory(sessionResult.nick);
+      const currentQuantity = toNumber(inventory[globalInventoryKey]);
+      if (currentQuantity <= 0) return { ok: false, error: "item_not_owned" };
+      const savedInventory = await patchInventoryFields(sessionResult.nick, {
+        [globalInventoryKey]: currentQuantity - 1
+      });
+      await insertRow("shop_rpg_ledger", {
+        nick: sessionResult.nick,
+        action: "consume",
+        item_id: catalogItem.item_id,
+        quantity_delta: -1,
+        details: { source: "shop_inventories" }
+      }, { returning: "minimal" });
+      if (toNumber(savedInventory[globalInventoryKey]) <= 0) {
+        await deleteRows("shop_rpg_loadout", {
+          nick: `eq.${sessionResult.nick}`,
+          item_id: `eq.${catalogItem.item_id}`
+        }, { returning: "minimal" });
+      }
+      return {
+        ok: true,
+        consumption: {
+          itemId: catalogItem.item_id,
+          quantity: Math.max(0, toNumber(savedInventory[globalInventoryKey]))
+        }
+      };
+    });
+  }
   const result = await supabaseRequest("rpc/shop_rpg_consume_item", {
     method: "POST",
     body: JSON.stringify({ p_nick: sessionResult.nick, p_item_id: catalogItem.item_id, p_quantity: 1 })
   });
   if (!result?.ok) return result || { ok: false, error: "rpg_consume_failed" };
   return { ok: true, consumption: result };
+  });
+}
+
+async function publicShopConsumeSpecialItem(sessionToken, itemKey) {
+  const sessionResult = await requireSession(sessionToken);
+  if (!sessionResult.ok) return sessionResult;
+  const normalizedItemKey = String(itemKey || "").trim();
+  if (!SPECIAL_ITEM_KEYS.has(normalizedItemKey)) {
+    return { ok: false, error: "invalid_special_item" };
+  }
+
+  return withNickLock(sessionResult.nick, async () => {
+    const inventory = await getInventory(sessionResult.nick);
+    const currentQuantity = toNumber(inventory[normalizedItemKey]);
+    if (currentQuantity <= 0) {
+      return { ok: false, error: "item_not_owned", inventory };
+    }
+    const fields = {
+      [normalizedItemKey]: currentQuantity - 1
+    };
+    if (normalizedItemKey === "sacoChatarra") {
+      fields.chatarra = toNumber(inventory.chatarra) + 200;
+    }
+    const savedInventory = await patchInventoryFields(sessionResult.nick, fields);
+    await appendActivity(
+      sessionResult.nick,
+      "Objeto especial",
+      normalizedItemKey === "sacoChatarra" ? "Saco de chatarra vendido" : `${normalizedItemKey} usado`,
+      normalizedItemKey === "sacoChatarra" ? "+200 Chatarra" : "Consumo: 1"
+    );
+    return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory };
   });
 }
 
@@ -4156,7 +4269,10 @@ async function publicShopRpgSaveCombat(sessionToken, combat) {
     );
     const maximumHealing = consumedRows.reduce((total, entry) => {
       const item = catalogById[String(entry.item_id || "")];
-      return total + (String(item?.kind || "") === "potion" ? Math.max(0, Number(item?.stats?.heal || 0)) : 0);
+      if (String(item?.kind || "") !== "potion") return total;
+      return total + (item?.stats?.healFull
+        ? previousPlayerMaxHp
+        : Math.max(0, Number(item?.stats?.heal || 0)));
     }, 0);
     if (previousEnemyHp - row.enemy_hp > maximumDamage
       || row.player_hp > Math.min(row.player_max_hp, previousPlayerHp + maximumHealing + Math.ceil(maximumDamage * 0.1))) {
@@ -6216,6 +6332,8 @@ async function handleShopAction(payload) {
       return publicShopPerriPetState(payload.sessionToken);
     case "publicShopPerriPetSave":
       return publicShopPerriPetSave(payload.sessionToken, payload.snapshot);
+    case "publicShopConsumeSpecialItem":
+      return publicShopConsumeSpecialItem(payload.sessionToken, payload.itemKey);
     case "publicShopRpgPurchase":
       return publicShopRpgPurchase(payload.sessionToken, payload.itemId, payload.quantity);
     case "publicShopRpgEquipArmor":
