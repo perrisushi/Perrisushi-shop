@@ -865,8 +865,18 @@
     }
     var desktopDraft = readDraft("desktop");
     var mobileDraft = readDraft("mobile");
-    if (Object.keys(desktopDraft).length) editorState.layouts.desktop = desktopDraft;
-    if (Object.keys(mobileDraft).length) editorState.layouts.mobile = mobileDraft;
+    /* Los ajustes de Maqueta 2 son siempre la base. Un borrador solo sustituye
+       las pantallas que realmente contiene; nunca puede borrar la maqueta. */
+    Object.keys(desktopDraft).forEach(function (screenName) {
+      if (desktopDraft[screenName] && Object.keys(desktopDraft[screenName]).length) {
+        editorState.layouts.desktop[screenName] = desktopDraft[screenName];
+      }
+    });
+    Object.keys(mobileDraft).forEach(function (screenName) {
+      if (mobileDraft[screenName] && Object.keys(mobileDraft[screenName]).length) {
+        editorState.layouts.mobile[screenName] = mobileDraft[screenName];
+      }
+    });
     editorState.loaded = true;
     markTargets();
   }

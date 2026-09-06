@@ -283,6 +283,24 @@ body.ui-layout-editing [data-ui-layout] {
   container-type: size;
 }
 
+/* La maqueta usa un único lienzo libre. La estructura antigua no puede recortar
+   los elementos colocados con las coordenadas definitivas de Maqueta 2. */
+body.perri-fixed-canvas .menu-panel,
+body.perri-fixed-canvas .menu-main-layout,
+body.perri-fixed-canvas .menu-frame,
+body.perri-fixed-canvas .menu-inner-area,
+body.perri-fixed-canvas .menu-frame-content,
+body.perri-fixed-canvas .menu-actions,
+body.perri-fixed-canvas .menu-socials,
+body.perri-fixed-canvas .menu-side-tools {
+  overflow: visible !important;
+}
+
+#uiLayoutResetButton,
+#uiLayoutPublishButton {
+  display: none !important;
+}
+
 [data-ui-layout].ui-layout-sized {
   min-width: 0 !important;
   min-height: 0 !important;
