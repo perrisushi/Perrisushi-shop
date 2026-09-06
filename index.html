@@ -46,7 +46,7 @@
       display: grid;
       place-items: center;
     }
-    @media (min-width: 721px) {
+    @media (min-width: 721px), (pointer: fine) {
       html,
       body {
         width: 100vw;
@@ -4323,7 +4323,7 @@
       color: var(--muted);
       font-size: 0.98rem;
     }
-    @media (max-width: 1180px) {
+    @media (max-width: 1180px) and (pointer: coarse) {
       body { overflow: auto; }
       .shop-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
       .equipment-layout { grid-template-columns: 1fr; }
@@ -4350,7 +4350,7 @@
       }
       .gear-tile[data-gear] { grid-area: auto; }
     }
-      @media (max-width: 720px) {
+      @media (max-width: 720px) and (pointer: coarse) {
       body {
         height: 100vh;
         height: 100dvh;
@@ -5944,7 +5944,7 @@
         width: 100%;
       }
     }
-    @media (min-width: 721px) {
+    @media (min-width: 721px), (pointer: fine) {
       .shell {
         width: 100vw;
         height: 100vh;
@@ -6141,7 +6141,7 @@
       .menu-social-button {
         width: min(230px, 22vw, 22dvh);
       }
-      @media (min-width: 721px) {
+      @media (min-width: 721px), (pointer: fine) {
         #shopView .shop-panel {
           padding-top: 0;
         }
@@ -6173,7 +6173,7 @@
         margin-top: 0;
       }
     }
-    @media (max-width: 620px) {
+    @media (max-width: 620px) and (pointer: coarse) {
       .perricasillas-view { padding-top: 48px; }
       .perricasillas-view > .section-topbar { top: 2px; left: 2px; }
       .perricasillas-shell { width: 100%; padding: 0 2px 4px; }
@@ -6190,7 +6190,7 @@
       .perricasillas-reward-card { padding: 26px 18px 22px; }
       .perricasillas-result { min-height: 17px; font-size: .62rem; }
     }
-    @media (max-height: 620px) {
+    @media (max-height: 620px) and (pointer: coarse) {
       .perricasillas-game { padding: 7px; gap: 3px; border-radius: 14px; }
       .perricasillas-title-logo { max-height: 32px; }
       .perricasillas-new-game { min-height: 24px; font-size: .55rem; }
@@ -6225,7 +6225,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260906-1">
+  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260906-2">
 </head>
 <body>
   <audio id="backgroundMusic" src="./musica-web.mp3" loop preload="auto"></audio>
@@ -12050,6 +12050,6 @@
       }
     });
   </script>
-  <script src="./ui-layout-editor.js?v=20260906-1"></script>
+  <script src="./ui-layout-editor.js?v=20260906-2"></script>
 </body>
 </html>

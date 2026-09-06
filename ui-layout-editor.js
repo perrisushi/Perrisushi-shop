@@ -13,8 +13,32 @@
     loaded: false
   };
 
+  var layoutCanvasScale = 1;
+  var mobileDevice = Boolean(
+    navigator.userAgentData && navigator.userAgentData.mobile
+  ) || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || "") || (
+    window.matchMedia("(pointer: coarse)").matches &&
+    Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 900
+  );
+
+  function fitFixedCanvas() {
+    var canvas = mobileDevice
+      ? { width: 390, height: 844 }
+      : { width: 1536, height: 864 };
+    layoutCanvasScale = Math.min(
+      window.innerWidth / canvas.width,
+      window.innerHeight / canvas.height
+    );
+    if (!Number.isFinite(layoutCanvasScale) || layoutCanvasScale <= 0) layoutCanvasScale = 1;
+    document.body.classList.add("perri-fixed-canvas");
+    document.body.classList.toggle("perri-mobile-layout", mobileDevice);
+    document.body.classList.toggle("perri-desktop-layout", !mobileDevice);
+    document.body.style.setProperty("--perri-canvas-width", canvas.width + "px");
+    document.body.style.setProperty("--perri-canvas-height", canvas.height + "px");
+    document.body.style.setProperty("--perri-canvas-scale", String(layoutCanvasScale));
+  }
+
   var targetDefinitions = [
-    ["#appView", "app", "Aplicación"],
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
@@ -66,7 +90,7 @@
   ];
 
   function currentMode() {
-    return window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
+    return mobileDevice ? "mobile" : "desktop";
   }
 
   function currentScreen() {
@@ -80,7 +104,18 @@
 
   function canvasRect() {
     var canvas = document.getElementById("appView");
-    return canvas ? canvas.getBoundingClientRect() : document.body.getBoundingClientRect();
+    if (!canvas) return { left: 0, top: 0, width: 1, height: 1, right: 1, bottom: 1 };
+    var rect = canvas.getBoundingClientRect();
+    var width = Math.max(1, canvas.clientWidth);
+    var height = Math.max(1, canvas.clientHeight);
+    return {
+      left: rect.left,
+      top: rect.top,
+      width: width,
+      height: height,
+      right: rect.left + width * layoutCanvasScale,
+      bottom: rect.top + height * layoutCanvasScale
+    };
   }
 
   function allTargets() {
@@ -262,8 +297,8 @@
     return {
       xRatio: canvas.width ? Number(element.dataset.uiLayoutX || 0) / canvas.width : 0,
       yRatio: canvas.height ? Number(element.dataset.uiLayoutY || 0) / canvas.height : 0,
-      widthRatio: canvas.width ? rect.width / canvas.width : 0,
-      heightRatio: canvas.height ? rect.height / canvas.height : 0,
+      widthRatio: canvas.width ? rect.width / layoutCanvasScale / canvas.width : 0,
+      heightRatio: canvas.height ? rect.height / layoutCanvasScale / canvas.height : 0,
       hidden: element.dataset.uiLayoutHidden === "true",
       lockedWith: element.dataset.uiLayoutLockedWith || null
     };
@@ -346,7 +381,7 @@
     if (element) element.classList.remove("ui-layout-attached");
     editorState.attached = null;
     if (!element) return;
-    var attachment = findAttachment(element, 12);
+    var attachment = findAttachment(element, 12 * layoutCanvasScale);
     if (!attachment) return;
     var target = attachment.candidate;
     if (snap) {
@@ -355,17 +390,17 @@
       var x = Number(element.dataset.uiLayoutX || 0);
       var y = Number(element.dataset.uiLayoutY || 0);
       if (attachment.side === "left") {
-        x += other.right - rect.left;
-        y += other.top - rect.top;
+        x += (other.right - rect.left) / layoutCanvasScale;
+        y += (other.top - rect.top) / layoutCanvasScale;
       } else if (attachment.side === "right") {
-        x += other.left - rect.right;
-        y += other.top - rect.top;
+        x += (other.left - rect.right) / layoutCanvasScale;
+        y += (other.top - rect.top) / layoutCanvasScale;
       } else if (attachment.side === "top") {
-        y += other.bottom - rect.top;
-        x += other.left - rect.left;
+        y += (other.bottom - rect.top) / layoutCanvasScale;
+        x += (other.left - rect.left) / layoutCanvasScale;
       } else {
-        y += other.top - rect.bottom;
-        x += other.left - rect.left;
+        y += (other.top - rect.bottom) / layoutCanvasScale;
+        x += (other.left - rect.left) / layoutCanvasScale;
       }
       element.dataset.uiLayoutX = String(x);
       element.dataset.uiLayoutY = String(y);
@@ -426,8 +461,8 @@
       startY: event.clientY,
       originX: Number(element.dataset.uiLayoutX || 0),
       originY: Number(element.dataset.uiLayoutY || 0),
-      width: rect.width,
-      height: rect.height
+      width: rect.width / layoutCanvasScale,
+      height: rect.height / layoutCanvasScale
     };
     if (element.setPointerCapture) element.setPointerCapture(event.pointerId);
   }
@@ -435,8 +470,8 @@
   function pointerMove(event) {
     var pointer = editorState.pointer;
     if (!pointer || pointer.id !== event.pointerId) return;
-    var dx = event.clientX - pointer.startX;
-    var dy = event.clientY - pointer.startY;
+    var dx = (event.clientX - pointer.startX) / layoutCanvasScale;
+    var dy = (event.clientY - pointer.startY) / layoutCanvasScale;
     if (pointer.type === "resize") {
       resizeElement(pointer.element, pointer.width + dx, pointer.height + dy, true);
       setStatus(Math.round(pointer.width + dx) + " × " + Math.round(pointer.height + dy));
@@ -621,10 +656,20 @@
 
   function openEditor() {
     buildToolbar();
-    document.getElementById("uiLayoutEditor").hidden = false;
     var panel = document.getElementById("requestsPanelModal");
-    if (panel) panel.hidden = true;
-    setEditing(true);
+    if (panel) {
+      panel.hidden = true;
+      panel.setAttribute("aria-hidden", "true");
+    }
+    var toolbar = document.getElementById("uiLayoutEditor");
+    toolbar.hidden = false;
+    toolbar.classList.remove("is-collapsed");
+    toolbar.querySelector(".ui-layout-editor-toggle").textContent = "−";
+    fitFixedCanvas();
+    requestAnimationFrame(function () {
+      applyCurrentLayout();
+      setEditing(true);
+    });
   }
 
   function closeEditor() {
@@ -662,7 +707,10 @@
   var resizeTimer = 0;
   window.addEventListener("resize", function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(applyCurrentLayout, 120);
+    resizeTimer = setTimeout(function () {
+      fitFixedCanvas();
+      applyCurrentLayout();
+    }, 120);
   });
 
   var observer = new MutationObserver(function () {
@@ -676,6 +724,7 @@
     attributeFilter: ["hidden"]
   });
 
+  fitFixedCanvas();
   buildToolbar();
   loadPublished();
   window.PerriUiEditor = {

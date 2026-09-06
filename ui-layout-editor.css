@@ -66,7 +66,7 @@ body {
   flex: 0 0 auto;
 }
 
-@media (min-width: 721px) {
+@media (min-width: 721px), (pointer: fine) {
   .inventory-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: clamp(10px, 1vw, 18px) !important;
@@ -95,7 +95,7 @@ body {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px) and (pointer: coarse) {
   .panel {
     background-image:
       linear-gradient(rgba(18, 8, 3, .12), rgba(18, 8, 3, .12)),
@@ -220,7 +220,7 @@ body {
 
 .ui-layout-editor {
   position: fixed;
-  z-index: 10000;
+  z-index: 2147483647;
   top: 10px;
   left: 50%;
   width: min(1120px, calc(100vw - 20px));
@@ -386,7 +386,7 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   filter: none !important;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px) and (pointer: coarse) {
   .ui-layout-editor {
     top: auto;
     bottom: 8px;
@@ -395,4 +395,48 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
     overflow-y: auto;
   }
   .ui-layout-editor-status { flex-basis: 100%; }
+}
+
+/* Lienzo lógico fijo: PC y móvil conservan su composición y solo escalan juntos. */
+body.perri-fixed-canvas {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.perri-fixed-canvas > .shell {
+  position: absolute !important;
+  z-index: 1;
+  top: 0;
+  left: 50%;
+  width: var(--perri-canvas-width) !important;
+  height: var(--perri-canvas-height) !important;
+  min-width: var(--perri-canvas-width) !important;
+  min-height: var(--perri-canvas-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  transform: translateX(-50%) scale(var(--perri-canvas-scale));
+  transform-origin: top center;
+  overflow: hidden;
+}
+
+body.perri-fixed-canvas > .shell > .panel {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+}
+
+/* La barra del editor vive fuera del lienzo escalado y nunca queda recortada. */
+body.ui-layout-editing > .shell {
+  overflow: visible;
 }
