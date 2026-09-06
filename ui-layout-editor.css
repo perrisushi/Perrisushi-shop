@@ -1,0 +1,398 @@
+/* Diseno unificado de la web y editor privado de composicion. */
+body {
+  background: #100d0b;
+}
+
+.panel {
+  background-image:
+    linear-gradient(rgba(18, 8, 3, .16), rgba(18, 8, 3, .16)),
+    url("./assets/fondo-menu-web-pc.png") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+.menu-frame {
+  width: min(1120px, 84vw, 88dvh * 1.3333) !important;
+  aspect-ratio: 4 / 3 !important;
+  background-image: url("./assets/marco-recuadro-pc.png") !important;
+  background-size: 100% 100% !important;
+}
+
+.menu-inner-area {
+  inset: 18% 10% 12% !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.menu-frame-content {
+  padding-top: clamp(44px, 6vh, 84px) !important;
+}
+
+.menu-actions {
+  width: min(760px, 82%) !important;
+  max-width: none !important;
+  column-gap: clamp(32px, 5vw, 72px) !important;
+  row-gap: clamp(14px, 2.2vh, 30px) !important;
+}
+
+.menu-button img,
+.menu-social-button img,
+.nav-back img,
+.desktop-stack-back-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.inventory-card,
+.shop-item-cell {
+  container-type: size;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.inventory-card > *,
+.shop-item-cell > *,
+.users-room-panel > *,
+.web-chat-view > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.inventory-card .inventory-badge,
+.shop-item-cell .item-badge {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 721px) {
+  .inventory-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: clamp(10px, 1vw, 18px) !important;
+  }
+
+  .inventory-card {
+    min-height: clamp(176px, 22vh, 236px) !important;
+    padding: clamp(12px, 1.2vw, 18px) !important;
+    gap: clamp(5px, .65vh, 9px) !important;
+  }
+
+  .inventory-card h2 { font-size: clamp(.78rem, 1vw, 1.08rem) !important; }
+  .inventory-card .inventory-copy { font-size: clamp(.65rem, .75vw, .85rem) !important; }
+  .inventory-card .inventory-badge { width: clamp(48px, 4vw, 66px) !important; height: clamp(48px, 4vw, 66px) !important; }
+
+  #equipmentPanel .shop-grid,
+  #sorteosPanel .shop-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch;
+  }
+
+  #equipmentPanel .shop-item-cell,
+  #sorteosPanel .shop-item-cell {
+    min-height: clamp(220px, 29vh, 310px) !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .panel {
+    background-image:
+      linear-gradient(rgba(18, 8, 3, .12), rgba(18, 8, 3, .12)),
+      url("./assets/fondo-menu-web-movil.png") !important;
+  }
+
+  .menu-frame {
+    width: min(94vw, 70dvh) !important;
+    aspect-ratio: 1016 / 1448 !important;
+    background-image: url("./assets/marco-recuadro-movil.png") !important;
+  }
+
+  .menu-inner-area {
+    inset: 17% 10% 10% !important;
+  }
+
+  .menu-frame-content {
+    padding-top: clamp(30px, 5.4vh, 70px) !important;
+  }
+
+  .menu-actions {
+    width: 90% !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: 8% !important;
+    row-gap: clamp(12px, 2vh, 26px) !important;
+  }
+
+  .menu-socials {
+    width: min(76vw, 360px) !important;
+    gap: 18px !important;
+  }
+
+  #inventoryView .resource-group,
+  #shopView .resource-group {
+    width: min(250px, 70vw) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #inventoryView .dust-chip,
+  #inventoryView .pc-chip,
+  #shopView .dust-chip,
+  #shopView .pc-chip {
+    min-height: 36px !important;
+    font-size: .72rem !important;
+  }
+
+  .inventory-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .inventory-card {
+    min-height: 162px !important;
+    padding: 10px !important;
+    gap: 5px !important;
+  }
+
+  .inventory-card.no-action {
+    align-content: center !important;
+  }
+
+  .inventory-card h2 { font-size: .76rem !important; }
+  .inventory-card .inventory-count { font-size: .96rem !important; }
+  .inventory-card .inventory-copy { font-size: .6rem !important; line-height: 1.18 !important; }
+  .inventory-card .inventory-badge { width: 50px !important; height: 50px !important; }
+  .inventory-card .inventory-badge img { width: 38px !important; height: 38px !important; }
+
+  #equipmentPanel .shop-grid,
+  #sorteosPanel .shop-grid {
+    width: min(100%, 318px) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  #equipmentPanel .shop-item-cell,
+  #sorteosPanel .shop-item-cell {
+    width: auto !important;
+    height: 174px !important;
+    min-height: 0 !important;
+    padding: 8px !important;
+    gap: 5px !important;
+  }
+
+  #equipmentPanel .shop-item-panel,
+  #sorteosPanel .shop-item-panel {
+    gap: 4px !important;
+  }
+
+  #equipmentPanel .item-badge,
+  #sorteosPanel .item-badge {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  #equipmentPanel .item-name,
+  #sorteosPanel .item-name { min-height: 0 !important; font-size: .68rem !important; }
+  #equipmentPanel .item-effect,
+  #sorteosPanel .item-effect { min-height: 0 !important; font-size: .54rem !important; }
+  #equipmentPanel .owned,
+  #sorteosPanel .owned { min-height: 0 !important; font-size: .53rem !important; }
+  #equipmentPanel .buy-button,
+  #sorteosPanel .buy-button { min-height: 27px !important; padding: 4px !important; }
+
+  .users-room-table { font-size: clamp(.68rem, 2.8vw, .86rem) !important; }
+  .users-room-table thead th,
+  .users-room-table tbody td { padding: 7px 5px !important; }
+  .users-room-logo { width: 27px !important; height: 27px !important; }
+
+  #chatView .web-chat-header h1 { font-size: 1.15rem !important; }
+  #chatView .web-chat-kicker { font-size: .58rem !important; }
+  #chatView .web-chat-status { font-size: .68rem !important; padding: 6px 8px !important; }
+  #chatView .web-chat-message { grid-template-columns: 32px minmax(0, 1fr) !important; padding: 8px !important; }
+  #chatView .web-chat-logo { width: 30px !important; height: 30px !important; }
+  #chatView .web-chat-nick { font-size: .78rem !important; }
+  #chatView .web-chat-time { font-size: .58rem !important; }
+  #chatView .web-chat-text { font-size: .72rem !important; line-height: 1.25 !important; }
+  #chatView .web-chat-composer textarea { min-height: 88px !important; font-size: .78rem !important; }
+}
+
+/* El editor nunca altera visualmente la pagina mientras esta cerrado. */
+.ui-layout-editor[hidden] { display: none !important; }
+
+.ui-layout-editor {
+  position: fixed;
+  z-index: 10000;
+  top: 10px;
+  left: 50%;
+  width: min(1120px, calc(100vw - 20px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid #d5a542;
+  border-radius: 12px;
+  background: rgba(24, 12, 8, .96);
+  box-shadow: 0 10px 34px #000c;
+  transform: translateX(-50%);
+}
+
+.ui-layout-editor.is-collapsed {
+  left: auto;
+  right: 8px;
+  width: auto;
+  transform: none;
+}
+
+.ui-layout-editor.is-collapsed > :not(.ui-layout-editor-toggle) { display: none !important; }
+
+.ui-layout-editor button,
+.requests-layout-launch {
+  min-height: 34px;
+  border: 1px solid #9a682f;
+  border-radius: 7px;
+  padding: 7px 11px;
+  background: linear-gradient(#733519, #421a0c);
+  color: #ffe3a0;
+  font: 800 12px/1.1 Georgia, serif;
+  cursor: pointer;
+}
+
+.ui-layout-editor button[aria-pressed="true"] {
+  border-color: #75e79d;
+  background: linear-gradient(#28683e, #153c25);
+  box-shadow: 0 0 12px rgba(78, 238, 132, .35);
+}
+
+.ui-layout-editor-status {
+  min-width: 170px;
+  max-width: 280px;
+  color: #ead2a2;
+  font: 700 12px/1.2 Georgia, serif;
+  text-align: center;
+}
+
+body.ui-layout-editing [data-ui-layout] {
+  position: relative;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  cursor: move !important;
+  touch-action: none !important;
+  container-type: size;
+}
+
+[data-ui-layout].ui-layout-sized {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  container-type: size;
+  flex: none;
+}
+
+[data-ui-layout].ui-layout-sized > *:not(.ui-layout-resize-handle) {
+  min-width: 0;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+[data-ui-layout].ui-layout-sized > img,
+[data-ui-layout].ui-layout-sized > a > img,
+[data-ui-layout].ui-layout-sized > button > img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: fill !important;
+}
+
+[data-ui-layout].ui-layout-sized h1 { font-size: clamp(7px, 11cqmin, 3rem) !important; }
+[data-ui-layout].ui-layout-sized h2 { font-size: clamp(6px, 9cqmin, 1.6rem) !important; }
+[data-ui-layout].ui-layout-sized h3 { font-size: clamp(5px, 8cqmin, 1.25rem) !important; }
+[data-ui-layout].ui-layout-sized p,
+[data-ui-layout].ui-layout-sized span:not(.ui-layout-resize-handle),
+[data-ui-layout].ui-layout-sized strong,
+[data-ui-layout].ui-layout-sized td,
+[data-ui-layout].ui-layout-sized th {
+  max-width: 100%;
+  font-size: clamp(4px, 6cqmin, 1rem) !important;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+body.ui-layout-editing [data-ui-layout]::before {
+  content: attr(data-ui-layout-label);
+  position: absolute;
+  z-index: 9997;
+  top: 2px;
+  left: 2px;
+  max-width: calc(100% - 4px);
+  padding: 3px 6px;
+  border-radius: 5px;
+  overflow: hidden;
+  color: #10232c;
+  background: rgba(92, 225, 255, .95);
+  font: 800 11px/1.1 system-ui, sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+body.ui-layout-editing.ui-layout-guides [data-ui-layout] {
+  outline: 2px solid rgba(255, 210, 70, .92) !important;
+  outline-offset: -2px !important;
+}
+
+body.ui-layout-editing [data-ui-layout].ui-layout-selected {
+  outline: 4px solid #59ed87 !important;
+  outline-offset: 1px !important;
+}
+
+body.ui-layout-editing [data-ui-layout].ui-layout-attached {
+  outline-color: #45bfff !important;
+  box-shadow: 0 0 0 3px rgba(69, 191, 255, .34) !important;
+}
+
+.ui-layout-resize-handle {
+  position: absolute;
+  z-index: 9999;
+  right: -8px;
+  bottom: -8px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #102a1a;
+  border-radius: 6px;
+  background: #59ed87;
+  box-shadow: 0 3px 10px #000b;
+  cursor: nwse-resize !important;
+  touch-action: none;
+}
+
+body.ui-layout-editing [data-ui-layout] img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+body.ui-layout-editing .menu-button:hover,
+body.ui-layout-editing .menu-social-button:hover,
+body.ui-layout-editing .notification-bubble:hover,
+body.ui-layout-editing .minigames-entry:hover,
+body.ui-layout-editing .desktop-stack-back-button:hover {
+  transform: none !important;
+  filter: none !important;
+}
+
+@media (max-width: 720px) {
+  .ui-layout-editor {
+    top: auto;
+    bottom: 8px;
+    width: calc(100vw - 16px);
+    max-height: 42dvh;
+    overflow-y: auto;
+  }
+  .ui-layout-editor-status { flex-basis: 100%; }
+}

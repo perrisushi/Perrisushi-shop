@@ -6225,6 +6225,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260906-1">
 </head>
 <body>
   <audio id="backgroundMusic" src="./musica-web.mp3" loop preload="auto"></audio>
@@ -6428,6 +6429,7 @@
                 </div>
               </div>
               <div id="requestsPanelContent" hidden>
+                <button id="openUiLayoutEditorButton" class="buy-button requests-layout-launch" type="button" hidden>Editar interfaz</button>
                 <div class="requests-panel-toolbar">
                   <label class="nick-field" for="requestsPanelStatusFilter">
                     <span class="field-label">Filtro</span>
@@ -7403,6 +7405,7 @@
     const requestsPanelLockButton = document.getElementById("requestsPanelLockButton");
     const requestsPanelMessage = document.getElementById("requestsPanelMessage");
     const requestsPanelList = document.getElementById("requestsPanelList");
+    const openUiLayoutEditorButton = document.getElementById("openUiLayoutEditorButton");
     const loginCard = document.getElementById("loginCard");
     const loginBrandFrame = document.getElementById("loginBrandFrame");
     const duelHeroCount = document.getElementById("duelHeroCount");
@@ -9523,6 +9526,7 @@
       if (requestsPanelMessage) requestsPanelMessage.textContent = "";
       if (requestsPanelAuth) requestsPanelAuth.hidden = false;
       if (requestsPanelContent) requestsPanelContent.hidden = true;
+      if (openUiLayoutEditorButton) openUiLayoutEditorButton.hidden = true;
     }
     function closeRequestsPanelModal() {
       if (requestsPanelModal) {
@@ -9595,6 +9599,7 @@
           return;
         }
         state.accessRequests = Array.isArray(data.accessRequests) ? data.accessRequests : [];
+        if (openUiLayoutEditorButton) openUiLayoutEditorButton.hidden = false;
         requestsPanelMessage.textContent = "";
         renderRequestsPanelList(state.accessRequests);
       } catch (error) {
@@ -11572,6 +11577,10 @@
     requestsPanelUnlockButton.addEventListener("click", unlockRequestsPanel);
     requestsPanelRefreshButton.addEventListener("click", loadRequestsPanelList);
     requestsPanelStatusFilter.addEventListener("change", loadRequestsPanelList);
+    openUiLayoutEditorButton.addEventListener("click", () => {
+      if (!state.requestsPanelUnlocked || !state.requestsPanelKey || !isRequestsPanelOwner()) return;
+      window.PerriUiEditor?.open();
+    });
     requestsPanelKeyInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -12042,5 +12051,6 @@
       }
     });
   </script>
+  <script src="./ui-layout-editor.js?v=20260906-1"></script>
 </body>
 </html>

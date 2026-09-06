@@ -3333,6 +3333,74 @@ async function publicShopResolveAccessRequestPanel(sessionToken, panelKey, reque
   return adminResolveAccessRequest(requestId, decision, adminNote);
 }
 
+function normalizePublishedUiLayouts(value) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const normalized = {
+    desktop: source.desktop && typeof source.desktop === "object" && !Array.isArray(source.desktop) ? source.desktop : {},
+    mobile: source.mobile && typeof source.mobile === "object" && !Array.isArray(source.mobile) ? source.mobile : {}
+  };
+  const serialized = JSON.stringify(normalized);
+  if (serialized.length > 500000) {
+    return null;
+  }
+  return normalized;
+}
+
+async function publicShopGetUiLayouts() {
+  try {
+    const row = await fetchRow("shop_ui_layouts", {
+      select: "layouts,updated_at",
+      filters: {
+        layout_key: "eq.published"
+      }
+    });
+    return {
+      ok: true,
+      layouts: normalizePublishedUiLayouts(row?.layouts) || { desktop: {}, mobile: {} },
+      updatedAt: row?.updated_at || null
+    };
+  } catch (error) {
+    return {
+      ok: true,
+      layouts: { desktop: {}, mobile: {} },
+      updatedAt: null,
+      storageReady: false
+    };
+  }
+}
+
+async function publicShopSaveUiLayouts(sessionToken, panelKey, layouts) {
+  const authResult = await authorizeAccessRequestPanel(sessionToken, panelKey);
+  if (!authResult.ok) {
+    return authResult;
+  }
+  const normalizedLayouts = normalizePublishedUiLayouts(layouts);
+  if (!normalizedLayouts) {
+    return {
+      ok: false,
+      error: "ui_layout_too_large"
+    };
+  }
+  const updatedAt = nowIso();
+  try {
+    await upsertRow("shop_ui_layouts", {
+      layout_key: "published",
+      layouts: normalizedLayouts,
+      updated_at: updatedAt
+    }, "layout_key", { returning: "minimal" });
+  } catch (error) {
+    return {
+      ok: false,
+      error: "ui_layout_storage_not_ready"
+    };
+  }
+  return {
+    ok: true,
+    layouts: normalizedLayouts,
+    updatedAt
+  };
+}
+
 async function publicShopRedeemPerriChest(sessionToken, chestToken, redeemId) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) {
@@ -6558,6 +6626,10 @@ async function handleShopAction(payload) {
       return publicShopListAccessRequestsPanel(payload.sessionToken, payload.panelKey, payload.status, payload.limit);
     case "publicShopResolveAccessRequestPanel":
       return publicShopResolveAccessRequestPanel(payload.sessionToken, payload.panelKey, payload.requestId, payload.decision, payload.adminNote);
+    case "publicShopGetUiLayouts":
+      return publicShopGetUiLayouts();
+    case "publicShopSaveUiLayouts":
+      return publicShopSaveUiLayouts(payload.sessionToken, payload.panelKey, payload.layouts);
     case "publicShopGetPerriChest":
       return publicShopGetPerriChest(payload.sessionToken, payload.chestToken);
     case "publicShopRedeemPerriChest":
