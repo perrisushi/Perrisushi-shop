@@ -6555,7 +6555,7 @@
               <div class="perricasillas-stats">
                 <div class="perricasillas-stat">MONEDAS <strong id="perriCasillasCoins">0</strong></div>
                 <div class="perricasillas-stat">COSTE <strong>1 MONEDA</strong></div>
-                <div class="perricasillas-stat">ABIERTAS <strong id="perriCasillasOpened">0 / 22</strong></div>
+                <div class="perricasillas-stat">ABIERTAS <strong id="perriCasillasOpened">0 / 36</strong></div>
                 <div class="perricasillas-stat">DISPONIBLES <strong id="perriCasillasPlays">0</strong></div>
                 <div class="perricasillas-stat perricasillas-cooldown-stat">PRÓXIMA <strong id="perriCasillasCooldown">LISTA</strong></div>
               </div>
@@ -7148,7 +7148,7 @@
     const CHAT_REFRESH_MS = 5000;
     const PERRI_CHEST_QUERY_PARAM = "perricofre";
     const ACCOUNT_ACTIVATION_QUERY_PARAM = "activar";
-    const PERRI_CASILLAS_TOTAL = 22;
+    const PERRI_CASILLAS_TOTAL = 36;
     const PERRI_CASILLAS_COST = 1;
     const state = {
       nick: "",
@@ -7522,7 +7522,9 @@
       { key: "incubadoraMejorada", image: "./assets/objetos-especiales/incubadora-mejorada.png", name: "Incubadora mejorada", effect: "Hace eclosionar inmediatamente un huevo de PerriPet. Un solo uso." },
       { key: "pocionDivina", image: "./assets/objetos-especiales/pocion-divina.png", name: "Poción divina", effect: "Restaura toda la salud del jugador en PerriRPG. Un solo uso." },
       { key: "relojCronotiempo", image: "./assets/objetos-especiales/reloj-cronotiempo.png", name: "Reloj Cronotiempo", effect: "Regenera inmediatamente un grupo enemigo de PerriPet que esté en espera. Un solo uso." },
-      { key: "sacoChatarra", image: "./assets/objetos-especiales/saco-chatarra.png", name: "Saco de chatarra", effect: "Se vende al granjero de PerriPet por 200 de chatarra." },
+      { key: "bolsaGemas", image: "./assets/objetos-especiales/bolsa-gemas.png", name: "Bolsa de Gemas", effect: "Ábrela para conseguir 100, 200 o 300 Gemas." },
+      { key: "bolsaChatarra", image: "./assets/objetos-especiales/saco-chatarra.png", name: "Bolsa de Chatarra", effect: "Ábrela para conseguir 35, 70 o 120 de chatarra." },
+      { key: "cajitaArmas", image: "./assets/objetos-especiales/cajita-armas.png", name: "Cajita de Armas", effect: "Contiene 10 armas básicas de un mismo tipo para PerriRPG." },
     ];
     const gearItems = [
       { key: "shieldChain", name: "Escudo" },
@@ -8730,7 +8732,7 @@
         return { icon: "./assets/perricita.png", note: "Perricita" };
       }
       if (kind === "monedas") {
-        return { icon: "./assets/moneda.png", note: "Monedas para Cartas" };
+        return { icon: "./assets/moneda.png", note: "Monedas para PerriCasillas" };
       }
       if (kind === "pc") {
         return { icon: "", note: "PerriCoins para la tienda" };
@@ -8747,6 +8749,18 @@
       if (kind === "logo") {
         const logo = getUserLogoById(reward?.logoId || reward?.id || "");
         return { icon: logo?.src || "./assets/logos-usuario/logo-pelusa-1.png", note: "Nuevo Perrilogo" };
+      }
+      if (kind === "bolsaGemas") {
+        return { icon: reward?.image || "./assets/objetos-especiales/bolsa-gemas.png", note: "Bolsa de Gemas" };
+      }
+      if (kind === "bolsaChatarra" || kind === "chatarra") {
+        return { icon: reward?.image || "./assets/objetos-especiales/saco-chatarra.png", note: kind === "chatarra" ? "Chatarra" : "Bolsa de Chatarra" };
+      }
+      if (kind === "cajitaArmas" || kind === "rpgItem") {
+        return { icon: reward?.image || "./assets/objetos-especiales/cajita-armas.png", note: kind === "rpgItem" ? "Armas para PerriRPG" : "Cajita de Armas" };
+      }
+      if (reward?.image) {
+        return { icon: String(reward.image), note: String(reward.label || "Ítem especial") };
       }
       return { icon: "", note: "Premio especial" };
     }
@@ -9731,11 +9745,67 @@
           <p class="inventory-copy">${escapeHtml(item.effect)}</p>
           ${item.key === "perriCofres" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-perri-chest" ${Math.max(0, Number(currentInventory.perriCofres || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir Perricofre</button>` : ""}
           ${item.key === "perriCofresMinijuego" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-minigame-chest" ${Math.max(0, Number(currentInventory.perriCofresMinijuego || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir cofre</button>` : ""}
+          ${["bolsaGemas", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-reward-container" data-item-key="${escapeHtml(item.key)}" ${Math.max(0, Number(currentInventory[item.key] || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir</button>` : ""}
         </article>
       `).join("");
       renderDuelView();
     }
     function getInventoryChestConfig(chestType) {
+      const rewardContainerConfigs = {
+        bolsaGemas: {
+          inventoryKey: "bolsaGemas",
+          closedImage: "./assets/objetos-especiales/bolsa-gemas.png",
+          openImage: "./assets/objetos-especiales/bolsa-gemas.png",
+          closedAlt: "Bolsa de Gemas",
+          openAlt: "Bolsa de Gemas abierta",
+          emptyText: "No tienes Bolsas de Gemas en el inventario.",
+          openingText: "Abriendo Bolsa de Gemas...",
+          errorText: "No se pudo abrir la Bolsa de Gemas.",
+          successTitle: "Bolsa de Gemas abierta",
+          confirmTitle: "Abrir Bolsa de Gemas",
+          confirmMessage: "Vas a abrir 1 Bolsa de Gemas.",
+          successMessage: "Has conseguido:",
+          actionLabel: "Abrir",
+          summaryName: "una Bolsa de Gemas",
+          isRewardContainer: true
+        },
+        bolsaChatarra: {
+          inventoryKey: "bolsaChatarra",
+          closedImage: "./assets/objetos-especiales/saco-chatarra.png",
+          openImage: "./assets/objetos-especiales/saco-chatarra.png",
+          closedAlt: "Bolsa de Chatarra",
+          openAlt: "Bolsa de Chatarra abierta",
+          emptyText: "No tienes Bolsas de Chatarra en el inventario.",
+          openingText: "Abriendo Bolsa de Chatarra...",
+          errorText: "No se pudo abrir la Bolsa de Chatarra.",
+          successTitle: "Bolsa de Chatarra abierta",
+          confirmTitle: "Abrir Bolsa de Chatarra",
+          confirmMessage: "Vas a abrir 1 Bolsa de Chatarra.",
+          successMessage: "Has conseguido:",
+          actionLabel: "Abrir",
+          summaryName: "una Bolsa de Chatarra",
+          isRewardContainer: true
+        },
+        cajitaArmas: {
+          inventoryKey: "cajitaArmas",
+          closedImage: "./assets/objetos-especiales/cajita-armas.png",
+          openImage: "./assets/objetos-especiales/cajita-armas.png",
+          closedAlt: "Cajita de Armas",
+          openAlt: "Cajita de Armas abierta",
+          emptyText: "No tienes Cajitas de Armas en el inventario.",
+          openingText: "Abriendo Cajita de Armas...",
+          errorText: "No se pudo abrir la Cajita de Armas.",
+          successTitle: "Cajita de Armas abierta",
+          confirmTitle: "Abrir Cajita de Armas",
+          confirmMessage: "Vas a abrir 1 Cajita de Armas.",
+          successMessage: "Has conseguido:",
+          actionLabel: "Abrir",
+          summaryName: "una Cajita de Armas",
+          isRewardContainer: true
+        }
+      };
+      const rewardContainerConfig = rewardContainerConfigs[String(chestType || "").trim()];
+      if (rewardContainerConfig) return rewardContainerConfig;
       if (String(chestType || "").trim() === "perriCofresMinijuego") {
         return {
           inventoryKey: "perriCofresMinijuego",
@@ -10360,7 +10430,12 @@
       inventoryMessage.textContent = chestConfig.openingText;
       closeInventoryChestConfirm();
       try {
-        const { data } = await callApi({
+        const { data } = await callApi(chestConfig.isRewardContainer ? {
+          action: "publicShopOpenRewardContainer",
+          sessionToken: state.sessionToken,
+          itemKey: chestConfig.inventoryKey,
+          openId: newChestOpenId()
+        } : {
           action: "publicShopOpenInventoryChest",
           sessionToken: state.sessionToken,
           chestOpenId: newChestOpenId(),
@@ -10375,14 +10450,15 @@
           if (data?.inventory) {
             updateInventory(data.inventory);
           }
-          inventoryMessage.textContent = data?.error === "no_perri_chests" || data?.error === "no_minigame_chests"
+          inventoryMessage.textContent = data?.error === "no_perri_chests" || data?.error === "no_minigame_chests" || data?.error === "item_not_owned"
             ? chestConfig.emptyText
             : chestConfig.errorText;
           updateStatus("online");
           return;
         }
 
-        state.inventoryChestResult = data.rewardBundle || null;
+        const rewardBundle = data.rewardBundle || (data.reward ? { rewards: [data.reward] } : null);
+        state.inventoryChestResult = rewardBundle;
         if (data.profile) {
           applyProfile(data.profile);
         }
@@ -10391,7 +10467,7 @@
           applyNotifications(data.notifications || [], data.unreadNotificationCount || 0);
         }
         updateStatus("online");
-        inventoryMessage.textContent = `${nick} abre ${chestConfig.summaryName} y consigue ${formatPerriChestRewardSummary(data.rewardBundle || {})}.`;
+        inventoryMessage.textContent = `${nick} abre ${chestConfig.summaryName} y consigue ${formatPerriChestRewardSummary(rewardBundle || {})}.`;
         inventoryChestModalArt.src = chestConfig.openImage;
         inventoryChestModalArt.alt = chestConfig.openAlt;
         inventoryChestModalArt.classList.add("is-open");
@@ -10399,7 +10475,7 @@
         inventoryChestConfirmMessage.textContent = chestConfig.successMessage;
         inventoryChestConfirmButton.hidden = true;
         inventoryChestCancelButton.textContent = "Cerrar";
-        renderInventoryChestModalRewards(data.rewardBundle?.rewards || []);
+        renderInventoryChestModalRewards(rewardBundle?.rewards || []);
         inventoryChestConfirmModal.hidden = false;
       } catch (error) {
         updateStatus("offline");
@@ -11399,6 +11475,9 @@
       }
       if (button.dataset.inventoryAction === "open-minigame-chest") {
         openInventoryChestConfirm("perriCofresMinijuego");
+      }
+      if (button.dataset.inventoryAction === "open-reward-container") {
+        openInventoryChestConfirm(String(button.dataset.itemKey || ""));
       }
     });
     gearGrid.addEventListener("click", (event) => {

@@ -54,7 +54,9 @@ const INVENTORY_KEYS = [
   "incubadoraMejorada",
   "pocionDivina",
   "relojCronotiempo",
-  "sacoChatarra"
+  "bolsaGemas",
+  "bolsaChatarra",
+  "cajitaArmas"
 ];
 
 const SPECIAL_ITEM_KEYS = new Set([
@@ -63,9 +65,30 @@ const SPECIAL_ITEM_KEYS = new Set([
   "gemaExperiencia",
   "incubadoraMejorada",
   "pocionDivina",
-  "relojCronotiempo",
-  "sacoChatarra"
+  "relojCronotiempo"
 ]);
+
+const SPECIAL_REWARD_ITEMS = [
+  { key: "aguaDivina", label: "Agua divina", image: "./assets/objetos-especiales/agua-divina.png" },
+  { key: "espadaSagrada", label: "Espada sagrada", image: "./assets/objetos-especiales/espada-sagrada.png" },
+  { key: "gemaExperiencia", label: "Gema de experiencia", image: "./assets/objetos-especiales/gema-experiencia.png" },
+  { key: "incubadoraMejorada", label: "Incubadora mejorada", image: "./assets/objetos-especiales/incubadora-mejorada.png" },
+  { key: "pocionDivina", label: "Poción divina", image: "./assets/objetos-especiales/pocion-divina.png" },
+  { key: "relojCronotiempo", label: "Reloj Cronotiempo", image: "./assets/objetos-especiales/reloj-cronotiempo.png" }
+];
+
+const REWARD_CONTAINER_ITEMS = {
+  bolsaGemas: { label: "Bolsa de Gemas", image: "./assets/objetos-especiales/bolsa-gemas.png" },
+  bolsaChatarra: { label: "Bolsa de Chatarra", image: "./assets/objetos-especiales/saco-chatarra.png" },
+  cajitaArmas: { label: "Cajita de Armas", image: "./assets/objetos-especiales/cajita-armas.png" }
+};
+
+const WEAPON_BOX_REWARDS = [
+  { itemId: "sword-worn", label: "10 Espadas desgastadas" },
+  { itemId: "projectile-wood-arrow", label: "10 Flechas de madera" },
+  { itemId: "greatsword-rusted", label: "10 Mandobles oxidados" },
+  { itemId: "device-broken-wand", label: "10 Varitas quebradas" }
+];
 
 const PERRIRPG_GLOBAL_ITEM_KEYS = {
   "sword-sacred": "espadaSagrada",
@@ -191,7 +214,7 @@ const INVENTORY_CHEST_CONFIG = {
 };
 
 const PERRI_CASILLAS_COST = 1;
-const PERRI_CASILLAS_BOARD_VERSION = 4;
+const PERRI_CASILLAS_BOARD_VERSION = 5;
 const PERRI_CASILLAS_MAX_GAMES = 2;
 const PERRI_CASILLAS_WINDOW_MS = 60 * 60 * 1000;
 const PERRIPET_RPG_ITEM_IDS = {
@@ -274,14 +297,16 @@ const PERRIPET_ITEM_IDS = [
   "loot-gold-chest"
 ];
 const PERRI_CASILLAS_REWARDS = [
-  { count: 7, label: "+1 Moneda", kind: "monedas", amount: 1, image: "./assets/moneda.png", inventoryDelta: { monedas: 1 } },
-  { count: 1, label: "Boleto Extra", kind: "boletoSorteo2", amount: 1, image: "./assets/icono-boleto.png", inventoryDelta: { boletoSorteo2: 1 } },
-  { count: 4, label: "1 Perricofre", kind: "perriCofres", amount: 1, image: "./assets/perricofre1-cerrado.png", inventoryDelta: { perriCofres: 1 } },
-  { count: 3, label: "200 Gemas", kind: "polvoGema", amount: 200, image: "./assets/gemas-moneda.png", inventoryDelta: { polvoGema: 200 } },
-  { count: 2, label: "500 Gemas", kind: "polvoGema", amount: 500, image: "./assets/gemas-moneda.png", inventoryDelta: { polvoGema: 500 } },
-  { count: 1, label: "Logo Aleatorio", kind: "logoRandom", amount: 1, image: "./assets/marco-logo.png", inventoryDelta: {} },
+  { count: 1, label: "Boleto de sorteo", kind: "boletoSorteo2", amount: 1, image: "./assets/icono-boleto.png", inventoryDelta: { boletoSorteo2: 1 } },
+  { count: 6, label: "1 Perricofre de minijuego", kind: "perriCofresMinijuego", amount: 1, image: "./assets/perricofres-minijuego-cerrado.png", inventoryDelta: { perriCofresMinijuego: 1 } },
+  { count: 3, label: "1 Bolsa de Gemas", kind: "bolsaGemas", amount: 1, image: "./assets/objetos-especiales/bolsa-gemas.png", inventoryDelta: { bolsaGemas: 1 } },
+  { count: 5, label: "1 Bolsa de Chatarra", kind: "bolsaChatarra", amount: 1, image: "./assets/objetos-especiales/saco-chatarra.png", inventoryDelta: { bolsaChatarra: 1 } },
+  { count: 5, label: "Ítem especial", kind: "specialRandom", amount: 1, image: "", inventoryDelta: {} },
+  { count: 3, label: "1 Cajita de Armas", kind: "cajitaArmas", amount: 1, image: "./assets/objetos-especiales/cajita-armas.png", inventoryDelta: { cajitaArmas: 1 } },
+  { count: 6, label: "50 Gemas", kind: "polvoGema", amount: 50, image: "./assets/gemas-moneda.png", inventoryDelta: { polvoGema: 50 } },
+  { count: 3, label: "100 Gemas", kind: "polvoGema", amount: 100, image: "./assets/gemas-moneda.png", inventoryDelta: { polvoGema: 100 } },
   { count: 2, label: "1 Perricita", kind: "perricita", amount: 1, image: "./assets/perricita.png", inventoryDelta: { perricita: 1 } },
-  { count: 2, label: "MiniSorteo", kind: "miniSorteo", amount: 1, image: "./assets/icono-boleto.png", inventoryDelta: { miniSorteo: 1 } }
+  { count: 2, label: "2 Perricitas", kind: "perricita", amount: 2, image: "./assets/perricita.png", inventoryDelta: { perricita: 2 } }
 ];
 const PERRI_CASILLAS_TOTAL = PERRI_CASILLAS_REWARDS.reduce((total, reward) => total + reward.count, 0);
 
@@ -346,17 +371,8 @@ const CHAT_REACTION_KEYS = ["corazon", "khe", "like", "llorar", "nolike", "risa"
 const CHAT_PRESENCE_TTL_MS = 20000;
 const PERRI_CHEST_GUARANTEED_REWARDS = {
   monedas: [
-    { quantity: 1, weight: 55 },
-    { quantity: 2, weight: 30 },
-    { quantity: 3, weight: 15 }
-  ],
-  polvoGema: [
-    { quantity: 200, weight: 24 },
-    { quantity: 300, weight: 22 },
-    { quantity: 400, weight: 18 },
-    { quantity: 500, weight: 16 },
-    { quantity: 600, weight: 12 },
-    { quantity: 700, weight: 8 }
+    { quantity: 1, weight: 95 },
+    { quantity: 2, weight: 5 }
   ]
 };
 
@@ -2288,7 +2304,34 @@ function buildInventoryReward(kind, quantity) {
     };
   }
 
+  const containerItem = REWARD_CONTAINER_ITEMS[kind];
+  if (containerItem) {
+    return {
+      kind,
+      label: formatRewardLabel(normalizedQuantity, containerItem.label),
+      quantity: normalizedQuantity,
+      image: containerItem.image,
+      inventoryDelta: { [kind]: normalizedQuantity }
+    };
+  }
+
+  const specialItem = SPECIAL_REWARD_ITEMS.find((entry) => entry.key === kind);
+  if (specialItem) {
+    return {
+      kind,
+      label: formatRewardLabel(normalizedQuantity, specialItem.label),
+      quantity: normalizedQuantity,
+      image: specialItem.image,
+      inventoryDelta: { [kind]: normalizedQuantity }
+    };
+  }
+
   return null;
+}
+
+function buildRandomSpecialItemReward() {
+  const selectedItem = SPECIAL_REWARD_ITEMS[randomInt(0, SPECIAL_REWARD_ITEMS.length - 1)] || SPECIAL_REWARD_ITEMS[0];
+  return selectedItem ? buildInventoryReward(selectedItem.key, 1) : null;
 }
 
 function listUnknownLogos(profile, logoCatalog) {
@@ -2298,11 +2341,19 @@ function listUnknownLogos(profile, logoCatalog) {
 
 function buildPerriChestGuaranteedRewards() {
   const coinRoll = pickWeightedEntry(PERRI_CHEST_GUARANTEED_REWARDS.monedas);
-  const dustRoll = pickWeightedEntry(PERRI_CHEST_GUARANTEED_REWARDS.polvoGema);
+  const mainRoll = pickWeightedEntry([
+    { kind: "bolsaGemas", weight: 45 },
+    { kind: "bolsaChatarra", weight: 25 },
+    { kind: "cajitaArmas", weight: 10 },
+    { kind: "specialRandom", weight: 20 }
+  ]);
+  const mainReward = mainRoll?.kind === "specialRandom"
+    ? buildRandomSpecialItemReward()
+    : buildInventoryReward(mainRoll?.kind || "bolsaGemas", 1);
 
   return [
     buildInventoryReward("monedas", coinRoll?.quantity || 1),
-    buildInventoryReward("polvoGema", dustRoll?.quantity || 200)
+    mainReward
   ].filter(Boolean);
 }
 
@@ -2341,16 +2392,18 @@ function buildPerriChestRewards(profile, logoCatalog) {
 }
 
 function buildMinigameChestRewards() {
-  const dustReward = pickWeightedEntry([
-    { quantity: 250, weight: 40 },
-    { quantity: 500, weight: 30 },
-    { quantity: 750, weight: 25 },
-    { quantity: 1000, weight: 5 }
+  const mainRoll = pickWeightedEntry([
+    { kind: "bolsaGemas", weight: 60 },
+    { kind: "bolsaChatarra", weight: 30 },
+    { kind: "specialRandom", weight: 10 }
   ]);
+  const mainReward = mainRoll?.kind === "specialRandom"
+    ? buildRandomSpecialItemReward()
+    : buildInventoryReward(mainRoll?.kind || "bolsaGemas", 1);
   const rewards = [
-    buildInventoryReward("monedas", 1),
     buildInventoryReward("perricita", 1),
-    buildInventoryReward("polvoGema", dustReward?.quantity || 250)
+    buildInventoryReward("cajitaArmas", 1),
+    mainReward
   ].filter(Boolean);
 
   return {
@@ -4189,18 +4242,122 @@ async function publicShopConsumeSpecialItem(sessionToken, itemKey) {
     const fields = {
       [normalizedItemKey]: currentQuantity - 1
     };
-    if (normalizedItemKey === "sacoChatarra") {
-      fields.chatarra = toNumber(inventory.chatarra) + 200;
-    }
     const savedInventory = await patchInventoryFields(sessionResult.nick, fields);
     await appendActivity(
       sessionResult.nick,
       "Objeto especial",
-      normalizedItemKey === "sacoChatarra" ? "Saco de chatarra vendido" : `${normalizedItemKey} usado`,
-      normalizedItemKey === "sacoChatarra" ? "+200 Chatarra" : "Consumo: 1"
+      `${normalizedItemKey} usado`,
+      "Consumo: 1"
     );
     return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory };
   });
+}
+
+async function publicShopOpenRewardContainer(sessionToken, itemKey, openId) {
+  const sessionResult = await requireSession(sessionToken);
+  if (!sessionResult.ok) return sessionResult;
+  const normalizedItemKey = String(itemKey || "").trim();
+  if (!Object.prototype.hasOwnProperty.call(REWARD_CONTAINER_ITEMS, normalizedItemKey)) {
+    return { ok: false, error: "invalid_reward_container" };
+  }
+  const normalizedOpenId = String(openId || "").trim();
+  if (!normalizedOpenId) return { ok: false, error: "missing_container_open_id" };
+
+  return withNickLock(sessionResult.nick, async () => runIdempotentOperation(
+    normalizedOpenId,
+    "publicShopOpenRewardContainer",
+    sessionResult.nick,
+    async () => {
+      const inventory = await getInventory(sessionResult.nick);
+      const currentQuantity = toNumber(inventory[normalizedItemKey]);
+      if (currentQuantity <= 0) {
+        return { ok: false, error: "item_not_owned", inventory };
+      }
+
+      if (normalizedItemKey === "bolsaGemas") {
+        const roll = pickWeightedEntry([
+          { quantity: 100, weight: 60 },
+          { quantity: 200, weight: 30 },
+          { quantity: 300, weight: 10 }
+        ]);
+        const amount = toNumber(roll?.quantity || 100);
+        const savedInventory = await patchInventoryFields(sessionResult.nick, {
+          bolsaGemas: currentQuantity - 1,
+          polvoGema: toNumber(inventory.polvoGema) + amount
+        });
+        const reward = buildInventoryReward("polvoGema", amount);
+        await appendActivity(sessionResult.nick, "Bolsa de Gemas", reward.label, "Consumo: 1 bolsa");
+        return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory, reward };
+      }
+
+      if (normalizedItemKey === "bolsaChatarra") {
+        const roll = pickWeightedEntry([
+          { quantity: 35, weight: 60 },
+          { quantity: 70, weight: 30 },
+          { quantity: 120, weight: 10 }
+        ]);
+        const amount = toNumber(roll?.quantity || 35);
+        const savedInventory = await patchInventoryFields(sessionResult.nick, {
+          bolsaChatarra: currentQuantity - 1,
+          chatarra: toNumber(inventory.chatarra) + amount
+        });
+        const reward = {
+          kind: "chatarra",
+          label: `${amount} Chatarra`,
+          quantity: amount,
+          image: "./assets/objetos-especiales/saco-chatarra.png",
+          inventoryDelta: { chatarra: amount }
+        };
+        await appendActivity(sessionResult.nick, "Bolsa de Chatarra", reward.label, "Consumo: 1 bolsa");
+        return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory, reward };
+      }
+
+      const selectedWeapon = WEAPON_BOX_REWARDS[randomInt(0, WEAPON_BOX_REWARDS.length - 1)] || WEAPON_BOX_REWARDS[0];
+      const existingRow = await fetchRow("shop_rpg_inventory", {
+        filters: {
+          nick: `eq.${sessionResult.nick}`,
+          item_id: `eq.${selectedWeapon.itemId}`
+        }
+      });
+      const savedInventory = await patchInventoryFields(sessionResult.nick, {
+        cajitaArmas: currentQuantity - 1
+      });
+      try {
+        await upsertRow("shop_rpg_inventory", {
+          nick: sessionResult.nick,
+          item_id: selectedWeapon.itemId,
+          quantity: Math.min(999999999, toNumber(existingRow?.quantity) + 10),
+          updated_at: nowIso()
+        }, "nick,item_id", { returning: "minimal" });
+        await insertRow("shop_rpg_ledger", {
+          nick: sessionResult.nick,
+          action: "reward",
+          item_id: selectedWeapon.itemId,
+          quantity_delta: 10,
+          details: { source: "cajita_armas" }
+        }, { returning: "minimal" });
+      } catch (error) {
+        await upsertRow("shop_rpg_inventory", {
+          nick: sessionResult.nick,
+          item_id: selectedWeapon.itemId,
+          quantity: Math.max(0, toNumber(existingRow?.quantity)),
+          updated_at: nowIso()
+        }, "nick,item_id", { returning: "minimal" }).catch(() => null);
+        await patchInventoryFields(sessionResult.nick, { cajitaArmas: currentQuantity });
+        throw error;
+      }
+      const reward = {
+        kind: "rpgItem",
+        label: selectedWeapon.label,
+        quantity: 10,
+        itemId: selectedWeapon.itemId,
+        image: REWARD_CONTAINER_ITEMS.cajitaArmas.image,
+        inventoryDelta: {}
+      };
+      await appendActivity(sessionResult.nick, "Cajita de Armas", reward.label, "Consumo: 1 cajita");
+      return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory, reward };
+    }
+  ));
 }
 
 function boundedNumber(value, min, max, fallback) {
@@ -4657,17 +4814,37 @@ async function publicShopUpgradeEquipment(sessionToken, gearType, usePerricita) 
 }
 
 function createPerriCasillasBoard() {
+  const shuffledSpecialItems = SPECIAL_REWARD_ITEMS.slice();
+  for (let index = shuffledSpecialItems.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomInt(0, index);
+    [shuffledSpecialItems[index], shuffledSpecialItems[swapIndex]] = [shuffledSpecialItems[swapIndex], shuffledSpecialItems[index]];
+  }
+  const specialItemsForBoard = shuffledSpecialItems.slice(0, 5).map((item) => buildInventoryReward(item.key, 1));
+  let specialItemIndex = 0;
   const cells = PERRI_CASILLAS_REWARDS.flatMap((reward) => (
-    Array.from({ length: reward.count }, () => ({
-      opened: false,
-      reward: {
-        label: reward.label,
-        kind: reward.kind,
-        amount: reward.amount,
-        image: reward.image,
-        inventoryDelta: reward.inventoryDelta
-      }
-    }))
+    Array.from({ length: reward.count }, () => {
+      const selectedReward = reward.kind === "specialRandom"
+        ? specialItemsForBoard[specialItemIndex++] || buildRandomSpecialItemReward()
+        : null;
+      return {
+        opened: false,
+        reward: selectedReward
+          ? {
+              label: selectedReward.label,
+              kind: selectedReward.kind,
+              amount: selectedReward.quantity,
+              image: selectedReward.image,
+              inventoryDelta: selectedReward.inventoryDelta
+            }
+          : {
+              label: reward.label,
+              kind: reward.kind,
+              amount: reward.amount,
+              image: reward.image,
+              inventoryDelta: reward.inventoryDelta
+            }
+      };
+    })
   ));
   for (let index = cells.length - 1; index > 0; index -= 1) {
     const swapIndex = randomInt(0, index);
@@ -4788,24 +4965,15 @@ async function publicShopGetPerriCasillas(sessionToken) {
 async function publicShopResetPerriCasillas(sessionToken) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) return sessionResult;
-  return withNickLock(sessionResult.nick, async () => {
-    const currentGame = await getOrCreatePerriCasillasGame(sessionResult.nick);
-    const game = {
-      roundId: crypto.randomUUID(),
-      cells: createPerriCasillasBoard(),
-      playsInWindow: currentGame.playsInWindow,
-      windowStartedAt: currentGame.windowStartedAt
-    };
-    await savePerriCasillasGame(sessionResult.nick, game);
-    await appendActivity(sessionResult.nick, "PerriCasillas", "Nueva partida", `Tablero de ${PERRI_CASILLAS_TOTAL} casillas reiniciado`);
-    return {
-      ok: true,
-      nick: sessionResult.nick,
-      cost: PERRI_CASILLAS_COST,
-      game: publicPerriCasillasGame(game),
-      inventory: await getInventory(sessionResult.nick)
-    };
-  });
+  const game = await getOrCreatePerriCasillasGame(sessionResult.nick);
+  return {
+    ok: false,
+    error: "perri_casillas_round_locked",
+    nick: sessionResult.nick,
+    cost: PERRI_CASILLAS_COST,
+    game: publicPerriCasillasGame(game),
+    inventory: await getInventory(sessionResult.nick)
+  };
 }
 
 async function publicShopOpenPerriCasilla(sessionToken, openId, cellIndex) {
@@ -6334,6 +6502,8 @@ async function handleShopAction(payload) {
       return publicShopPerriPetSave(payload.sessionToken, payload.snapshot);
     case "publicShopConsumeSpecialItem":
       return publicShopConsumeSpecialItem(payload.sessionToken, payload.itemKey);
+    case "publicShopOpenRewardContainer":
+      return publicShopOpenRewardContainer(payload.sessionToken, payload.itemKey, payload.openId || payload.operationId);
     case "publicShopRpgPurchase":
       return publicShopRpgPurchase(payload.sessionToken, payload.itemId, payload.quantity);
     case "publicShopRpgEquipArmor":
