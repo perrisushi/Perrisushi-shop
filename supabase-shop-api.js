@@ -4316,7 +4316,7 @@ async function publicShopOpenRewardContainer(sessionToken, itemKey, openId) {
           kind: "chatarra",
           label: `${amount} Chatarra`,
           quantity: amount,
-          image: "./assets/objetos-especiales/saco-chatarra.png",
+          image: "./assets/icono-chatarra.png",
           inventoryDelta: { chatarra: amount }
         };
         await appendActivity(sessionResult.nick, "Bolsa de Chatarra", reward.label, "Consumo: 1 bolsa");

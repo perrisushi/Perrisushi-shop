@@ -8758,7 +8758,10 @@
         return { icon: reward?.image || "./assets/objetos-especiales/bolsa-especial.png", note: "Bolsa Especial" };
       }
       if (kind === "bolsaChatarra" || kind === "chatarra") {
-        return { icon: reward?.image || "./assets/objetos-especiales/saco-chatarra.png", note: kind === "chatarra" ? "Chatarra" : "Bolsa de Chatarra" };
+        return {
+          icon: reward?.image || (kind === "chatarra" ? "./assets/icono-chatarra.png" : "./assets/objetos-especiales/saco-chatarra.png"),
+          note: kind === "chatarra" ? "Chatarra" : "Bolsa de Chatarra"
+        };
       }
       if (kind === "cajitaArmas" || kind === "rpgItem") {
         return { icon: reward?.image || "./assets/objetos-especiales/cajita-armas.png", note: kind === "rpgItem" ? "Armas para PerriRPG" : "Cajita de Armas" };
