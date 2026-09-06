@@ -55,6 +55,7 @@ const INVENTORY_KEYS = [
   "pocionDivina",
   "relojCronotiempo",
   "bolsaGemas",
+  "bolsaEspecial",
   "bolsaChatarra",
   "cajitaArmas"
 ];
@@ -79,6 +80,7 @@ const SPECIAL_REWARD_ITEMS = [
 
 const REWARD_CONTAINER_ITEMS = {
   bolsaGemas: { label: "Bolsa de Gemas", image: "./assets/objetos-especiales/bolsa-gemas.png" },
+  bolsaEspecial: { label: "Bolsa Especial", image: "./assets/objetos-especiales/bolsa-especial.png" },
   bolsaChatarra: { label: "Bolsa de Chatarra", image: "./assets/objetos-especiales/saco-chatarra.png" },
   cajitaArmas: { label: "Cajita de Armas", image: "./assets/objetos-especiales/cajita-armas.png" }
 };
@@ -2195,11 +2197,20 @@ function buildRuletaRewardDelta(reward) {
     return null;
   }
 
-  if (normalizedReward === "+1 Perricofre") {
+  if (normalizedReward === "+1 Perricofre" || normalizedReward === "1 Perricofre") {
     return { perriCofres: 1 };
   }
-  if (normalizedReward === "Sub canal") {
+  if (normalizedReward === "+1 Bolsa de Gemas" || normalizedReward === "1 Bolsa de Gemas") {
+    return { bolsaGemas: 1 };
+  }
+  if (normalizedReward === "+1 Bolsa Especial" || normalizedReward === "1 Bolsa Especial") {
+    return { bolsaEspecial: 1 };
+  }
+  if (normalizedReward === "Sub canal" || normalizedReward === "+1 Sub" || normalizedReward === "1 Sub") {
     return {};
+  }
+  if (normalizedReward === "1 Moneda") {
+    return { monedas: 1 };
   }
   const coinMatch = normalizedReward.match(/^\+(\d+)\s+Monedas?$/i);
   if (coinMatch) {
@@ -4309,6 +4320,21 @@ async function publicShopOpenRewardContainer(sessionToken, itemKey, openId) {
           inventoryDelta: { chatarra: amount }
         };
         await appendActivity(sessionResult.nick, "Bolsa de Chatarra", reward.label, "Consumo: 1 bolsa");
+        return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory, reward };
+      }
+
+      if (normalizedItemKey === "bolsaEspecial") {
+        const reward = buildRandomSpecialItemReward();
+        const rewardEntry = Object.entries(reward?.inventoryDelta || {})[0];
+        if (!reward || !rewardEntry || !INVENTORY_KEYS.includes(rewardEntry[0])) {
+          return { ok: false, error: "special_reward_unavailable", inventory };
+        }
+        const [rewardKey, rewardQuantity] = rewardEntry;
+        const savedInventory = await patchInventoryFields(sessionResult.nick, {
+          bolsaEspecial: currentQuantity - 1,
+          [rewardKey]: toNumber(inventory[rewardKey]) + toNumber(rewardQuantity)
+        });
+        await appendActivity(sessionResult.nick, "Bolsa Especial", reward.label, "Consumo: 1 bolsa");
         return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory, reward };
       }
 

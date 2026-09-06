@@ -7523,6 +7523,7 @@
       { key: "pocionDivina", image: "./assets/objetos-especiales/pocion-divina.png", name: "Poción divina", effect: "Restaura toda la salud del jugador en PerriRPG. Un solo uso." },
       { key: "relojCronotiempo", image: "./assets/objetos-especiales/reloj-cronotiempo.png", name: "Reloj Cronotiempo", effect: "Regenera inmediatamente un grupo enemigo de PerriPet que esté en espera. Un solo uso." },
       { key: "bolsaGemas", image: "./assets/objetos-especiales/bolsa-gemas.png", name: "Bolsa de Gemas", effect: "Ábrela para conseguir 100, 200 o 300 Gemas." },
+      { key: "bolsaEspecial", image: "./assets/objetos-especiales/bolsa-especial.png", name: "Bolsa Especial", effect: "Ábrela para conseguir al azar uno de los seis objetos especiales." },
       { key: "bolsaChatarra", image: "./assets/objetos-especiales/saco-chatarra.png", name: "Bolsa de Chatarra", effect: "Ábrela para conseguir 35, 70 o 120 de chatarra." },
       { key: "cajitaArmas", image: "./assets/objetos-especiales/cajita-armas.png", name: "Cajita de Armas", effect: "Contiene 10 armas básicas de un mismo tipo para PerriRPG." },
     ];
@@ -8753,6 +8754,9 @@
       if (kind === "bolsaGemas") {
         return { icon: reward?.image || "./assets/objetos-especiales/bolsa-gemas.png", note: "Bolsa de Gemas" };
       }
+      if (kind === "bolsaEspecial") {
+        return { icon: reward?.image || "./assets/objetos-especiales/bolsa-especial.png", note: "Bolsa Especial" };
+      }
       if (kind === "bolsaChatarra" || kind === "chatarra") {
         return { icon: reward?.image || "./assets/objetos-especiales/saco-chatarra.png", note: kind === "chatarra" ? "Chatarra" : "Bolsa de Chatarra" };
       }
@@ -9745,7 +9749,7 @@
           <p class="inventory-copy">${escapeHtml(item.effect)}</p>
           ${item.key === "perriCofres" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-perri-chest" ${Math.max(0, Number(currentInventory.perriCofres || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir Perricofre</button>` : ""}
           ${item.key === "perriCofresMinijuego" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-minigame-chest" ${Math.max(0, Number(currentInventory.perriCofresMinijuego || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir cofre</button>` : ""}
-          ${["bolsaGemas", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-reward-container" data-item-key="${escapeHtml(item.key)}" ${Math.max(0, Number(currentInventory[item.key] || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir</button>` : ""}
+          ${["bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-reward-container" data-item-key="${escapeHtml(item.key)}" ${Math.max(0, Number(currentInventory[item.key] || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir</button>` : ""}
         </article>
       `).join("");
       renderDuelView();
@@ -9767,6 +9771,23 @@
           successMessage: "Has conseguido:",
           actionLabel: "Abrir",
           summaryName: "una Bolsa de Gemas",
+          isRewardContainer: true
+        },
+        bolsaEspecial: {
+          inventoryKey: "bolsaEspecial",
+          closedImage: "./assets/objetos-especiales/bolsa-especial.png",
+          openImage: "./assets/objetos-especiales/bolsa-especial.png",
+          closedAlt: "Bolsa Especial",
+          openAlt: "Bolsa Especial abierta",
+          emptyText: "No tienes Bolsas Especiales en el inventario.",
+          openingText: "Abriendo Bolsa Especial...",
+          errorText: "No se pudo abrir la Bolsa Especial.",
+          successTitle: "Bolsa Especial abierta",
+          confirmTitle: "Abrir Bolsa Especial",
+          confirmMessage: "Vas a abrir 1 Bolsa Especial.",
+          successMessage: "Has conseguido:",
+          actionLabel: "Abrir",
+          summaryName: "una Bolsa Especial",
           isRewardContainer: true
         },
         bolsaChatarra: {
