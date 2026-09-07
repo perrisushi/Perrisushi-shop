@@ -366,9 +366,12 @@ body.ui-layout-editing [data-ui-layout].ui-layout-static { position: relative; }
    acompañar al contenedor, pero nunca quedar recortados por sus límites. */
 .session-left-stack.ui-layout-sized,
 .mobile-session-menu.ui-layout-sized,
-.menu-side-tools.ui-layout-sized,
 .notification-dock.ui-layout-sized {
   overflow: visible !important;
+}
+
+.menu-side-tools.ui-layout-sized {
+  overflow: hidden !important;
 }
 
 body.ui-layout-editing #notificationDock,

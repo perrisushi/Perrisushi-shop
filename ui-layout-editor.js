@@ -510,6 +510,9 @@
       if (element.dataset.uiLayoutEnabled === "false") return;
       applyItem(element, layout[element.dataset.uiLayout], canvas, "position");
     });
+    [document.getElementById("openChatButton"), document.getElementById("openRequestsPanelButton"),
+     document.getElementById("openTwitchButton"), document.getElementById("openYoutubeButton")]
+      .forEach(clampInsideParent);
     refreshPersistentLocks();
     refreshHidden();
   }
@@ -636,6 +639,8 @@
     var attachment = findAttachment(element, 12 * layoutCanvasScale);
     if (!attachment) return;
     var target = attachment.candidate;
+    var boundary = boundedParent(element);
+    if (boundary && !boundary.contains(target)) return;
     if (snap) {
       var rect = element.getBoundingClientRect();
       var other = target.getBoundingClientRect();
@@ -673,12 +678,46 @@
     }) || null;
   }
 
+  function boundedParent(element) {
+    if (!element) return null;
+    if (element.matches("#openChatButton, #openRequestsPanelButton")) {
+      return element.closest(".menu-side-tools");
+    }
+    if (element.matches("#openTwitchButton, #openYoutubeButton")) {
+      return element.closest(".menu-socials");
+    }
+    return null;
+  }
+
+  function clampInsideParent(element) {
+    var parent = boundedParent(element);
+    if (!parent) return;
+    var rect = element.getBoundingClientRect();
+    var bounds = parent.getBoundingClientRect();
+    var dx = 0;
+    var dy = 0;
+    if (rect.width <= bounds.width) {
+      if (rect.left < bounds.left) dx = bounds.left - rect.left;
+      else if (rect.right > bounds.right) dx = bounds.right - rect.right;
+    } else {
+      dx = bounds.left - rect.left;
+    }
+    if (rect.height <= bounds.height) {
+      if (rect.top < bounds.top) dy = bounds.top - rect.top;
+      else if (rect.bottom > bounds.bottom) dy = bounds.bottom - rect.bottom;
+    } else {
+      dy = bounds.top - rect.top;
+    }
+    if (dx || dy) moveElement(element, dx / layoutCanvasScale, dy / layoutCanvasScale, false);
+  }
+
   function moveElement(element, dx, dy, includeLinked) {
     var x = Number(element.dataset.uiLayoutX || 0) + dx;
     var y = Number(element.dataset.uiLayoutY || 0) + dy;
     element.dataset.uiLayoutX = String(x);
     element.dataset.uiLayoutY = String(y);
     element.style.translate = x + "px " + y + "px";
+    if (includeLinked !== false) clampInsideParent(element);
     if (includeLinked !== false) {
       var linked = linkedElement(element);
       if (linked) moveElement(linked, dx, dy, false);
@@ -688,6 +727,12 @@
   function resizeElement(element, width, height, includeLinked) {
     var safeWidth = Math.max(16, width);
     var safeHeight = Math.max(16, height);
+    var bounded = boundedParent(element);
+    if (bounded) {
+      var boundedRect = bounded.getBoundingClientRect();
+      safeWidth = Math.min(safeWidth, boundedRect.width / layoutCanvasScale);
+      safeHeight = Math.min(safeHeight, boundedRect.height / layoutCanvasScale);
+    }
     var linked = includeLinked !== false ? linkedElement(element) : null;
     var relation = null;
     if (linked) {
@@ -710,6 +755,7 @@
     element.style.setProperty("width", safeWidth + "px", "important");
     element.style.setProperty("height", safeHeight + "px", "important");
     element.classList.add("ui-layout-sized");
+    clampInsideParent(element);
     if (linked) {
       resizeElement(linked, safeWidth, safeHeight, false);
       var resized = element.getBoundingClientRect();
@@ -803,7 +849,10 @@
   function pointerUp(event) {
     var pointer = editorState.pointer;
     if (!pointer || pointer.id !== event.pointerId) return;
-    if (pointer.type === "move") refreshAttachment(pointer.element, true);
+    if (pointer.type === "move") {
+      refreshAttachment(pointer.element, true);
+      clampInsideParent(pointer.element);
+    }
     commitElement(pointer.element);
     (pointer.descendants || []).forEach(function (snapshot) { commitElement(snapshot.element); });
     var linked = linkedElement(pointer.element);
