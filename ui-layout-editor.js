@@ -5,7 +5,7 @@
   var EDITOR_IMPLEMENTATION = "native-layout-editor-v1";
   var DRAFT_PREFIX = "perrisushi-native-layout-v1:";
   var MOBILE_PREVIEW_REVISION_KEY = "perrisushi-mobile-editor-revision";
-  var MOBILE_PREVIEW_REVISION = "2";
+  var MOBILE_PREVIEW_REVISION = "3";
   var editorState = {
     active: false,
     guides: true,
@@ -901,6 +901,10 @@
         if (localStorage.getItem(MOBILE_PREVIEW_REVISION_KEY) !== MOBILE_PREVIEW_REVISION) {
           localStorage.removeItem(DRAFT_PREFIX + "mobile");
           localStorage.setItem(MOBILE_PREVIEW_REVISION_KEY, MOBILE_PREVIEW_REVISION);
+          /* También se descarta en memoria la composición móvil publicada por
+             las versiones que usaban coordenadas del escritorio. La primera
+             edición nueva vuelve a guardarse en Supabase con ratios móviles. */
+          editorState.layouts.mobile = {};
         }
       } catch (error) {}
     }
