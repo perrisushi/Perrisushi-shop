@@ -1266,17 +1266,17 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   max-width: 100% !important;
   max-height: 100% !important;
   display: grid !important;
-  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  grid-template-rows: minmax(0, 22%) minmax(0, 25%) minmax(0, 1fr) minmax(18px, 16%) !important;
   align-content: stretch !important;
   align-items: start !important;
   justify-items: stretch !important;
-  gap: clamp(1px, 2.2cqmin, 8px) !important;
-  padding: clamp(3px, 4cqmin, 14px) !important;
+  gap: clamp(1px, 1.7cqmin, 6px) !important;
+  padding: clamp(3px, 3cqmin, 12px) !important;
   overflow: hidden !important;
 }
 
 #inventoryView #inventoryGrid > .inventory-card.no-action {
-  grid-template-rows: auto auto minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 24%) minmax(0, 27%) minmax(0, 1fr) !important;
 }
 
 #inventoryView #inventoryGrid > .inventory-card > * {
@@ -1288,10 +1288,17 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
 }
 
 #inventoryView #inventoryGrid > .inventory-card .inventory-badge {
-  width: clamp(16px, 25cqmin, 58px) !important;
-  height: clamp(16px, 25cqmin, 58px) !important;
+  align-self: stretch !important;
+  width: auto !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: clamp(5px, 7cqmin, 18px) !important;
   justify-self: start !important;
+  overflow: hidden !important;
 }
 
 #inventoryView #inventoryGrid > .inventory-card .inventory-badge img {
@@ -1303,27 +1310,32 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
 }
 
 #inventoryView #inventoryGrid > .inventory-card > div:nth-child(2) {
-  align-self: start !important;
+  align-self: stretch !important;
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
+  align-content: stretch !important;
+  gap: clamp(1px, 1cqmin, 4px) !important;
 }
 
 #inventoryView #inventoryGrid > .inventory-card h2 {
   margin: 0 !important;
-  font-size: clamp(6px, min(7cqh, 6cqw), 1.08rem) !important;
+  align-self: center !important;
+  font-size: clamp(5px, min(6cqh, 5.2cqw), 1.08rem) !important;
   line-height: 1.08 !important;
   overflow-wrap: anywhere !important;
 }
 
 #inventoryView #inventoryGrid > .inventory-card .inventory-count {
   margin: clamp(1px, 1cqmin, 4px) 0 0 !important;
-  font-size: clamp(8px, min(12cqh, 9cqw), 2.2rem) !important;
+  font-size: clamp(7px, min(9cqh, 8cqw), 2rem) !important;
   line-height: 1 !important;
 }
 
 #inventoryView #inventoryGrid > .inventory-card .inventory-copy {
   align-self: stretch !important;
   margin: 0 !important;
-  font-size: clamp(5px, min(4.7cqh, 3.8cqw), .82rem) !important;
-  line-height: 1.18 !important;
+  font-size: clamp(4px, min(4cqh, 3.35cqw), .82rem) !important;
+  line-height: 1.12 !important;
   overflow: hidden !important;
   overflow-wrap: anywhere !important;
 }
@@ -1334,11 +1346,11 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   width: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
-  height: clamp(16px, 13cqmin, 32px) !important;
-  max-height: 24% !important;
+  height: 100% !important;
+  max-height: 100% !important;
   margin: 0 !important;
   padding: clamp(1px, 2cqmin, 5px) !important;
-  font-size: clamp(5px, min(5cqh, 4cqw), .82rem) !important;
+  font-size: clamp(5px, min(4.8cqh, 3.8cqw), .82rem) !important;
   line-height: 1 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
