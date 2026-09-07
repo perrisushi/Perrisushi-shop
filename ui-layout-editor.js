@@ -3,7 +3,7 @@
 
   var LAYOUT_VERSION = 4;
   var EDITOR_IMPLEMENTATION = "native-layout-editor-v1";
-  var BASE_LAYOUT_ID = "maqueta-20260907-3";
+  var BASE_LAYOUT_ID = "maqueta-20260907-4";
   var DRAFT_PREFIX = "perrisushi-native-layout-v2:";
   var MOBILE_PREVIEW_REVISION_KEY = "perrisushi-mobile-editor-revision";
   var MOBILE_PREVIEW_REVISION = "4";
@@ -274,7 +274,11 @@
 
   function readDraft(modeName) {
     try {
-      return JSON.parse(localStorage.getItem(DRAFT_PREFIX + modeName) || "{}");
+      var stored = JSON.parse(localStorage.getItem(DRAFT_PREFIX + modeName) || "{}");
+      if (stored && stored.baseLayoutId === BASE_LAYOUT_ID && stored.screens && typeof stored.screens === "object") {
+        return stored.screens;
+      }
+      return {};
     } catch (error) {
       return {};
     }
@@ -282,7 +286,10 @@
 
   function saveDraft() {
     try {
-      localStorage.setItem(DRAFT_PREFIX + currentMode(), JSON.stringify(editorState.layouts[currentMode()] || {}));
+      localStorage.setItem(DRAFT_PREFIX + currentMode(), JSON.stringify({
+        baseLayoutId: BASE_LAYOUT_ID,
+        screens: editorState.layouts[currentMode()] || {}
+      }));
     } catch (error) {}
     clearTimeout(remoteSaveTimer);
     remoteSaveTimer = setTimeout(saveRemoteLayout, 900);
@@ -370,6 +377,23 @@
          exporta como rectángulos 0x0 al pie del lienzo. Esos datos no son una
          posición válida: conservamos las medidas exactas del CSS compartido. */
       var menu = converted.desktop.menu || {};
+      /* En Maqueta 2 el escenario del menu esta centrado mediante
+         left:50% + translateX(-50%). El exportador entrega la coordenada
+         previa a esa compensacion. Recentramos el marco y desplazamos sus
+         hijos exactamente la misma distancia para conservar el diseno. */
+      var mainFrame = menu["main-frame"];
+      if (mainFrame && Number.isFinite(Number(mainFrame.leftRatio)) &&
+          Number.isFinite(Number(mainFrame.widthRatio))) {
+        var centeredLeft = (1 - Number(mainFrame.widthRatio)) / 2;
+        var menuCenterDelta = centeredLeft - Number(mainFrame.leftRatio);
+        ["main-frame", "home-buttons", "menu-profile", "menu-users",
+         "menu-inventory", "menu-minigames", "menu-shop"].forEach(function (key) {
+          var item = menu[key];
+          if (item && Number.isFinite(Number(item.leftRatio))) {
+            item.leftRatio = Number(item.leftRatio) + menuCenterDelta;
+          }
+        });
+      }
       ["social-buttons", "social-twitch", "social-youtube"].forEach(function (key) {
         var item = menu[key];
         if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
@@ -784,8 +808,8 @@
     if (!file) return;
     try {
       editorState.layouts = convertPrototypePayload(JSON.parse(await file.text()));
-      localStorage.setItem(DRAFT_PREFIX + "desktop", JSON.stringify(editorState.layouts.desktop));
-      localStorage.setItem(DRAFT_PREFIX + "mobile", JSON.stringify(editorState.layouts.mobile));
+      localStorage.setItem(DRAFT_PREFIX + "desktop", JSON.stringify({ baseLayoutId: BASE_LAYOUT_ID, screens: editorState.layouts.desktop }));
+      localStorage.setItem(DRAFT_PREFIX + "mobile", JSON.stringify({ baseLayoutId: BASE_LAYOUT_ID, screens: editorState.layouts.mobile }));
       scheduleLayoutApply();
       clearTimeout(remoteSaveTimer);
       remoteSaveTimer = setTimeout(saveRemoteLayout, 300);
@@ -926,7 +950,7 @@
     var bundled = null;
     var remote = null;
     try {
-      var bundledResponse = await fetch("./maqueta-layout.json?v=20260907-3", { cache: "no-store" });
+      var bundledResponse = await fetch("./maqueta-layout.json?v=20260907-4", { cache: "no-store" });
       if (bundledResponse.ok) bundled = await bundledResponse.json();
     } catch (error) {}
     editorState.layouts = convertPrototypePayload(bundled);
