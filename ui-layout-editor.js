@@ -4,6 +4,8 @@
   var LAYOUT_VERSION = 3;
   var EDITOR_IMPLEMENTATION = "native-layout-editor-v1";
   var DRAFT_PREFIX = "perrisushi-native-layout-v1:";
+  var MOBILE_PREVIEW_REVISION_KEY = "perrisushi-mobile-editor-revision";
+  var MOBILE_PREVIEW_REVISION = "2";
   var editorState = {
     active: false,
     guides: true,
@@ -889,6 +891,18 @@
     var normalizedRemote = normalizePayload(remote);
     if (Object.keys(normalizedRemote.desktop).length || Object.keys(normalizedRemote.mobile).length) {
       editorState.layouts = normalizedRemote;
+    }
+    /* Las primeras versiones de Vista móvil calcularon las posiciones con el
+       ancho del monitor y dejaron un borrador local recortado. Se descarta una
+       sola vez únicamente ese borrador del PC; el diseño publicado y el
+       borrador de escritorio permanecen intactos. */
+    if (!mobileDevice) {
+      try {
+        if (localStorage.getItem(MOBILE_PREVIEW_REVISION_KEY) !== MOBILE_PREVIEW_REVISION) {
+          localStorage.removeItem(DRAFT_PREFIX + "mobile");
+          localStorage.setItem(MOBILE_PREVIEW_REVISION_KEY, MOBILE_PREVIEW_REVISION);
+        }
+      } catch (error) {}
     }
     var desktopDraft = readDraft("desktop");
     var mobileDraft = readDraft("mobile");
