@@ -84,10 +84,6 @@
     height: clamp(34px, 2.35vw, 52px);
   }
 
-  body:not(.ui-layout-editing) #appView.is-menu-screen .desktop-stack-back-button {
-    display: none !important;
-  }
-
   body:not(.ui-layout-editing) #menuView {
     position: absolute;
     inset: 0;
