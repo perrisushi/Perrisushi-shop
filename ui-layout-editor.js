@@ -806,8 +806,23 @@
     editorState.pointer = null;
   }
 
+  function captureRenderedLayout() {
+    if (!editorState.loaded) return;
+    var layout = screenLayouts(true);
+    visibleTargets().forEach(function (element) {
+      if (!element.dataset.uiLayout) return;
+      layout[element.dataset.uiLayout] = captureElement(element);
+    });
+  }
+
   function setEditing(active) {
-    editorState.active = Boolean(active);
+    var nextActive = Boolean(active);
+    /* La vista publicada es la referencia. Antes de añadir las clases y
+       etiquetas del editor guardamos exactamente los rectángulos que el
+       usuario está viendo; así ningún cambio de containing block puede
+       recolocar el diseño al pulsar "Mover recuadros". */
+    if (nextActive && !editorState.active) captureRenderedLayout();
+    editorState.active = nextActive;
     document.body.classList.toggle("ui-layout-editing", editorState.active);
     document.body.classList.toggle("ui-layout-guides", editorState.active && editorState.guides);
     var button = document.getElementById("uiLayoutEditToggle");
@@ -825,6 +840,9 @@
       refreshLabels();
       setStatus("Editando " + (currentMode() === "mobile" ? "móvil" : "PC") + " · " + currentScreen());
     }
+    /* Reaplica las coordenadas absolutas después del cambio de clase tanto al
+       entrar como al salir, manteniendo idéntica la composición en ambos. */
+    scheduleLayoutApply();
   }
 
   function exportLayouts() {
