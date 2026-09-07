@@ -44,20 +44,28 @@
     document.body.style.removeProperty("--perri-canvas-width");
     document.body.style.removeProperty("--perri-canvas-height");
     document.body.style.removeProperty("--perri-canvas-scale");
-    if (mobileDevice || editorState.previewMode === "mobile") return;
+    document.body.style.removeProperty("--perri-canvas-display-height");
+    /* La vista movil manual del editor ya dispone de su propio lienzo de
+       trabajo. En un telefono real si fijamos el lienzo publicado. */
+    if (!mobileDevice && editorState.previewMode === "mobile") return;
 
     /* El escritorio conserva siempre el lienzo exacto exportado por Maqueta 2.
        Reducir la ventana escala el conjunto completo y nunca activa ni imita
        la composición móvil. */
-    var canvasWidth = 1638;
-    var canvasHeight = 901;
-    var availableWidth = Math.max(1, window.innerWidth * 0.96);
+    var canvasWidth = mobileDevice ? 390 : 1638;
+    var canvasHeight = mobileDevice ? 844 : 901;
+    var availableWidth = Math.max(1, window.innerWidth * (mobileDevice ? 1 : 0.96));
     var availableHeight = Math.max(1, window.innerHeight);
-    layoutCanvasScale = Math.min(availableWidth / canvasWidth, availableHeight / canvasHeight);
+    /* En movil manda el ancho. Si la pantalla es corta se desplaza en vertical;
+       nunca se comprime una dimension independientemente de la otra. */
+    layoutCanvasScale = mobileDevice
+      ? availableWidth / canvasWidth
+      : Math.min(availableWidth / canvasWidth, availableHeight / canvasHeight);
     document.body.style.setProperty("--perri-canvas-width", canvasWidth + "px");
     document.body.style.setProperty("--perri-canvas-height", canvasHeight + "px");
     document.body.style.setProperty("--perri-canvas-scale", String(layoutCanvasScale));
-    document.body.classList.add("perri-fixed-canvas", "perri-desktop-layout");
+    document.body.style.setProperty("--perri-canvas-display-height", (canvasHeight * layoutCanvasScale) + "px");
+    document.body.classList.add("perri-fixed-canvas", mobileDevice ? "perri-mobile-layout" : "perri-desktop-layout");
   }
 
   var targetDefinitions = [

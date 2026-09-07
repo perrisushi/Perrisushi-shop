@@ -279,6 +279,19 @@ body.perri-fixed-canvas > .shell > .panel {
   transform-origin: top center !important;
 }
 
+body.perri-fixed-canvas.perri-mobile-layout {
+  height: max(100dvh, var(--perri-canvas-display-height)) !important;
+  min-height: max(100dvh, var(--perri-canvas-display-height)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body.perri-fixed-canvas.perri-mobile-layout > .shell {
+  height: var(--perri-canvas-display-height) !important;
+  min-height: var(--perri-canvas-display-height) !important;
+  overflow: visible !important;
+}
+
 /* Previsualización móvil deliberada: aplica la composición estrecha dentro de
    una columna desplazable, sin recuperar el antiguo lienzo fijo ni recortarla. */
 body.perri-mobile-preview {
