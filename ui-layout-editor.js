@@ -11,6 +11,7 @@
     selected: null,
     attached: null,
     pointer: null,
+    previewMode: null,
     undo: [],
     redo: [],
     layouts: { desktop: {}, mobile: {} },
@@ -29,7 +30,7 @@
 
   function fitFixedCanvas() {
     layoutCanvasScale = 1;
-    document.body.classList.remove("perri-fixed-canvas", "perri-mobile-layout", "perri-desktop-layout", "perri-mobile-preview");
+    document.body.classList.remove("perri-fixed-canvas", "perri-mobile-layout", "perri-desktop-layout");
     document.body.style.removeProperty("--perri-canvas-width");
     document.body.style.removeProperty("--perri-canvas-height");
     document.body.style.removeProperty("--perri-canvas-scale");
@@ -94,7 +95,45 @@
   ];
 
   function currentMode() {
-    return mobileDevice ? "mobile" : "desktop";
+    return editorState.previewMode || (mobileDevice ? "mobile" : "desktop");
+  }
+
+  function mobilePreviewRules() {
+    var css = [];
+    Array.from(document.styleSheets).forEach(function (sheet) {
+      var rules;
+      try { rules = Array.from(sheet.cssRules || []); } catch (error) { return; }
+      rules.forEach(function (rule) {
+        if (rule.type !== CSSRule.MEDIA_RULE) return;
+        var condition = String(rule.conditionText || "");
+        if (!/max-width\s*:\s*720px/i.test(condition) || !/pointer\s*:\s*coarse/i.test(condition)) return;
+        Array.from(rule.cssRules || []).forEach(function (innerRule) { css.push(innerRule.cssText); });
+      });
+    });
+    return css.join("\n");
+  }
+
+  function setMobilePreview(enabled) {
+    editorState.previewMode = enabled ? "mobile" : null;
+    document.body.classList.toggle("perri-mobile-preview", Boolean(enabled));
+    var style = document.getElementById("uiLayoutMobilePreviewRules");
+    if (enabled && !style) {
+      style = document.createElement("style");
+      style.id = "uiLayoutMobilePreviewRules";
+      style.textContent = mobilePreviewRules();
+      document.head.appendChild(style);
+    } else if (!enabled && style) {
+      style.remove();
+    }
+    var button = document.getElementById("uiLayoutPreviewButton");
+    if (button) {
+      button.textContent = enabled ? "Vista PC" : "Vista móvil";
+      button.setAttribute("aria-pressed", String(Boolean(enabled)));
+    }
+    selectElement(null);
+    markTargets();
+    scheduleLayoutApply();
+    setStatus("Editando " + (enabled ? "móvil" : "PC") + " · " + currentScreen());
   }
 
   function currentScreen() {
@@ -694,6 +733,7 @@
     toolbar.innerHTML =
       "<button class=\"ui-layout-editor-toggle\" type=\"button\" aria-label=\"Minimizar\">−</button>" +
       "<button id=\"uiLayoutEditToggle\" type=\"button\" aria-pressed=\"false\">Mover recuadros</button>" +
+      "<button id=\"uiLayoutPreviewButton\" type=\"button\" aria-pressed=\"false\">Vista móvil</button>" +
       "<button id=\"uiLayoutGuidesToggle\" type=\"button\" aria-pressed=\"true\">Ocultar marcos</button>" +
       "<button id=\"uiLayoutEqualButton\" type=\"button\">Igualar tamaño</button>" +
       "<button id=\"uiLayoutLockButton\" type=\"button\">Anclar</button>" +
@@ -714,6 +754,9 @@
     });
     toolbar.querySelector("#uiLayoutEditToggle").addEventListener("click", function () {
       setEditing(!editorState.active);
+    });
+    toolbar.querySelector("#uiLayoutPreviewButton").addEventListener("click", function () {
+      setMobilePreview(editorState.previewMode !== "mobile");
     });
     toolbar.querySelector("#uiLayoutGuidesToggle").addEventListener("click", function (event) {
       editorState.guides = !editorState.guides;
@@ -801,6 +844,7 @@
 
   function closeEditor() {
     setEditing(false);
+    setMobilePreview(false);
     fitFixedCanvas();
     scheduleLayoutApply();
     var toolbar = document.getElementById("uiLayoutEditor");

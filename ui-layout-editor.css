@@ -246,6 +246,33 @@ body {
 
 .ui-layout-editor.is-collapsed > :not(.ui-layout-editor-toggle) { display: none !important; }
 
+/* Previsualización móvil deliberada: aplica la composición estrecha dentro de
+   una columna desplazable, sin recuperar el antiguo lienzo fijo ni recortarla. */
+body.perri-mobile-preview {
+  padding: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+body.perri-mobile-preview > .shell {
+  width: min(430px, 100vw) !important;
+  min-width: 0 !important;
+  max-width: 430px !important;
+  min-height: 900px !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+
+body.perri-mobile-preview > .shell > .panel {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 900px !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
 .ui-layout-editor button,
 .requests-layout-launch {
   min-height: 34px;
