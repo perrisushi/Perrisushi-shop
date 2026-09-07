@@ -2442,3 +2442,68 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
+
+/* Tarjeta exterior transparente; icono y cantidad permanecen en una fila. */
+#inventoryView #inventoryGrid > .inventory-card,
+#inventoryView #inventoryGrid > .inventory-card.no-action {
+  grid-template-columns: minmax(0, 1fr) minmax(28px, auto) !important;
+  grid-template-rows: minmax(0, 1fr) clamp(25px, 18cqh, 34px) !important;
+  column-gap: clamp(8px, 7cqmin, 16px) !important;
+  row-gap: clamp(4px, 4cqh, 9px) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card.no-action {
+  grid-template-rows: minmax(0, 1fr) !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card > .inventory-badge {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  justify-self: end !important;
+  align-self: center !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card > .inventory-count {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  justify-self: start !important;
+  align-self: center !important;
+  white-space: nowrap !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card > .inventory-action {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card:hover,
+#inventoryView #inventoryGrid > .inventory-card:focus-visible {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.inventory-title-image {
+  display: block;
+  width: clamp(240px, 34vw, 480px);
+  max-width: 82%;
+  max-height: clamp(72px, 12vh, 120px);
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+  justify-self: center;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .38));
+}
+
+@media (max-width: 720px), (pointer: coarse) {
+  .inventory-title-image {
+    width: min(340px, 78vw);
+    max-width: 90%;
+    max-height: 92px;
+  }
+}
