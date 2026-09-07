@@ -1,5 +1,5 @@
 /* Portada de escritorio reproducida desde la maqueta aprobada. */
-@media (min-width: 721px) and (pointer: fine) {
+@media (pointer: fine), (any-pointer: fine) {
   body:not(.ui-layout-editing) .shell {
     width: 100vw;
     height: 100dvh;

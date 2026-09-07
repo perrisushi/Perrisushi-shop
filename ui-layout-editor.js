@@ -44,6 +44,20 @@
     document.body.style.removeProperty("--perri-canvas-width");
     document.body.style.removeProperty("--perri-canvas-height");
     document.body.style.removeProperty("--perri-canvas-scale");
+    if (mobileDevice || editorState.previewMode === "mobile") return;
+
+    /* El escritorio conserva siempre el lienzo exacto exportado por Maqueta 2.
+       Reducir la ventana escala el conjunto completo y nunca activa ni imita
+       la composición móvil. */
+    var canvasWidth = 1638;
+    var canvasHeight = 901;
+    var availableWidth = Math.max(1, window.innerWidth * 0.96);
+    var availableHeight = Math.max(1, window.innerHeight);
+    layoutCanvasScale = Math.min(availableWidth / canvasWidth, availableHeight / canvasHeight);
+    document.body.style.setProperty("--perri-canvas-width", canvasWidth + "px");
+    document.body.style.setProperty("--perri-canvas-height", canvasHeight + "px");
+    document.body.style.setProperty("--perri-canvas-scale", String(layoutCanvasScale));
+    document.body.classList.add("perri-fixed-canvas", "perri-desktop-layout");
   }
 
   var targetDefinitions = [

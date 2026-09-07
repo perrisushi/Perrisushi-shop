@@ -246,6 +246,39 @@ body {
 
 .ui-layout-editor.is-collapsed > :not(.ui-layout-editor-toggle) { display: none !important; }
 
+/* En un ordenador la anchura del navegador no decide el modo. El lienzo de
+   escritorio mantiene sus proporciones y se escala como una sola pieza. */
+body.perri-fixed-canvas {
+  position: relative !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+body.perri-fixed-canvas > .shell {
+  position: relative !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.perri-fixed-canvas > .shell > .panel {
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  width: var(--perri-canvas-width) !important;
+  min-width: var(--perri-canvas-width) !important;
+  max-width: none !important;
+  height: var(--perri-canvas-height) !important;
+  min-height: 0 !important;
+  transform: translateX(-50%) scale(var(--perri-canvas-scale)) !important;
+  transform-origin: top center !important;
+}
+
 /* Previsualización móvil deliberada: aplica la composición estrecha dentro de
    una columna desplazable, sin recuperar el antiguo lienzo fijo ni recortarla. */
 body.perri-mobile-preview {
