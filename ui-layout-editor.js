@@ -38,6 +38,7 @@
   var settledApplyTimer = 0;
   var remoteSaveTimer = 0;
   var originalStyles = new WeakMap();
+  var contentOriginalStyles = new WeakMap();
   var targetResizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(function (entries) {
     entries.forEach(function (entry) {
       var box = entry.contentRect;
@@ -341,6 +342,16 @@
     return Boolean(element && element.dataset && element.dataset.uiLayoutTemplate);
   }
 
+  function editableLayoutFor(element, create) {
+    return isGlobalTarget(element) ? globalLayouts(create) : screenLayouts(create);
+  }
+
+  function layoutItemFor(element) {
+    if (!element || !element.dataset.uiLayout || isTemplateTarget(element)) return null;
+    var layout = editableLayoutFor(element, false);
+    return layout[element.dataset.uiLayout] || null;
+  }
+
   function markTargets() {
     /* La carga normal puede ocultar de nuevo el dock si no hay avisos reales.
        En edición debe seguir visible y seleccionable con sus muestras. */
@@ -552,6 +563,51 @@
     delete element.dataset.uiLayoutLockedWith;
   }
 
+  function contentChildren(element) {
+    if (!element) return [];
+    return Array.from(element.children).filter(function (child) {
+      return !child.classList.contains("ui-layout-target-label") &&
+        !child.classList.contains("ui-layout-resize-handle");
+    });
+  }
+
+  function restoreContentSizing() {
+    document.querySelectorAll(".ui-layout-content-item").forEach(function (child) {
+      var saved = contentOriginalStyles.get(child);
+      ["width", "height"].forEach(function (property) {
+        var entry = saved && saved[property];
+        if (entry && entry.value) child.style.setProperty(property, entry.value, entry.priority || "");
+        else child.style.removeProperty(property);
+      });
+      child.classList.remove("ui-layout-content-item");
+    });
+    allTargets().forEach(function (element) {
+      element.classList.remove("ui-layout-content-sized");
+      delete element.dataset.uiContentWidth;
+      delete element.dataset.uiContentHeight;
+    });
+  }
+
+  function applyContentSizing(element, item) {
+    var width = Number(item && item.contentWidth);
+    var height = Number(item && item.contentHeight);
+    if (!(width > 0) || !(height > 0)) return;
+    element.dataset.uiContentWidth = String(width);
+    element.dataset.uiContentHeight = String(height);
+    element.classList.add("ui-layout-content-sized");
+    contentChildren(element).forEach(function (child) {
+      if (!contentOriginalStyles.has(child)) {
+        contentOriginalStyles.set(child, {
+          width: { value: child.style.getPropertyValue("width"), priority: child.style.getPropertyPriority("width") },
+          height: { value: child.style.getPropertyValue("height"), priority: child.style.getPropertyPriority("height") }
+        });
+      }
+      child.classList.add("ui-layout-content-item");
+      child.style.setProperty("width", width + "px", "important");
+      child.style.setProperty("height", height + "px", "important");
+    });
+  }
+
   function applyItem(element, item, canvas, phase) {
     if (!item) return;
     var offsetX = Number(item.offsetXRatio) * canvas.width;
@@ -596,6 +652,7 @@
     var layout = screenLayouts(false);
     var global = globalLayouts(false);
     var canvas = canvasRect();
+    restoreContentSizing();
     allTargets().forEach(clearStyle);
     allTargets().forEach(function (element) {
       if (element.dataset.uiLayoutEnabled === "false") return;
@@ -605,6 +662,10 @@
       }
       var key = element.dataset.uiLayout;
       applyItem(element, isGlobalTarget(key) ? global[key] : layout[key], canvas, "size");
+    });
+    allTargets().forEach(function (element) {
+      if (element.dataset.uiLayoutEnabled === "false") return;
+      applyContentSizing(element, layoutItemFor(element));
     });
     void document.documentElement.offsetHeight;
     allTargets().forEach(function (element) {
@@ -638,7 +699,7 @@
   function captureElement(element) {
     var canvas = canvasRect();
     var rect = element.getBoundingClientRect();
-    return {
+    var captured = {
       leftRatio: canvas.width ? (rect.left - canvas.left) / layoutCanvasScale / canvas.width : 0,
       topRatio: canvas.height ? (rect.top - canvas.top) / layoutCanvasScale / canvas.height : 0,
       offsetXRatio: canvas.width ? Number(element.dataset.uiLayoutX || 0) / canvas.width : 0,
@@ -648,12 +709,19 @@
       hidden: element.dataset.uiLayoutHidden === "true",
       lockedWith: element.dataset.uiLayoutLockedWith || null
     };
+    var contentWidth = Number(element.dataset.uiContentWidth);
+    var contentHeight = Number(element.dataset.uiContentHeight);
+    if (contentWidth > 0 && contentHeight > 0) {
+      captured.contentWidth = contentWidth;
+      captured.contentHeight = contentHeight;
+    }
+    return captured;
   }
 
   function commitElement(element) {
     if (!element || !element.dataset.uiLayout) return;
     if (isTemplateTarget(element)) return;
-    var layout = isGlobalTarget(element) ? globalLayouts(true) : screenLayouts(true);
+    var layout = editableLayoutFor(element, true);
     layout[element.dataset.uiLayout] = captureElement(element);
     saveDraft();
   }
@@ -671,6 +739,76 @@
   function setStatus(text) {
     var status = document.getElementById("uiLayoutEditorStatus");
     if (status) status.textContent = text;
+  }
+
+  function closeContentContextMenu() {
+    var menu = document.getElementById("uiLayoutContentContextMenu");
+    if (menu) menu.remove();
+  }
+
+  function saveContentSize(element, width, height) {
+    if (!element || !element.dataset.uiLayout) return;
+    var layout = editableLayoutFor(element, true);
+    var key = element.dataset.uiLayout;
+    var item = cloneValue(layout[key] || captureElement(element));
+    if (width > 0 && height > 0) {
+      item.contentWidth = width;
+      item.contentHeight = height;
+    } else {
+      delete item.contentWidth;
+      delete item.contentHeight;
+    }
+    layout[key] = item;
+    saveDraft();
+    scheduleLayoutApply();
+  }
+
+  function openContentContextMenu(element, clientX, clientY) {
+    closeContentContextMenu();
+    if (!element || !contentChildren(element).length) {
+      setStatus("Este recuadro no contiene elementos editables");
+      return;
+    }
+    var item = layoutItemFor(element) || {};
+    var firstChild = contentChildren(element)[0];
+    var firstRect = firstChild.getBoundingClientRect();
+    var initialWidth = Number(item.contentWidth) || Math.max(1, Math.round(firstRect.width / layoutCanvasScale));
+    var initialHeight = Number(item.contentHeight) || Math.max(1, Math.round(firstRect.height / layoutCanvasScale));
+    var menu = document.createElement("div");
+    menu.id = "uiLayoutContentContextMenu";
+    menu.className = "ui-layout-context-menu";
+    menu.innerHTML =
+      '<strong>Tamaño del contenido</strong>' +
+      '<label>Ancho <input data-content-width type="number" min="1" step="1"></label>' +
+      '<label>Alto <input data-content-height type="number" min="1" step="1"></label>' +
+      '<div class="ui-layout-context-actions">' +
+        '<button data-content-apply type="button">Aplicar a todo</button>' +
+        '<button data-content-auto type="button">Automático</button>' +
+      '</div>';
+    document.body.appendChild(menu);
+    var widthInput = menu.querySelector("[data-content-width]");
+    var heightInput = menu.querySelector("[data-content-height]");
+    widthInput.value = String(Math.round(initialWidth));
+    heightInput.value = String(Math.round(initialHeight));
+    menu.querySelector("[data-content-apply]").addEventListener("click", function () {
+      var width = Math.max(1, Number(widthInput.value) || 1);
+      var height = Math.max(1, Number(heightInput.value) || 1);
+      pushHistory();
+      saveContentSize(element, width, height);
+      closeContentContextMenu();
+      setStatus("Contenido: " + Math.round(width) + " × " + Math.round(height));
+    });
+    menu.querySelector("[data-content-auto]").addEventListener("click", function () {
+      pushHistory();
+      saveContentSize(element, 0, 0);
+      closeContentContextMenu();
+      setStatus("Contenido en tamaño automático");
+    });
+    var menuRect = menu.getBoundingClientRect();
+    menu.style.left = Math.max(6, Math.min(clientX, window.innerWidth - menuRect.width - 6)) + "px";
+    menu.style.top = Math.max(6, Math.min(clientY, window.innerHeight - menuRect.height - 6)) + "px";
+    widthInput.focus();
+    widthInput.select();
   }
 
   function removeHandle() {
@@ -1299,12 +1437,28 @@
   document.addEventListener("pointermove", pointerMove, true);
   document.addEventListener("pointerup", pointerUp, true);
   document.addEventListener("click", function (event) {
-    if (!editorState.active || event.target.closest(".ui-layout-editor")) return;
+    if (!editorState.active || event.target.closest(".ui-layout-editor, .ui-layout-context-menu")) return;
     if (event.target.closest("[data-ui-layout], a, button")) {
       event.preventDefault();
       event.stopImmediatePropagation();
     }
   }, true);
+  document.addEventListener("contextmenu", function (event) {
+    if (!editorState.active || event.target.closest(".ui-layout-editor, .ui-layout-context-menu")) return;
+    var element = event.target.closest("[data-ui-layout]");
+    if (!element || element.closest("[hidden]")) return;
+    if (isTemplateTarget(element)) element = boundedParent(element) || element;
+    event.preventDefault();
+    event.stopPropagation();
+    selectElement(element);
+    openContentContextMenu(element, event.clientX, event.clientY);
+  }, true);
+  document.addEventListener("pointerdown", function (event) {
+    if (!event.target.closest(".ui-layout-context-menu")) closeContentContextMenu();
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeContentContextMenu();
+  });
 
   var resizeTimer = 0;
   window.addEventListener("resize", function () {
