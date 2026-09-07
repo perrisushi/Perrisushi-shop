@@ -3336,6 +3336,9 @@ async function publicShopResolveAccessRequestPanel(sessionToken, panelKey, reque
 function normalizePublishedUiLayouts(value) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   const normalized = {
+    layoutVersion: 3,
+    editorImplementation: "native-layout-editor-v1",
+    coordinateSystem: "native-offset-ratios",
     desktop: source.desktop && typeof source.desktop === "object" && !Array.isArray(source.desktop) ? source.desktop : {},
     mobile: source.mobile && typeof source.mobile === "object" && !Array.isArray(source.mobile) ? source.mobile : {}
   };
@@ -3356,13 +3359,13 @@ async function publicShopGetUiLayouts() {
     });
     return {
       ok: true,
-      layouts: normalizePublishedUiLayouts(row?.layouts) || { desktop: {}, mobile: {} },
+      layouts: normalizePublishedUiLayouts(row?.layouts) || normalizePublishedUiLayouts({}),
       updatedAt: row?.updated_at || null
     };
   } catch (error) {
     return {
       ok: true,
-      layouts: { desktop: {}, mobile: {} },
+      layouts: normalizePublishedUiLayouts({}),
       updatedAt: null,
       storageReady: false
     };

@@ -299,7 +299,10 @@
 
   async function saveRemoteLayout() {
     if (typeof callApi !== "function" || typeof state === "undefined" ||
-        !state.sessionToken || !state.requestsPanelKey) return;
+        !state.sessionToken || !state.requestsPanelKey) {
+      setStatus("Solo guardado en este navegador: falta desbloquear el panel");
+      return;
+    }
     try {
       var response = await callApi({
         action: "publicShopSaveUiLayouts",
@@ -307,9 +310,13 @@
         panelKey: state.requestsPanelKey,
         layouts: layoutPayload()
       });
-      if (response.data && response.data.ok) setStatus("Guardado automáticamente");
+      if (response.data && response.data.ok) {
+        setStatus("Guardado en Supabase");
+      } else {
+        setStatus("NO sincronizado: " + ((response.data && response.data.error) || "respuesta inválida"));
+      }
     } catch (error) {
-      setStatus("Guardado local; no se pudo sincronizar");
+      setStatus("NO sincronizado: guardado solo en este navegador");
     }
   }
 
@@ -336,9 +343,17 @@
   function normalizePayload(payload) {
     var result = { desktop: {}, mobile: {} };
     if (!payload || typeof payload !== "object") return result;
-    if (Number(payload.layoutVersion) !== LAYOUT_VERSION ||
-        payload.editorImplementation !== EDITOR_IMPLEMENTATION ||
-        payload.coordinateSystem !== "native-offset-ratios") return result;
+    var modernPayload = Number(payload.layoutVersion) === LAYOUT_VERSION &&
+        payload.editorImplementation === EDITOR_IMPLEMENTATION &&
+        payload.coordinateSystem === "native-offset-ratios";
+    /* La primera API de diseños quitaba estos tres metadatos antes de guardar.
+       Aceptamos ese formato ya almacenado para no perder el trabajo existente. */
+    var legacyApiPayload = !("layoutVersion" in payload) &&
+        ["desktop", "mobile"].some(function (modeName) {
+          return payload[modeName] && payload[modeName].screens &&
+            typeof payload[modeName].screens === "object";
+        });
+    if (!modernPayload && !legacyApiPayload) return result;
     ["desktop", "mobile"].forEach(function (modeName) {
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {

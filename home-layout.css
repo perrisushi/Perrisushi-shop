@@ -1,0 +1,235 @@
+/* Portada de escritorio reproducida desde la maqueta aprobada. */
+@media (min-width: 721px) and (pointer: fine) {
+  body:not(.ui-layout-editing) .shell {
+    width: 100vw;
+    height: 100dvh;
+    padding: 0 2vw;
+    place-items: center;
+  }
+
+  body:not(.ui-layout-editing) .panel {
+    width: 96vw;
+    max-width: none;
+    height: 100dvh;
+    min-height: 0;
+    padding: 0;
+    gap: 0;
+    border-radius: clamp(18px, 1.4vw, 30px);
+    overflow: hidden;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen > .session-bar {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+    z-index: 12;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .session-left-stack {
+    position: absolute;
+    top: 3.1%;
+    left: 1.2%;
+    width: 11.5%;
+    min-height: 0;
+    gap: clamp(8px, .7vw, 15px);
+    pointer-events: auto;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .session-user-card {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: none;
+    min-height: clamp(32px, 2vw, 44px);
+    padding: .35vw .75vw;
+    gap: .38vw;
+    flex-wrap: nowrap;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .session-user-card::before {
+    width: clamp(9px, .65vw, 14px);
+    height: clamp(9px, .65vw, 14px);
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .session-user-label {
+    font-size: clamp(7px, .42vw, 10px);
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .session-user {
+    font-size: clamp(16px, 1.15vw, 25px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .mobile-session-menu {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin: 0;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .mobile-session-menu-toggle {
+    width: clamp(34px, 2.35vw, 52px);
+    height: clamp(34px, 2.35vw, 52px);
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .desktop-stack-back-button {
+    display: none !important;
+  }
+
+  body:not(.ui-layout-editing) #menuView {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-panel,
+  body:not(.ui-layout-editing) #menuView .menu-main-layout {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    display: block;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-frame {
+    position: absolute;
+    left: 50%;
+    top: 10.7%;
+    width: 56.4vw;
+    max-width: none;
+    height: auto;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-inner-area {
+    left: 8.6%;
+    top: 27%;
+    width: 82.8%;
+    height: 58%;
+    overflow: visible;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-frame-content {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-actions {
+    width: 82%;
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 13%;
+    row-gap: clamp(34px, 4.5vh, 78px);
+    align-items: center;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-button {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3.58 / 1;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-button img {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: fill;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-socials {
+    position: absolute;
+    left: 50%;
+    top: 80.6%;
+    width: 36%;
+    max-width: none;
+    margin: 0;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-between;
+    gap: 10.5%;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-social-button {
+    width: 42.5%;
+    max-width: none;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-social-button img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-chat-button {
+    left: 10.2%;
+    top: 26%;
+    width: 5.1vw;
+    height: 5.1vw;
+    max-width: 112px;
+    max-height: 112px;
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-requests-button {
+    left: 10.2%;
+    top: 34%;
+    width: 5.1vw;
+    min-height: 5.1vw;
+    max-width: 112px;
+    padding: .4vw;
+    border-radius: clamp(14px, 1vw, 24px);
+  }
+
+  body:not(.ui-layout-editing) #menuView .menu-requests-button span {
+    font-size: clamp(13px, .9vw, 20px);
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen > .session-logo-badge {
+    top: 2.4%;
+    right: 4.5%;
+    width: 11vw;
+    height: 11vw;
+    max-width: 238px;
+    max-height: 238px;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen > .notification-dock {
+    top: 25.8%;
+    right: 9.9%;
+    gap: clamp(25px, 3.1vh, 55px);
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .notification-bubble {
+    width: 5.55vw;
+    height: 5.55vw;
+    max-width: 120px;
+    max-height: 120px;
+  }
+
+  body:not(.ui-layout-editing) #appView.is-menu-screen .notification-bubble-icon {
+    width: 72%;
+    height: 72%;
+  }
+}
