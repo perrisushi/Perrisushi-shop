@@ -218,11 +218,10 @@ body {
 /* El editor nunca altera visualmente la pagina mientras esta cerrado. */
 .ui-layout-editor[hidden] { display: none !important; }
 
-/* Control global: siempre disponible desde inicio y en todas las secciones. */
+/* Control global disponible en todas las secciones; su visibilidad puede
+   configurarse desde la herramienta como la de cualquier otro recuadro. */
 #desktopStackBackButton {
   display: inline-flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 .ui-layout-editor {

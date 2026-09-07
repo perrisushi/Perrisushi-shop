@@ -321,7 +321,6 @@
           });
         }
       }
-      if (key === "global-back-button" && global[key]) global[key].hidden = false;
       Object.keys(screens).forEach(function (screenName) {
         if (screenName !== GLOBAL_SCREEN && screens[screenName]) delete screens[screenName][key];
       });
@@ -807,9 +806,7 @@
 
   function refreshHidden() {
     allTargets().forEach(function (element) {
-      var forcedVisible = element.dataset.uiLayout === "global-back-button";
-      if (forcedVisible) delete element.dataset.uiLayoutHidden;
-      var hidden = !forcedVisible && element.dataset.uiLayoutHidden === "true";
+      var hidden = element.dataset.uiLayoutHidden === "true";
       var reveal = editorState.active && editorState.showHidden;
       element.style.visibility = hidden && !reveal ? "hidden" : "";
       element.style.opacity = hidden && reveal ? ".28" : "";
@@ -1464,7 +1461,6 @@
     });
     toolbar.querySelector("#uiLayoutHideButton").addEventListener("click", function () {
       if (!editorState.selected) return setStatus("Selecciona un elemento");
-      if (editorState.selected.dataset.uiLayout === "global-back-button") return setStatus("El botón volver debe permanecer visible");
       pushHistory();
       var hidden = editorState.selected.dataset.uiLayoutHidden !== "true";
       if (hidden) editorState.selected.dataset.uiLayoutHidden = "true";
