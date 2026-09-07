@@ -531,7 +531,7 @@ body.ui-layout-editing .session-logo-badge[data-ui-layout] {
   max-height: 100%;
 }
 
-[data-ui-layout].ui-layout-sized img {
+[data-ui-layout].ui-layout-sized > img {
   width: 100% !important;
   height: 100% !important;
   max-width: none !important;
@@ -1169,6 +1169,119 @@ a[data-ui-layout].ui-layout-sized > img {
 .users-room-table-wrap.ui-layout-sized th,
 .users-room-table-wrap.ui-layout-sized td {
   padding: clamp(1px, 2cqmin, 8px) !important;
+}
+
+/* Sala de usuarios: marco cerrado y una única zona desplazable. Las imágenes
+   interiores conservan su función y no heredan el tamaño completo del panel. */
+#usersView .users-room-frame,
+#usersView .users-room-frame-content,
+#usersView .users-room-panel {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+#usersView .users-room-frame {
+  background-size: 100% 100% !important;
+}
+
+#usersView .users-room-frame-content > .users-room-panel {
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  grid-template-rows: minmax(32px, 18%) minmax(0, 1fr) !important;
+  align-content: stretch !important;
+  gap: clamp(3px, 2cqmin, 14px) !important;
+  padding: clamp(4px, 2.4cqmin, 16px) !important;
+}
+
+#usersView .users-room-panel-top {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+#usersView .users-room-panel-title {
+  width: auto !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
+#usersView .users-room-table-wrap {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  padding-right: clamp(3px, 1cqmin, 8px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+
+#usersView .users-room-table {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: auto !important;
+  table-layout: fixed !important;
+}
+
+#usersView .users-room-table :is(th, td) {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: clamp(3px, 1.2cqmin, 10px) !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+}
+
+#usersView .users-room-table :is(th, td):nth-child(1) { width: 46% !important; }
+#usersView .users-room-table :is(th, td):nth-child(2) { width: 19% !important; }
+#usersView .users-room-table :is(th, td):nth-child(3) { width: 35% !important; }
+
+#usersView .users-room-identity {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  gap: clamp(3px, 1.5cqmin, 12px) !important;
+  overflow: hidden !important;
+}
+
+#usersView .users-room-logo {
+  flex: 0 0 auto !important;
+  width: clamp(22px, 9cqmin, 54px) !important;
+  height: clamp(22px, 9cqmin, 54px) !important;
+  max-width: 24% !important;
+  overflow: hidden !important;
+}
+
+#usersView .users-room-logo :is(.users-room-logo-frame, .users-room-logo-slot, .users-room-logo-image) {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+#usersView .users-room-name,
+#usersView .users-room-name-button,
+#usersView .users-room-pc,
+#usersView .users-room-achievements {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  font-size: clamp(7px, min(3.5cqh, 2.1cqw), 1rem) !important;
+  line-height: 1.15 !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
 }
 
 .ui-layout-target-label {
