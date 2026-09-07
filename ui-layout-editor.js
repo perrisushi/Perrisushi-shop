@@ -7,6 +7,13 @@
   var DRAFT_PREFIX = "perrisushi-native-layout-v2:";
   var MOBILE_PREVIEW_REVISION_KEY = "perrisushi-mobile-editor-revision";
   var MOBILE_PREVIEW_REVISION = "4";
+  var GLOBAL_SCREEN = "__global";
+  var GLOBAL_TARGET_KEYS = {
+    "user-controls": true,
+    "session-user": true,
+    "session-menu": true,
+    "global-back-button": true
+  };
   var editorState = {
     active: false,
     guides: true,
@@ -90,7 +97,7 @@
     [".menu-side-tools", "side-tools", "Botones laterales"],
     ["#openChatButton", "side-chat", "Botón Chat"],
     ["#openRequestsPanelButton", "side-panel", "Botón Panel"],
-    ["#profileView,#usersView,#inventoryView,#minigamesView,#shopView,#chatView", "section-panel", "Pantalla de sección"],
+    ["#profileView,#usersView,#inventoryView,#minigamesView,#shopView,#chatView,#personalizeView", "section-panel", "Pantalla de sección"],
     ["#minigamesView .minigames-panel", "minigames-panel", "Panel de minijuegos"],
     ["#minigamesView .minigames-grid", "minigames-grid", "Botones de minijuegos"],
     ["#openDuelsFromMinigames", "game-duels", "PerriDuelos"],
@@ -121,6 +128,18 @@
     ["#profileView .profile-stats-panel", "profile-stats", "Estadísticas del perfil"],
     ["#profileView .profile-actions", "profile-actions", "Acciones del perfil"],
     ["#profileView .profile-actions > *", "profile-action", "Botón del perfil", true],
+    ["#backToProfileFromPersonalize", "logos-back", "Botón volver del álbum"],
+    ["#personalizeView .personalize-album-wrap", "logos-album-box", "Contenedor del álbum"],
+    ["#personalizeView .personalize-album", "logos-album-image", "Imagen del álbum"],
+    ["#personalizeView .hero-card", "logos-selection-card", "Selección de Perrilogo"],
+    ["#personalizeView .hero-copy", "logos-selection-copy", "Texto de selección"],
+    ["#personalizeView .hero-preview", "logos-preview", "Vista previa del Perrilogo"],
+    ["#personalizeView .logos-shell", "logos-browser", "Álbum de Perrilogos"],
+    ["#personalizeView .logos-tabs", "logos-tabs", "Pestañas del álbum"],
+    ["#personalizeView .logos-tab", "logos-tab", "Pestaña del álbum", true],
+    ["#personalizeView .logos-card", "logos-card", "Panel de Perrilogos"],
+    ["#logoGrid", "logos-grid", "Cuadrícula de Perrilogos"],
+    ["#logoGrid .logo-option", "logos-option", "Perrilogo", true],
     ["#chatView .web-chat-view", "chat-window", "Ventana de chat"],
     ["#chatView .web-chat-header", "chat-header", "Cabecera del chat"],
     ["#chatView .web-chat-feed-wrap", "chat-feed", "Mensajes del chat"],
@@ -253,6 +272,50 @@
     return editorState.layouts[modeName][screenName] || {};
   }
 
+  function globalLayouts(create) {
+    var modeName = currentMode();
+    if (!editorState.layouts[modeName]) editorState.layouts[modeName] = {};
+    if (create && !editorState.layouts[modeName][GLOBAL_SCREEN]) {
+      editorState.layouts[modeName][GLOBAL_SCREEN] = {};
+    }
+    return editorState.layouts[modeName][GLOBAL_SCREEN] || {};
+  }
+
+  function isGlobalTarget(elementOrKey) {
+    var key = typeof elementOrKey === "string"
+      ? elementOrKey
+      : elementOrKey && elementOrKey.dataset.uiLayout;
+    return Boolean(key && GLOBAL_TARGET_KEYS[key]);
+  }
+
+  function promoteGlobalTargets(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var global = screens[GLOBAL_SCREEN] && typeof screens[GLOBAL_SCREEN] === "object"
+      ? screens[GLOBAL_SCREEN]
+      : {};
+    Object.keys(GLOBAL_TARGET_KEYS).forEach(function (key) {
+      if (!global[key]) {
+        var preferred = screens.menu && screens.menu[key];
+        if (preferred) global[key] = preferred;
+        if (!global[key]) {
+          Object.keys(screens).some(function (screenName) {
+            if (screenName === GLOBAL_SCREEN) return false;
+            if (screens[screenName] && screens[screenName][key]) {
+              global[key] = screens[screenName][key];
+              return true;
+            }
+            return false;
+          });
+        }
+      }
+      Object.keys(screens).forEach(function (screenName) {
+        if (screenName !== GLOBAL_SCREEN && screens[screenName]) delete screens[screenName][key];
+      });
+    });
+    screens[GLOBAL_SCREEN] = global;
+    return screens;
+  }
+
   function markTargets() {
     /* La carga normal puede ocultar de nuevo el dock si no hay avisos reales.
        En edición debe seguir visible y seleccionable con sus muestras. */
@@ -282,7 +345,7 @@
           if (baseKey === "notification") {
             key = ["notice-objects", "notice-social", "notice-announcement"][index] || "notice-" + index;
           } else if (indexed) {
-            var identity = element.id || element.dataset.itemId || element.dataset.kind || element.dataset.tab || String(index);
+            var identity = element.id || element.dataset.logoId || element.dataset.itemId || element.dataset.kind || element.dataset.tab || String(index);
             key = baseKey + "-" + String(identity).toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
           }
           element.dataset.uiLayout = key;
@@ -302,7 +365,7 @@
     try {
       var stored = JSON.parse(localStorage.getItem(DRAFT_PREFIX + modeName) || "{}");
       if (stored && stored.baseLayoutId === BASE_LAYOUT_ID && stored.screens && typeof stored.screens === "object") {
-        return removeEmptySocialBoxes(stored.screens);
+        return promoteGlobalTargets(removeEmptySocialBoxes(stored.screens));
       }
       return {};
     } catch (error) {
@@ -370,15 +433,15 @@
   }
 
   function pushHistory() {
-    editorState.undo.push(cloneValue(screenLayouts(false)));
+    editorState.undo.push(cloneValue(editorState.layouts[currentMode()] || {}));
     if (editorState.undo.length > 40) editorState.undo.shift();
     editorState.redo = [];
   }
 
   function restoreHistory(from, to, label) {
     if (!from.length) return setStatus("No hay más cambios");
-    to.push(cloneValue(screenLayouts(false)));
-    editorState.layouts[currentMode()][currentScreen()] = from.pop();
+    to.push(cloneValue(editorState.layouts[currentMode()] || {}));
+    editorState.layouts[currentMode()] = from.pop();
     saveDraft();
     scheduleLayoutApply();
     selectElement(null);
@@ -396,7 +459,7 @@
     ["desktop", "mobile"].forEach(function (modeName) {
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
-        result[modeName] = removeEmptySocialBoxes(cloneValue(mode.screens));
+        result[modeName] = promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens)));
       }
     });
     return result;
@@ -434,8 +497,8 @@
         var item = menu[key];
         if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
       });
-      removeEmptySocialBoxes(converted.desktop);
-      removeEmptySocialBoxes(converted.mobile);
+      promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop));
+      promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile));
       return converted;
     }
     return normalizePayload(payload);
@@ -499,20 +562,21 @@
   function applyCurrentLayout() {
     if (!editorState.loaded) return;
     var layout = screenLayouts(false);
+    var global = globalLayouts(false);
     var canvas = canvasRect();
     allTargets().forEach(clearStyle);
     allTargets().forEach(function (element) {
       if (element.dataset.uiLayoutEnabled === "false") return;
-      applyItem(element, layout[element.dataset.uiLayout], canvas, "size");
+      var key = element.dataset.uiLayout;
+      applyItem(element, isGlobalTarget(key) ? global[key] : layout[key], canvas, "size");
     });
     void document.documentElement.offsetHeight;
     allTargets().forEach(function (element) {
       if (element.dataset.uiLayoutEnabled === "false") return;
-      applyItem(element, layout[element.dataset.uiLayout], canvas, "position");
+      var key = element.dataset.uiLayout;
+      applyItem(element, isGlobalTarget(key) ? global[key] : layout[key], canvas, "position");
     });
-    [document.getElementById("openChatButton"), document.getElementById("openRequestsPanelButton"),
-     document.getElementById("openTwitchButton"), document.getElementById("openYoutubeButton")]
-      .forEach(clampInsideParent);
+    allTargets().forEach(clampInsideParent);
     refreshPersistentLocks();
     refreshHidden();
   }
@@ -551,7 +615,8 @@
 
   function commitElement(element) {
     if (!element || !element.dataset.uiLayout) return;
-    screenLayouts(true)[element.dataset.uiLayout] = captureElement(element);
+    var layout = isGlobalTarget(element) ? globalLayouts(true) : screenLayouts(true);
+    layout[element.dataset.uiLayout] = captureElement(element);
     saveDraft();
   }
 
@@ -685,6 +750,27 @@
     }
     if (element.matches("#openTwitchButton, #openYoutubeButton")) {
       return element.closest(".menu-socials");
+    }
+    if (element.matches("#personalizeView .personalize-album")) {
+      return element.closest(".personalize-album-wrap");
+    }
+    if (element.matches("#personalizeView .hero-copy, #personalizeView .hero-preview")) {
+      return element.closest(".hero-card");
+    }
+    if (element.matches("#personalizeView .logos-tabs, #personalizeView .logos-card")) {
+      return element.closest(".logos-shell");
+    }
+    if (element.matches("#personalizeView .logos-tab")) {
+      return element.closest(".logos-tabs");
+    }
+    if (element.matches("#logoGrid")) {
+      return element.closest(".logos-card");
+    }
+    if (element.matches("#logoGrid .logo-option")) {
+      return element.closest("#logoGrid");
+    }
+    if (element.matches("#backToProfileFromPersonalize, #personalizeView .personalize-album-wrap, #personalizeView .hero-card, #personalizeView .logos-shell")) {
+      return element.closest("#personalizeView");
     }
     return null;
   }
@@ -862,9 +948,9 @@
 
   function captureRenderedLayout() {
     if (!editorState.loaded) return;
-    var layout = screenLayouts(true);
     visibleTargets().forEach(function (element) {
       if (!element.dataset.uiLayout) return;
+      var layout = isGlobalTarget(element) ? globalLayouts(true) : screenLayouts(true);
       layout[element.dataset.uiLayout] = captureElement(element);
     });
   }

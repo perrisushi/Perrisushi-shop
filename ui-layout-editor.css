@@ -388,6 +388,10 @@ body.ui-layout-editing #notificationDock [data-ui-editor-preview="true"] {
   opacity: 1 !important;
 }
 
+body.ui-layout-editing #personalizeView .logo-option:disabled {
+  pointer-events: auto !important;
+}
+
 /* El tirador debe quedar accesible durante la edición aunque el contenido se
    recorte de nuevo al cerrar la herramienta. */
 body.ui-layout-editing [data-ui-layout].ui-layout-sized {
@@ -988,6 +992,7 @@ body.ui-layout-editing .menu-button:hover,
 body.ui-layout-editing .menu-social-button:hover,
 body.ui-layout-editing .notification-bubble:hover,
 body.ui-layout-editing .minigames-entry:hover,
+body.ui-layout-editing .logo-option:hover,
 body.ui-layout-editing .desktop-stack-back-button:hover {
   transform: none !important;
   filter: none !important;
