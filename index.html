@@ -9765,6 +9765,22 @@
     }
     function renderInventoryView() {
       if (document.body.classList.contains("ui-layout-editing")) return;
+      const existingCards = Array.from(inventoryGrid.children).filter((element) => element.classList.contains("inventory-card"));
+      const canReuseCards = existingCards.length === inventoryItems.length && existingCards.every((card, index) => (
+        card.dataset.itemId === inventoryItems[index].key
+      ));
+      if (canReuseCards) {
+        existingCards.forEach((card, index) => {
+          const item = inventoryItems[index];
+          const count = Math.max(0, Number(currentInventory[item.key] || 0));
+          const countNode = card.querySelector(".inventory-count");
+          const actionButton = card.querySelector(".inventory-action");
+          if (countNode && countNode.textContent !== String(count)) countNode.textContent = String(count);
+          if (actionButton) actionButton.disabled = count <= 0 || state.loading;
+        });
+        renderDuelView();
+        return;
+      }
       inventoryGrid.innerHTML = inventoryItems.map((item) => `
         <article class="inventory-card${["perriCofres", "perriCofresMinijuego", "bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? "" : " no-action"}" data-item-id="${escapeHtml(item.key)}">
           <div class="inventory-badge"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>
