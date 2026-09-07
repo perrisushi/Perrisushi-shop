@@ -362,12 +362,12 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
 }
 
 .session-user-card.ui-layout-sized .session-user-label {
-  font-size: clamp(5px, min(35cqh, 5cqw), .8rem) !important;
+  font-size: clamp(7px, min(47cqh, 7cqw), 10px) !important;
 }
 
 .session-user-card.ui-layout-sized .session-user {
   flex: 1 1 auto;
-  font-size: clamp(8px, min(55cqh, 10cqw), 1.35rem) !important;
+  font-size: clamp(10px, min(68cqh, 12cqw), 15px) !important;
   line-height: 1 !important;
   white-space: nowrap !important;
 }

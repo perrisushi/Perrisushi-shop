@@ -359,10 +359,19 @@
   function convertPrototypePayload(payload) {
     if (payload && Number(payload.prototypeLayoutVersion) === 2 &&
         payload.coordinateSystem === "absolute-canvas-ratios") {
-      return {
+      var converted = {
         desktop: payload.desktop && payload.desktop.screens ? cloneValue(payload.desktop.screens) : {},
         mobile: payload.mobile && payload.mobile.screens ? cloneValue(payload.mobile.screens) : {}
       };
+      /* El prototipo no genera caja propia para estos enlaces y por eso los
+         exporta como rectángulos 0x0 al pie del lienzo. Esos datos no son una
+         posición válida: conservamos las medidas exactas del CSS compartido. */
+      var menu = converted.desktop.menu || {};
+      ["social-buttons", "social-twitch", "social-youtube"].forEach(function (key) {
+        var item = menu[key];
+        if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
+      });
+      return converted;
     }
     return normalizePayload(payload);
   }

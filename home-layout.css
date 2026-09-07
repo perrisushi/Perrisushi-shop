@@ -159,7 +159,7 @@
     object-fit: fill;
   }
 
-  body:not(.ui-layout-editing) #menuView .menu-socials {
+  #menuView .menu-socials {
     position: absolute;
     left: 50%;
     top: 80.6%;
@@ -172,12 +172,12 @@
     gap: 10.5%;
   }
 
-  body:not(.ui-layout-editing) #menuView .menu-social-button {
+  #menuView .menu-social-button {
     width: 42.5%;
     max-width: none;
   }
 
-  body:not(.ui-layout-editing) #menuView .menu-social-button img {
+  #menuView .menu-social-button img {
     width: 100%;
     height: auto;
     object-fit: contain;
