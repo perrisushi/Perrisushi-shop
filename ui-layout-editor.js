@@ -3,6 +3,7 @@
 
   var LAYOUT_VERSION = 4;
   var EDITOR_IMPLEMENTATION = "native-layout-editor-v1";
+  var BASE_LAYOUT_ID = "maqueta-20260907-3";
   var DRAFT_PREFIX = "perrisushi-native-layout-v2:";
   var MOBILE_PREVIEW_REVISION_KEY = "perrisushi-mobile-editor-revision";
   var MOBILE_PREVIEW_REVISION = "4";
@@ -291,6 +292,7 @@
     return {
       layoutVersion: LAYOUT_VERSION,
       editorImplementation: EDITOR_IMPLEMENTATION,
+      baseLayoutId: BASE_LAYOUT_ID,
       coordinateSystem: "absolute-canvas-ratios",
       desktop: { screens: editorState.layouts.desktop },
       mobile: { screens: editorState.layouts.mobile }
@@ -345,6 +347,7 @@
     if (!payload || typeof payload !== "object") return result;
     var modernPayload = Number(payload.layoutVersion) === LAYOUT_VERSION &&
         payload.editorImplementation === EDITOR_IMPLEMENTATION &&
+        payload.baseLayoutId === BASE_LAYOUT_ID &&
         payload.coordinateSystem === "absolute-canvas-ratios";
     if (!modernPayload) return result;
     ["desktop", "mobile"].forEach(function (modeName) {

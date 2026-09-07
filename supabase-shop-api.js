@@ -3339,6 +3339,7 @@ function normalizePublishedUiLayouts(value) {
   const normalized = {
     layoutVersion,
     editorImplementation: source.editorImplementation || "native-layout-editor-v1",
+    baseLayoutId: source.baseLayoutId || null,
     coordinateSystem: source.coordinateSystem || (layoutVersion >= 4 ? "absolute-canvas-ratios" : "native-offset-ratios"),
     desktop: source.desktop && typeof source.desktop === "object" && !Array.isArray(source.desktop) ? source.desktop : {},
     mobile: source.mobile && typeof source.mobile === "object" && !Array.isArray(source.mobile) ? source.mobile : {}
