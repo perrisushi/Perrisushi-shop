@@ -1551,25 +1551,13 @@
     if (Object.keys(normalizedRemote.desktop).length || Object.keys(normalizedRemote.mobile).length) {
       editorState.layouts = normalizedRemote;
     }
-    /* Migración única: conserva los cambios que ya estaban atrapados en este
-       navegador para poder enviarlos con Guardar diseño. Tras guardarlos se
-       eliminan y Supabase pasa a ser la única fuente persistente. */
-    var desktopDraft = readDraft("desktop");
-    var mobileDraft = readDraft("mobile");
-    var hasLegacyDraft = false;
-    Object.keys(desktopDraft).forEach(function (screenName) {
-      if (desktopDraft[screenName] && Object.keys(desktopDraft[screenName]).length) {
-        editorState.layouts.desktop[screenName] = desktopDraft[screenName];
-        hasLegacyDraft = true;
-      }
-    });
-    Object.keys(mobileDraft).forEach(function (screenName) {
-      if (mobileDraft[screenName] && Object.keys(mobileDraft[screenName]).length) {
-        editorState.layouts.mobile[screenName] = mobileDraft[screenName];
-        hasLegacyDraft = true;
-      }
-    });
-    editorState.dirty = hasLegacyDraft;
+    /* Supabase es la única fuente persistente. Eliminamos cualquier borrador
+       antiguo para que ningún navegador pueda tapar el diseño compartido. */
+    try {
+      localStorage.removeItem(DRAFT_PREFIX + "desktop");
+      localStorage.removeItem(DRAFT_PREFIX + "mobile");
+    } catch (error) {}
+    editorState.dirty = false;
     refreshSaveButton();
     markTargets();
     /* No mostramos el lienzo entre el diseño incluido y el remoto: esperamos
