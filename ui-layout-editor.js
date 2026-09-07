@@ -647,6 +647,7 @@
     delete element.dataset.uiLayoutHidden;
     delete element.dataset.uiLayoutLockedWith;
     delete element.dataset.uiLayoutMagnetism;
+    delete element.dataset.uiLayoutUnbounded;
   }
 
   function contentChildren(element) {
@@ -796,6 +797,7 @@
       if (item.hidden) element.dataset.uiLayoutHidden = "true";
       if (item.lockedWith) element.dataset.uiLayoutLockedWith = String(item.lockedWith);
       if (item.magnetism === false) element.dataset.uiLayoutMagnetism = "false";
+      if (item.unbounded === true) element.dataset.uiLayoutUnbounded = "true";
     }
   }
 
@@ -864,7 +866,8 @@
       heightRatio: canvas.height ? rect.height / layoutCanvasScale / canvas.height : 0,
       hidden: element.dataset.uiLayoutHidden === "true",
       lockedWith: element.dataset.uiLayoutLockedWith || null,
-      magnetism: element.dataset.uiLayoutMagnetism !== "false"
+      magnetism: element.dataset.uiLayoutMagnetism !== "false",
+      unbounded: element.dataset.uiLayoutUnbounded === "true"
     };
     var contentWidth = Number(element.dataset.uiContentWidth);
     var contentHeight = Number(element.dataset.uiContentHeight);
@@ -1012,6 +1015,7 @@
       setStatus("Selecciona un elemento");
       refreshLockButton();
       refreshMagnetismButton();
+      refreshContainmentButton();
       refreshRevealButton();
       return;
     }
@@ -1025,6 +1029,7 @@
     setStatus(element.dataset.uiLayoutLabel || element.dataset.uiLayout);
     refreshLockButton();
     refreshMagnetismButton();
+    refreshContainmentButton();
     refreshRevealButton();
   }
 
@@ -1053,6 +1058,17 @@
     button.disabled = !editorState.selected;
     button.textContent = "Magnetismo: " + (enabled ? "Sí" : "No");
     button.setAttribute("aria-pressed", String(enabled));
+  }
+
+  function refreshContainmentButton() {
+    var button = document.getElementById("uiLayoutContainmentButton");
+    if (!button) return;
+    var selected = editorState.selected;
+    var unbounded = Boolean(selected) && selected.dataset.uiLayoutUnbounded === "true";
+    var hasContainer = Boolean(selected) && Boolean(boundedParent(selected, true));
+    button.disabled = !selected || (!unbounded && !hasContainer);
+    button.textContent = unbounded ? "Mantener dentro" : "Permitir salir";
+    button.setAttribute("aria-pressed", String(unbounded));
   }
 
   function candidateTargets(element) {
@@ -1134,8 +1150,9 @@
     }) || null;
   }
 
-  function boundedParent(element) {
+  function boundedParent(element, ignoreUnbounded) {
     if (!element) return null;
+    if (!ignoreUnbounded && element.dataset.uiLayoutUnbounded === "true") return null;
     /* En el lienzo móvil estos dos controles son flotantes globales. No deben
        quedar aprisionados por la altura inicial de session-left-stack, porque
        el editor tiene que poder bajarlos a cualquier zona del diseño. */
@@ -1500,6 +1517,7 @@
       "<button id=\"uiLayoutGuidesToggle\" type=\"button\" aria-pressed=\"true\">Ocultar marcos</button>" +
       "<button id=\"uiLayoutEqualButton\" type=\"button\">Igualar tamaño</button>" +
       "<button id=\"uiLayoutMagnetismButton\" type=\"button\" aria-pressed=\"true\" disabled>Magnetismo: Sí</button>" +
+      "<button id=\"uiLayoutContainmentButton\" type=\"button\" aria-pressed=\"false\" disabled>Permitir salir</button>" +
       "<button id=\"uiLayoutLockButton\" type=\"button\">Anclar</button>" +
       "<button id=\"uiLayoutHideButton\" type=\"button\">Ocultar selección</button>" +
       "<button id=\"uiLayoutShowHiddenButton\" type=\"button\" aria-pressed=\"false\">Ver ocultos</button>" +
@@ -1549,6 +1567,22 @@
       commitElement(editorState.selected);
       refreshMagnetismButton();
       setStatus("Magnetismo " + (disable ? "desactivado" : "activado") + " para este recuadro");
+    });
+    toolbar.querySelector("#uiLayoutContainmentButton").addEventListener("click", function () {
+      var selected = editorState.selected;
+      if (!selected) return setStatus("Selecciona un elemento");
+      var unbounded = selected.dataset.uiLayoutUnbounded === "true";
+      if (!unbounded && !boundedParent(selected, true)) return setStatus("Este elemento no tiene contenedor");
+      pushHistory();
+      if (unbounded) {
+        delete selected.dataset.uiLayoutUnbounded;
+        clampInsideParent(selected);
+      } else {
+        selected.dataset.uiLayoutUnbounded = "true";
+      }
+      commitElement(selected);
+      refreshContainmentButton();
+      setStatus(unbounded ? "Elemento limitado a su contenedor" : "Elemento libre: ya puede salir de su contenedor");
     });
     toolbar.querySelector("#uiLayoutLockButton").addEventListener("click", function (event) {
       if (!editorState.selected) return setStatus("Selecciona un elemento");
