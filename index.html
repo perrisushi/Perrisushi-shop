@@ -6243,7 +6243,7 @@
       }
     }
   </style>
-    <link rel="stylesheet" href="./ui-layout-editor.css?v=20260908-52">
+    <link rel="stylesheet" href="./ui-layout-editor.css?v=20260908-53">
     <link rel="stylesheet" href="./home-layout.css?v=20260907-3">
 </head>
 <body>
@@ -6860,6 +6860,18 @@
             </footer>
           </div>
         </section>
+        <div id="inventoryInfoModal" class="notification-modal inventory-info-modal" hidden>
+          <div id="inventoryInfoModalBackdrop" class="notification-modal-backdrop"></div>
+          <article class="notification-modal-card inventory-info-modal-card" role="dialog" aria-modal="true" aria-labelledby="inventoryInfoModalTitle">
+            <button id="inventoryInfoModalClose" class="notification-modal-close" type="button" aria-label="Cerrar informacion del objeto">×</button>
+            <div class="inventory-info-modal-icon">
+              <img id="inventoryInfoModalImage" src="./assets/perricofre1-cerrado.png" alt="">
+            </div>
+            <h2 id="inventoryInfoModalTitle" class="notification-modal-title">Objeto</h2>
+            <p class="inventory-info-modal-quantity">Cantidad: <strong id="inventoryInfoModalCount">0</strong></p>
+            <p id="inventoryInfoModalDescription" class="notification-modal-message"></p>
+          </article>
+        </div>
         <section id="profileView" class="content-view view" hidden>
           <div class="inventory-panel profile-panel">
             <section class="profile-card">
@@ -7380,6 +7392,13 @@
     const backToProfileFromPersonalize = document.getElementById("backToProfileFromPersonalize");
     const inventoryGrid = document.getElementById("inventoryGrid");
     const inventoryMessage = document.getElementById("inventoryMessage");
+    const inventoryInfoModal = document.getElementById("inventoryInfoModal");
+    const inventoryInfoModalBackdrop = document.getElementById("inventoryInfoModalBackdrop");
+    const inventoryInfoModalClose = document.getElementById("inventoryInfoModalClose");
+    const inventoryInfoModalImage = document.getElementById("inventoryInfoModalImage");
+    const inventoryInfoModalTitle = document.getElementById("inventoryInfoModalTitle");
+    const inventoryInfoModalCount = document.getElementById("inventoryInfoModalCount");
+    const inventoryInfoModalDescription = document.getElementById("inventoryInfoModalDescription");
     const perriCasillasBoard = document.getElementById("perriCasillasBoard");
     const perriCasillasCoins = document.getElementById("perriCasillasCoins");
     const perriCasillasOpened = document.getElementById("perriCasillasOpened");
@@ -9790,19 +9809,31 @@
         return;
       }
       inventoryGrid.innerHTML = inventoryItems.map((item) => `
-        <article class="inventory-card${["perriCofres", "perriCofresMinijuego", "bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? "" : " no-action"}" data-item-id="${escapeHtml(item.key)}">
+        <article class="inventory-card${["perriCofres", "perriCofresMinijuego", "bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? "" : " no-action"}" data-item-id="${escapeHtml(item.key)}" role="button" tabindex="0" aria-label="Ver informacion de ${escapeHtml(item.name)}">
           <div class="inventory-badge"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>
-          <div>
-            <h2>${escapeHtml(item.name)}</h2>
-            <p class="inventory-count">${Math.max(0, Number(currentInventory[item.key] || 0))}</p>
-          </div>
-          <p class="inventory-copy">${escapeHtml(item.effect)}</p>
+          <p class="inventory-count" aria-label="Cantidad: ${Math.max(0, Number(currentInventory[item.key] || 0))}">${Math.max(0, Number(currentInventory[item.key] || 0))}</p>
           ${item.key === "perriCofres" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-perri-chest" ${Math.max(0, Number(currentInventory.perriCofres || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir Perricofre</button>` : ""}
           ${item.key === "perriCofresMinijuego" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-minigame-chest" ${Math.max(0, Number(currentInventory.perriCofresMinijuego || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir cofre</button>` : ""}
           ${["bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-reward-container" data-item-key="${escapeHtml(item.key)}" ${Math.max(0, Number(currentInventory[item.key] || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir</button>` : ""}
         </article>
       `).join("");
       renderDuelView();
+    }
+    function closeInventoryInfoModal() {
+      inventoryInfoModal.hidden = true;
+    }
+    function openInventoryInfoModal(itemKey) {
+      if (document.body.classList.contains("ui-layout-editing")) return;
+      const item = inventoryItems.find((entry) => entry.key === String(itemKey || ""));
+      if (!item) return;
+      const count = Math.max(0, Number(currentInventory[item.key] || 0));
+      inventoryInfoModalImage.src = item.image;
+      inventoryInfoModalImage.alt = item.name;
+      inventoryInfoModalTitle.textContent = item.name;
+      inventoryInfoModalCount.textContent = String(count);
+      inventoryInfoModalDescription.textContent = item.effect;
+      inventoryInfoModal.hidden = false;
+      inventoryInfoModalClose.focus();
     }
     function getInventoryChestConfig(chestType) {
       const rewardContainerConfigs = {
@@ -11542,16 +11573,33 @@
     });
     inventoryGrid.addEventListener("click", (event) => {
       const button = event.target.closest("[data-inventory-action]");
-      if (!button) return;
-      if (button.dataset.inventoryAction === "open-perri-chest") {
-        openInventoryChestConfirm("perriCofres");
+      if (button) {
+        if (button.dataset.inventoryAction === "open-perri-chest") {
+          openInventoryChestConfirm("perriCofres");
+        }
+        if (button.dataset.inventoryAction === "open-minigame-chest") {
+          openInventoryChestConfirm("perriCofresMinijuego");
+        }
+        if (button.dataset.inventoryAction === "open-reward-container") {
+          openInventoryChestConfirm(String(button.dataset.itemKey || ""));
+        }
+        return;
       }
-      if (button.dataset.inventoryAction === "open-minigame-chest") {
-        openInventoryChestConfirm("perriCofresMinijuego");
-      }
-      if (button.dataset.inventoryAction === "open-reward-container") {
-        openInventoryChestConfirm(String(button.dataset.itemKey || ""));
-      }
+      const card = event.target.closest(".inventory-card[data-item-id]");
+      if (card) openInventoryInfoModal(card.dataset.itemId);
+    });
+    inventoryGrid.addEventListener("keydown", (event) => {
+      if (event.target.closest("[data-inventory-action]")) return;
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const card = event.target.closest(".inventory-card[data-item-id]");
+      if (!card) return;
+      event.preventDefault();
+      openInventoryInfoModal(card.dataset.itemId);
+    });
+    inventoryInfoModalClose.addEventListener("click", closeInventoryInfoModal);
+    inventoryInfoModalBackdrop.addEventListener("click", closeInventoryInfoModal);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !inventoryInfoModal.hidden) closeInventoryInfoModal();
     });
     gearGrid.addEventListener("click", (event) => {
       const button = event.target.closest(".gear-tile");
