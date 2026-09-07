@@ -671,7 +671,12 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
 #shopView .shop-content-shell.ui-layout-sized,
 #inventoryView #inventoryGrid.ui-layout-sized {
   min-height: 0 !important;
-  overflow: auto !important;
+}
+
+#inventoryView #inventoryGrid.ui-layout-sized {
+  overflow: hidden !important;
+  align-content: stretch !important;
+  align-items: stretch !important;
 }
 
 #usersView .users-room-table-wrap.ui-layout-selected > .ui-layout-resize-handle,
@@ -786,6 +791,50 @@ a[data-ui-layout].ui-layout-sized > img {
 #minigamesView .minigames-panel.ui-layout-sized {
   box-sizing: border-box !important;
   contain: layout style !important;
+}
+
+/* Fichas de recursos: el texto literal pertenece al propio <p>, por eso se
+   escala el objetivo además de sus descendientes. El icono conserva una zona
+   proporcional y nunca puede expulsar el texto fuera de la pastilla. */
+#inventoryView :is(.dust-chip, .pc-chip)[data-ui-layout].ui-layout-sized,
+#shopView :is(.dust-chip, .pc-chip)[data-ui-layout].ui-layout-sized {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+  gap: clamp(2px, calc(var(--ui-box-w, 120px) * .04), 10px) !important;
+  padding: clamp(2px, calc(var(--ui-box-h, 40px) * .14), 12px)
+           clamp(3px, calc(var(--ui-box-w, 120px) * .06), 16px) !important;
+  font-size: clamp(7px, min(calc(var(--ui-box-w, 120px) * .105), calc(var(--ui-box-h, 40px) * .3)), 20px) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+#inventoryView :is(.dust-chip, .pc-chip)[data-ui-layout].ui-layout-sized strong,
+#shopView :is(.dust-chip, .pc-chip)[data-ui-layout].ui-layout-sized strong {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  font-size: 1.08em !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+#inventoryView .dust-chip[data-ui-layout].ui-layout-sized .chip-icon,
+#shopView .dust-chip[data-ui-layout].ui-layout-sized .chip-icon {
+  flex: 0 0 auto !important;
+  width: min(28%, calc(var(--ui-box-h, 40px) * .58)) !important;
+  height: min(70%, calc(var(--ui-box-h, 40px) * .58)) !important;
+  object-fit: contain !important;
+}
+
+/* Al redimensionar el conjunto, todas las tarjetas se reparten dentro de la
+   caja y el navegador no crea una barra de desplazamiento intermitente. */
+#inventoryView #inventoryGrid.ui-layout-sized > .inventory-card {
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
 }
 
 .users-room-table-wrap.ui-layout-sized th,
