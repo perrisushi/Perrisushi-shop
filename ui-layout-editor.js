@@ -12,6 +12,7 @@
     "user-controls": true,
     "session-user": true,
     "session-menu": true,
+    "session-dropdown": true,
     "global-back-button": true
   };
   var editorState = {
@@ -79,6 +80,7 @@
     [".session-left-stack", "user-controls", "Controles de usuario"],
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
+    ["#mobileSessionDropdown", "session-dropdown", "Ventana del menú desplegable"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
     [".content-view .nav-back", "section-back", "Botón volver", true],
     [".session-logo-badge", "avatar", "Logo del usuario"],
@@ -319,7 +321,10 @@
   function markTargets() {
     /* La carga normal puede ocultar de nuevo el dock si no hay avisos reales.
        En edición debe seguir visible y seleccionable con sus muestras. */
-    if (editorState.active) setNotificationEditorPreviews(true);
+    if (editorState.active) {
+      setNotificationEditorPreviews(true);
+      setSessionDropdownEditorPreview(true);
+    }
     var addedTarget = false;
     targetDefinitions.forEach(function (definition) {
       var selector = definition[0];
@@ -988,6 +993,22 @@
     delete dock.dataset.uiEditorPreviewState;
   }
 
+  function setSessionDropdownEditorPreview(enabled) {
+    var dropdown = document.getElementById("mobileSessionDropdown");
+    if (!dropdown) return;
+    if (enabled) {
+      if (!dropdown.dataset.uiEditorPreviewState) {
+        dropdown.dataset.uiEditorPreviewState = dropdown.hidden ? "hidden" : "visible";
+      }
+      dropdown.hidden = false;
+      dropdown.classList.add("is-open", "is-editor-preview");
+      return;
+    }
+    dropdown.classList.remove("is-editor-preview", "is-open");
+    if (dropdown.dataset.uiEditorPreviewState === "hidden") dropdown.hidden = true;
+    delete dropdown.dataset.uiEditorPreviewState;
+  }
+
   function setEditing(active) {
     var nextActive = Boolean(active);
     /* La vista publicada es la referencia. Antes de añadir las clases y
@@ -1005,12 +1026,14 @@
     }
     if (!editorState.active) {
       setNotificationEditorPreviews(false);
+      setSessionDropdownEditorPreview(false);
       selectElement(null);
       editorState.showHidden = false;
       refreshHidden();
       refreshLabels();
     } else {
       setNotificationEditorPreviews(true);
+      setSessionDropdownEditorPreview(true);
       markTargets();
       refreshLabels();
       setStatus("Editando " + (currentMode() === "mobile" ? "móvil" : "PC") + " · " + currentScreen());

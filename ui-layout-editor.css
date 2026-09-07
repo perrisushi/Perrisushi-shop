@@ -441,6 +441,28 @@ body.ui-layout-editing .session-logo-badge[data-ui-layout] {
   min-height: 0 !important;
 }
 
+body.ui-layout-editing .mobile-session-dropdown.is-editor-preview {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  max-height: none !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+.mobile-session-dropdown.ui-layout-sized {
+  container-type: size;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+.mobile-session-dropdown.ui-layout-sized > .mobile-session-menu-item {
+  min-height: 0 !important;
+  height: 100% !important;
+  padding: clamp(2px, 5cqh, 12px) clamp(4px, 6cqw, 16px) !important;
+  font-size: clamp(8px, min(18cqh, 8cqw), 16px) !important;
+  overflow: hidden;
+}
+
 .session-user-card.ui-layout-sized {
   padding: clamp(1px, 10cqh, 11px) clamp(3px, 6cqw, 18px) !important;
   gap: clamp(2px, 3cqw, 10px) !important;
