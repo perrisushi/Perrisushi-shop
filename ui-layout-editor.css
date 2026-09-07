@@ -1573,3 +1573,153 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
     line-height: 1.25 !important;
   }
 }
+
+/* Personalización de escritorio: composición compacta y logos agrupados. */
+@media (min-width: 721px) and (pointer: fine) {
+  #personalizeView {
+    box-sizing: border-box !important;
+    place-items: center !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView .personalize-panel {
+    box-sizing: border-box !important;
+    width: min(620px, 58%) !important;
+    height: auto !important;
+    max-height: 88% !important;
+    margin: auto !important;
+    place-self: center !important;
+    display: grid !important;
+    grid-template-rows: auto auto auto auto !important;
+    align-content: center !important;
+    gap: 12px !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView .section-topbar {
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+  }
+
+  #personalizeView .personalize-album-wrap {
+    width: 100% !important;
+    height: 104px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView .personalize-album {
+    width: 220px !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  #personalizeView .hero-card {
+    box-sizing: border-box !important;
+    width: min(520px, 100%) !important;
+    height: 112px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    padding: 12px 16px !important;
+    grid-template-columns: minmax(0, 1fr) 88px !important;
+    gap: 14px !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView .hero-copy,
+  #personalizeView .hero-copy > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #personalizeView .hero-text {
+    font-size: .78rem !important;
+    line-height: 1.15 !important;
+  }
+
+  #personalizeView .hero-preview {
+    width: 88px !important;
+    height: 88px !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    align-self: center !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView .logos-shell {
+    box-sizing: border-box !important;
+    width: min(520px, 100%) !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView .logos-tabs {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 0 -2px !important;
+    padding-left: 10px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView .logos-tab {
+    min-width: 0 !important;
+    padding: 8px 12px 10px !important;
+    font-size: .7rem !important;
+    white-space: nowrap !important;
+  }
+
+  #personalizeView .logos-card {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 138px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 12px !important;
+    overflow: hidden auto !important;
+  }
+
+  #personalizeView #logoGrid {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, 54px) !important;
+    grid-auto-rows: 54px !important;
+    justify-content: start !important;
+    align-content: start !important;
+    gap: 8px !important;
+    overflow: visible !important;
+  }
+
+  #personalizeView #logoGrid > .logo-option {
+    box-sizing: border-box !important;
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 5px !important;
+    overflow: hidden !important;
+  }
+
+  #personalizeView #logoGrid > .logo-option > img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+  }
+}

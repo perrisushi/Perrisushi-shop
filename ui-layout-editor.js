@@ -511,6 +511,22 @@
     return screens;
   }
 
+  function compactDesktopPersonalizeOnce(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var personalize = screens.personalize;
+    if (!personalize || typeof personalize !== "object" || personalize.__compact_personalize_pc_v1) return screens;
+    [
+      "logos-album-box", "logos-album-image", "logos-selection-card",
+      "logos-selection-copy", "logos-preview", "logos-browser",
+      "logos-tabs", "logos-card", "logos-grid"
+    ].forEach(function (key) { delete personalize[key]; });
+    Object.keys(personalize).forEach(function (key) {
+      if (key.indexOf("logos-tab-") === 0) delete personalize[key];
+    });
+    personalize.__compact_personalize_pc_v1 = { applied: true };
+    return screens;
+  }
+
   function pushHistory() {
     editorState.undo.push(cloneValue(editorState.layouts[currentMode()] || {}));
     if (editorState.undo.length > 40) editorState.undo.shift();
@@ -539,6 +555,7 @@
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
         result[modeName] = removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens))));
+        if (modeName === "desktop") compactDesktopPersonalizeOnce(result[modeName]);
       }
     });
     return result;
