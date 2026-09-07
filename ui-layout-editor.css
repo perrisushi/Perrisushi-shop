@@ -289,15 +289,19 @@ body.ui-layout-editing [data-ui-layout].ui-layout-static { position: relative; }
   flex: none;
 }
 
+/* El tirador debe quedar accesible durante la edición aunque el contenido se
+   recorte de nuevo al cerrar la herramienta. */
+body.ui-layout-editing [data-ui-layout].ui-layout-sized {
+  overflow: visible !important;
+}
+
 [data-ui-layout].ui-layout-sized > *:not(.ui-layout-resize-handle) {
   min-width: 0;
   max-width: 100%;
   max-height: 100%;
 }
 
-[data-ui-layout].ui-layout-sized > img,
-[data-ui-layout].ui-layout-sized > a > img,
-[data-ui-layout].ui-layout-sized > button > img {
+[data-ui-layout].ui-layout-sized img {
   width: 100% !important;
   height: 100% !important;
   max-width: none !important;
@@ -323,11 +327,22 @@ body.ui-layout-editing [data-ui-layout].ui-layout-static { position: relative; }
   max-width: 100%;
   font-size: clamp(4px, 6cqmin, 1rem) !important;
   line-height: 1.18;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
-body.ui-layout-editing [data-ui-layout]::before {
-  content: attr(data-ui-layout-label);
+[data-ui-layout].ui-layout-sized button,
+[data-ui-layout].ui-layout-sized a,
+[data-ui-layout].ui-layout-sized input,
+[data-ui-layout].ui-layout-sized textarea,
+[data-ui-layout].ui-layout-sized select {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  font-size: clamp(5px, 6cqmin, 1rem) !important;
+}
+
+.ui-layout-target-label {
   position: absolute;
   z-index: 9997;
   top: 2px;
@@ -373,12 +388,6 @@ body.ui-layout-editing [data-ui-layout].ui-layout-locked {
   box-shadow: 0 3px 10px #000b;
   cursor: nwse-resize !important;
   touch-action: none;
-}
-
-body.ui-layout-editing [data-ui-layout] img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
 }
 
 body.ui-layout-editing .menu-button:hover,

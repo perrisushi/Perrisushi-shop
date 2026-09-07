@@ -23,8 +23,9 @@
   var originalStyles = new WeakMap();
   var mobileDevice = Boolean(
     navigator.userAgentData && navigator.userAgentData.mobile
-  ) || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || "") ||
-    Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 720;
+  ) || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || "") || Boolean(
+    navigator.maxTouchPoints > 0 && window.matchMedia && window.matchMedia("(pointer: coarse)").matches
+  );
 
   function fitFixedCanvas() {
     layoutCanvasScale = 1;
@@ -35,10 +36,10 @@
   }
 
   var targetDefinitions = [
-    [".session-left-stack", "user-controls", "Controles de usuario"],
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
+    [".content-view .nav-back", "section-back", "Botón volver", true],
     [".session-logo-badge", "avatar", "Logo del usuario"],
     ["#notificationDock", "notifications", "Botones de aviso"],
     [".notification-bubble", "notification", "Aviso", true],
@@ -67,13 +68,16 @@
     ["#usersView .users-room-table-wrap", "users-table", "Lista de usuarios"],
     ["#shopView .shop-resource-shell", "shop-resource-shell", "Barra de recursos"],
     ["#shopView .resource-group", "shop-resources", "Gemas y PC"],
+    ["#shopView .resource-group > *", "shop-resource-chip", "Recurso", true],
     ["#shopView .shop-tabs-shell", "shop-tabs", "Pestañas de tienda"],
+    ["#shopView .shop-tabs-shell .tab-button", "shop-tab", "Pestaña", true],
     ["#shopView .shop-content-shell", "shop-content", "Contenido de tienda"],
     ["#shopView .random-key-card", "shop-random-key", "Random Key"],
     ["#shopView .random-key-history", "shop-key-history", "Historial de Keys"],
     ["#shopView .shop-item-cell", "shop-item", "Artículo de tienda", true],
     ["#inventoryView .section-topbar", "inventory-resources", "Gemas y PC"],
     ["#inventoryView .resource-group", "inventory-resource-chips", "Recuadro de Gemas y PC"],
+    ["#inventoryView .resource-group > *", "inventory-resource-chip", "Recurso", true],
     ["#inventoryView .inventory-heading", "inventory-title", "Título Inventario"],
     ["#inventoryGrid", "inventory-grid", "Objetos del inventario"],
     ["#inventoryGrid .inventory-card", "inventory-item", "Objeto del inventario", true],
@@ -81,6 +85,7 @@
     ["#profileView .profile-logo-panel", "profile-logo", "Logo del perfil"],
     ["#profileView .profile-stats-panel", "profile-stats", "Estadísticas del perfil"],
     ["#profileView .profile-actions", "profile-actions", "Acciones del perfil"],
+    ["#profileView .profile-actions > *", "profile-action", "Botón del perfil", true],
     ["#chatView .web-chat-view", "chat-window", "Ventana de chat"],
     ["#chatView .web-chat-header", "chat-header", "Cabecera del chat"],
     ["#chatView .web-chat-feed-wrap", "chat-feed", "Mensajes del chat"],
@@ -126,6 +131,27 @@
     });
   }
 
+  function refreshLabels() {
+    if (!editorState.active) {
+      document.querySelectorAll(".ui-layout-target-label").forEach(function (label) { label.remove(); });
+      return;
+    }
+    visibleTargets().forEach(function (element) {
+      var existing = Array.from(element.children).find(function (child) {
+        return child.classList && child.classList.contains("ui-layout-target-label");
+      });
+      if (existing) {
+        existing.textContent = element.dataset.uiLayoutLabel || element.dataset.uiLayout;
+        return;
+      }
+      var label = document.createElement("span");
+      label.className = "ui-layout-target-label";
+      label.textContent = element.dataset.uiLayoutLabel || element.dataset.uiLayout;
+      label.setAttribute("aria-hidden", "true");
+      element.appendChild(label);
+    });
+  }
+
   function screenLayouts(create) {
     var modeName = currentMode();
     var screenName = currentScreen();
@@ -159,7 +185,8 @@
           if (baseKey === "notification") {
             key = ["notice-objects", "notice-social", "notice-announcement"][index] || "notice-" + index;
           } else if (indexed) {
-            key = baseKey + "-" + index;
+            var identity = element.id || element.dataset.itemId || element.dataset.kind || element.dataset.tab || String(index);
+            key = baseKey + "-" + String(identity).toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
           }
           element.dataset.uiLayout = key;
         }
@@ -170,6 +197,7 @@
     document.querySelectorAll(".content-view[data-ui-layout=\"section-panel\"]").forEach(function (view) {
       view.dataset.uiLayoutEnabled = view === activeView ? "true" : "false";
     });
+    refreshLabels();
     if (!editorState.active) scheduleLayoutApply();
   }
 
@@ -467,7 +495,9 @@
   function linkedElement(element) {
     var key = element && element.dataset.uiLayoutLockedWith;
     if (!key) return null;
-    return document.querySelector("[data-ui-layout=\"" + CSS.escape(key) + "\"]");
+    return visibleTargets().find(function (candidate) {
+      return candidate.dataset.uiLayout === key;
+    }) || null;
   }
 
   function moveElement(element, dx, dy, includeLinked) {
@@ -485,14 +515,48 @@
   function resizeElement(element, width, height, includeLinked) {
     var safeWidth = Math.max(16, width);
     var safeHeight = Math.max(16, height);
+    var linked = includeLinked !== false ? linkedElement(element) : null;
+    var relation = null;
+    if (linked) {
+      var firstRect = element.getBoundingClientRect();
+      var linkedRect = linked.getBoundingClientRect();
+      var centerDx = (linkedRect.left + linkedRect.width / 2) - (firstRect.left + firstRect.width / 2);
+      var centerDy = (linkedRect.top + linkedRect.height / 2) - (firstRect.top + firstRect.height / 2);
+      if (Math.abs(centerDx) >= Math.abs(centerDy)) {
+        relation = centerDx >= 0
+          ? { side: "right", gap: linkedRect.left - firstRect.right, cross: linkedRect.top - firstRect.top }
+          : { side: "left", gap: firstRect.left - linkedRect.right, cross: linkedRect.top - firstRect.top };
+      } else {
+        relation = centerDy >= 0
+          ? { side: "bottom", gap: linkedRect.top - firstRect.bottom, cross: linkedRect.left - firstRect.left }
+          : { side: "top", gap: firstRect.top - linkedRect.bottom, cross: linkedRect.left - firstRect.left };
+      }
+    }
     element.dataset.uiLayoutWidth = String(safeWidth);
     element.dataset.uiLayoutHeight = String(safeHeight);
     element.style.setProperty("width", safeWidth + "px", "important");
     element.style.setProperty("height", safeHeight + "px", "important");
     element.classList.add("ui-layout-sized");
-    if (includeLinked !== false) {
-      var linked = linkedElement(element);
-      if (linked) resizeElement(linked, safeWidth, safeHeight, false);
+    if (linked) {
+      resizeElement(linked, safeWidth, safeHeight, false);
+      var resized = element.getBoundingClientRect();
+      var linkedResized = linked.getBoundingClientRect();
+      var desiredLeft = linkedResized.left;
+      var desiredTop = linkedResized.top;
+      if (relation.side === "right") {
+        desiredLeft = resized.right + relation.gap;
+        desiredTop = resized.top + relation.cross;
+      } else if (relation.side === "left") {
+        desiredLeft = resized.left - relation.gap - linkedResized.width;
+        desiredTop = resized.top + relation.cross;
+      } else if (relation.side === "bottom") {
+        desiredTop = resized.bottom + relation.gap;
+        desiredLeft = resized.left + relation.cross;
+      } else {
+        desiredTop = resized.top - relation.gap - linkedResized.height;
+        desiredLeft = resized.left + relation.cross;
+      }
+      moveElement(linked, (desiredLeft - linkedResized.left) / layoutCanvasScale, (desiredTop - linkedResized.top) / layoutCanvasScale, false);
     }
   }
 
@@ -516,8 +580,8 @@
       originY: Number(element.dataset.uiLayoutY || 0),
       width: rect.width / layoutCanvasScale,
       height: rect.height / layoutCanvasScale,
-      descendants: handle ? allTargets().filter(function (candidate) {
-        return candidate !== element && element.contains(candidate) && candidate.getClientRects().length;
+      descendants: handle ? visibleTargets().filter(function (candidate) {
+        return candidate !== element && element.contains(candidate);
       }).map(function (candidate) {
         var childRect = candidate.getBoundingClientRect();
         return {
@@ -584,8 +648,10 @@
       selectElement(null);
       editorState.showHidden = false;
       refreshHidden();
+      refreshLabels();
     } else {
       markTargets();
+      refreshLabels();
       setStatus("Editando " + (currentMode() === "mobile" ? "móvil" : "PC") + " · " + currentScreen());
     }
   }
