@@ -123,6 +123,19 @@ body {
     row-gap: clamp(12px, 2vh, 26px) !important;
   }
 
+  /* Un tamaño guardado por la herramienta manda sobre la anchura de la celda
+     del grid. Así el tirador derecho puede ensanchar cada botón del menú sin
+     que grid-template-columns vuelva a encogerlo o lo recorte. */
+  .menu-actions.ui-layout-sized {
+    overflow: visible !important;
+  }
+
+  .menu-actions > .menu-button.ui-layout-sized {
+    min-width: 16px !important;
+    max-width: none !important;
+    justify-self: start !important;
+  }
+
   .menu-socials {
     width: min(76vw, 360px) !important;
     gap: 18px !important;
