@@ -44,6 +44,11 @@
       var box = entry.contentRect;
       entry.target.style.setProperty("--ui-box-w", Math.max(1, box.width) + "px");
       entry.target.style.setProperty("--ui-box-h", Math.max(1, box.height) + "px");
+      if (entry.target.dataset.uiContentFit === "true") {
+        requestAnimationFrame(function () {
+          applyContentFit(entry.target, layoutItemFor(entry.target));
+        });
+      }
     });
   }) : null;
   var mobileDevice = Boolean(
@@ -562,6 +567,7 @@
     delete element.dataset.uiLayoutHeight;
     delete element.dataset.uiLayoutHidden;
     delete element.dataset.uiLayoutLockedWith;
+    delete element.dataset.uiLayoutMagnetism;
   }
 
   function contentChildren(element) {
@@ -572,10 +578,24 @@
     });
   }
 
+  function rememberContentStyles(child) {
+    var saved = contentOriginalStyles.get(child) || {};
+    ["width", "height", "transform", "transform-origin"].forEach(function (property) {
+      if (!saved[property]) {
+        saved[property] = {
+          value: child.style.getPropertyValue(property),
+          priority: child.style.getPropertyPriority(property)
+        };
+      }
+    });
+    contentOriginalStyles.set(child, saved);
+    return saved;
+  }
+
   function restoreContentSizing() {
     document.querySelectorAll(".ui-layout-content-item").forEach(function (child) {
       var saved = contentOriginalStyles.get(child);
-      ["width", "height"].forEach(function (property) {
+      ["width", "height", "transform", "transform-origin"].forEach(function (property) {
         var entry = saved && saved[property];
         if (entry && entry.value) child.style.setProperty(property, entry.value, entry.priority || "");
         else child.style.removeProperty(property);
@@ -583,9 +603,10 @@
       child.classList.remove("ui-layout-content-item");
     });
     allTargets().forEach(function (element) {
-      element.classList.remove("ui-layout-content-sized");
+      element.classList.remove("ui-layout-content-sized", "ui-layout-content-fit");
       delete element.dataset.uiContentWidth;
       delete element.dataset.uiContentHeight;
+      delete element.dataset.uiContentFit;
     });
   }
 
@@ -597,15 +618,65 @@
     element.dataset.uiContentHeight = String(height);
     element.classList.add("ui-layout-content-sized");
     contentChildren(element).forEach(function (child) {
-      if (!contentOriginalStyles.has(child)) {
-        contentOriginalStyles.set(child, {
-          width: { value: child.style.getPropertyValue("width"), priority: child.style.getPropertyPriority("width") },
-          height: { value: child.style.getPropertyValue("height"), priority: child.style.getPropertyPriority("height") }
-        });
-      }
+      rememberContentStyles(child);
       child.classList.add("ui-layout-content-item");
       child.style.setProperty("width", width + "px", "important");
       child.style.setProperty("height", height + "px", "important");
+    });
+  }
+
+  function applyContentFit(element, item) {
+    if (!element || !item || item.contentFit !== true) return;
+    var children = contentChildren(element).filter(function (child) {
+      return !child.hidden && getComputedStyle(child).display !== "none";
+    });
+    if (!children.length) return;
+    element.dataset.uiContentFit = "true";
+    element.classList.add("ui-layout-content-fit");
+    children.forEach(function (child) {
+      var saved = rememberContentStyles(child);
+      child.classList.add("ui-layout-content-item");
+      var originalTransform = saved.transform;
+      var originalOrigin = saved["transform-origin"];
+      if (originalTransform && originalTransform.value) child.style.setProperty("transform", originalTransform.value, originalTransform.priority || "");
+      else child.style.removeProperty("transform");
+      if (originalOrigin && originalOrigin.value) child.style.setProperty("transform-origin", originalOrigin.value, originalOrigin.priority || "");
+      else child.style.removeProperty("transform-origin");
+    });
+    void element.offsetHeight;
+    var parentRect = element.getBoundingClientRect();
+    var computed = getComputedStyle(element);
+    var scaleBasis = Math.max(.0001, layoutCanvasScale);
+    var paddingLeft = (parseFloat(computed.paddingLeft) || 0) * scaleBasis;
+    var paddingRight = (parseFloat(computed.paddingRight) || 0) * scaleBasis;
+    var paddingTop = (parseFloat(computed.paddingTop) || 0) * scaleBasis;
+    var paddingBottom = (parseFloat(computed.paddingBottom) || 0) * scaleBasis;
+    var innerLeft = parentRect.left + paddingLeft;
+    var innerTop = parentRect.top + paddingTop;
+    var innerWidth = Math.max(1, parentRect.width - paddingLeft - paddingRight);
+    var innerHeight = Math.max(1, parentRect.height - paddingTop - paddingBottom);
+    var rects = children.map(function (child) { return child.getBoundingClientRect(); });
+    var minLeft = Math.min.apply(Math, rects.map(function (rect) { return rect.left; }));
+    var minTop = Math.min.apply(Math, rects.map(function (rect) { return rect.top; }));
+    var maxRight = Math.max.apply(Math, rects.map(function (rect) { return rect.right; }));
+    var maxBottom = Math.max.apply(Math, rects.map(function (rect) { return rect.bottom; }));
+    var contentWidth = Math.max(1, maxRight - minLeft);
+    var contentHeight = Math.max(1, maxBottom - minTop);
+    var fitScale = Math.max(.02, Math.min(8, innerWidth / contentWidth, innerHeight / contentHeight));
+    var fittedWidth = contentWidth * fitScale;
+    var fittedHeight = contentHeight * fitScale;
+    var groupLeft = innerLeft + (innerWidth - fittedWidth) / 2;
+    var groupTop = innerTop + (innerHeight - fittedHeight) / 2;
+    children.forEach(function (child, index) {
+      var rect = rects[index];
+      var desiredLeft = groupLeft + (rect.left - minLeft) * fitScale;
+      var desiredTop = groupTop + (rect.top - minTop) * fitScale;
+      var translateX = (desiredLeft - rect.left) / scaleBasis;
+      var translateY = (desiredTop - rect.top) / scaleBasis;
+      var saved = contentOriginalStyles.get(child) || {};
+      var original = saved.transform && saved.transform.value ? " " + saved.transform.value : "";
+      child.style.setProperty("transform-origin", "0 0", "important");
+      child.style.setProperty("transform", "translate(" + translateX + "px," + translateY + "px) scale(" + fitScale + ")" + original, "important");
     });
   }
 
@@ -645,6 +716,7 @@
     if (phase !== "position") {
       if (item.hidden) element.dataset.uiLayoutHidden = "true";
       if (item.lockedWith) element.dataset.uiLayoutLockedWith = String(item.lockedWith);
+      if (item.magnetism === false) element.dataset.uiLayoutMagnetism = "false";
     }
   }
 
@@ -676,6 +748,10 @@
       applyItem(element, isGlobalTarget(key) ? global[key] : layout[key], canvas, "position");
     });
     allTargets().forEach(clampInsideParent);
+    allTargets().forEach(function (element) {
+      if (element.dataset.uiLayoutEnabled === "false") return;
+      applyContentFit(element, layoutItemFor(element));
+    });
     refreshPersistentLocks();
     refreshHidden();
   }
@@ -708,7 +784,8 @@
       widthRatio: canvas.width ? rect.width / layoutCanvasScale / canvas.width : 0,
       heightRatio: canvas.height ? rect.height / layoutCanvasScale / canvas.height : 0,
       hidden: element.dataset.uiLayoutHidden === "true",
-      lockedWith: element.dataset.uiLayoutLockedWith || null
+      lockedWith: element.dataset.uiLayoutLockedWith || null,
+      magnetism: element.dataset.uiLayoutMagnetism !== "false"
     };
     var contentWidth = Number(element.dataset.uiContentWidth);
     var contentHeight = Number(element.dataset.uiContentHeight);
@@ -716,6 +793,7 @@
       captured.contentWidth = contentWidth;
       captured.contentHeight = contentHeight;
     }
+    if (element.dataset.uiContentFit === "true") captured.contentFit = true;
     return captured;
   }
 
@@ -757,9 +835,28 @@
     if (width > 0 && height > 0) {
       item.contentWidth = width;
       item.contentHeight = height;
+      delete item.contentFit;
     } else {
       delete item.contentWidth;
       delete item.contentHeight;
+      delete item.contentFit;
+    }
+    layout[key] = item;
+    saveDraft();
+    scheduleLayoutApply();
+  }
+
+  function saveContentFit(element, enabled) {
+    if (!element || !element.dataset.uiLayout) return;
+    var layout = editableLayoutFor(element, true);
+    var key = element.dataset.uiLayout;
+    var item = cloneValue(layout[key] || captureElement(element));
+    if (enabled) {
+      item.contentFit = true;
+      delete item.contentWidth;
+      delete item.contentHeight;
+    } else {
+      delete item.contentFit;
     }
     layout[key] = item;
     saveDraft();
@@ -781,12 +878,13 @@
     menu.id = "uiLayoutContentContextMenu";
     menu.className = "ui-layout-context-menu";
     menu.innerHTML =
-      '<strong>Tamaño del contenido</strong>' +
+      '<strong>Tamaño y ajuste del contenido</strong>' +
       '<label>Ancho <input data-content-width type="number" min="1" step="1"></label>' +
       '<label>Alto <input data-content-height type="number" min="1" step="1"></label>' +
       '<div class="ui-layout-context-actions">' +
         '<button data-content-apply type="button">Aplicar a todo</button>' +
         '<button data-content-auto type="button">Automático</button>' +
+        '<button data-content-fit type="button">' + (item.contentFit === true ? 'Quitar ajuste' : 'Ajustar dentro') + '</button>' +
       '</div>';
     document.body.appendChild(menu);
     var widthInput = menu.querySelector("[data-content-width]");
@@ -806,6 +904,13 @@
       saveContentSize(element, 0, 0);
       closeContentContextMenu();
       setStatus("Contenido en tamaño automático");
+    });
+    menu.querySelector("[data-content-fit]").addEventListener("click", function () {
+      var enable = item.contentFit !== true;
+      pushHistory();
+      saveContentFit(element, enable);
+      closeContentContextMenu();
+      setStatus(enable ? "Contenido ajustado dentro del recuadro" : "Ajuste de contenido desactivado");
     });
     var menuRect = menu.getBoundingClientRect();
     menu.style.left = Math.max(6, Math.min(clientX, window.innerWidth - menuRect.width - 6)) + "px";
@@ -828,6 +933,7 @@
     if (!element) {
       setStatus("Selecciona un elemento");
       refreshLockButton();
+      refreshMagnetismButton();
       return;
     }
     element.classList.add("ui-layout-selected");
@@ -839,6 +945,7 @@
     }
     setStatus(element.dataset.uiLayoutLabel || element.dataset.uiLayout);
     refreshLockButton();
+    refreshMagnetismButton();
   }
 
   function refreshLockButton() {
@@ -847,6 +954,19 @@
     var linked = linkedElement(editorState.selected);
     button.textContent = linked ? "Desanclar" : "Anclar";
     button.disabled = !editorState.selected || (!linked && !editorState.attached);
+  }
+
+  function magnetismEnabled(element) {
+    return Boolean(element) && element.dataset.uiLayoutMagnetism !== "false";
+  }
+
+  function refreshMagnetismButton() {
+    var button = document.getElementById("uiLayoutMagnetismButton");
+    if (!button) return;
+    var enabled = magnetismEnabled(editorState.selected);
+    button.disabled = !editorState.selected;
+    button.textContent = "Magnetismo: " + (enabled ? "Sí" : "No");
+    button.setAttribute("aria-pressed", String(enabled));
   }
 
   function candidateTargets(element) {
@@ -882,6 +1002,10 @@
     if (element) element.classList.remove("ui-layout-attached");
     editorState.attached = null;
     if (!element) return;
+    if (!magnetismEnabled(element)) {
+      refreshLockButton();
+      return;
+    }
     var attachment = findAttachment(element, 12 * layoutCanvasScale);
     if (!attachment) return;
     var target = attachment.candidate;
@@ -1124,7 +1248,8 @@
     var pointer = editorState.pointer;
     if (!pointer || pointer.id !== event.pointerId) return;
     if (pointer.type === "move") {
-      refreshAttachment(pointer.element, true);
+      if (magnetismEnabled(pointer.element)) refreshAttachment(pointer.element, true);
+      else refreshAttachment(pointer.element, false);
       clampInsideParent(pointer.element);
     }
     commitElement(pointer.element);
@@ -1267,6 +1392,7 @@
       "<button id=\"uiLayoutPreviewButton\" type=\"button\" aria-pressed=\"false\">Vista móvil</button>" +
       "<button id=\"uiLayoutGuidesToggle\" type=\"button\" aria-pressed=\"true\">Ocultar marcos</button>" +
       "<button id=\"uiLayoutEqualButton\" type=\"button\">Igualar tamaño</button>" +
+      "<button id=\"uiLayoutMagnetismButton\" type=\"button\" aria-pressed=\"true\" disabled>Magnetismo: Sí</button>" +
       "<button id=\"uiLayoutLockButton\" type=\"button\">Anclar</button>" +
       "<button id=\"uiLayoutHideButton\" type=\"button\">Ocultar selección</button>" +
       "<button id=\"uiLayoutShowHiddenButton\" type=\"button\" aria-pressed=\"false\">Ver ocultos</button>" +
@@ -1302,6 +1428,17 @@
       resizeElement(editorState.selected, rect.width / layoutCanvasScale, rect.height / layoutCanvasScale, false);
       commitElement(editorState.selected);
       setStatus("Tamaño igualado");
+    });
+    toolbar.querySelector("#uiLayoutMagnetismButton").addEventListener("click", function () {
+      if (!editorState.selected) return setStatus("Selecciona un elemento");
+      pushHistory();
+      var disable = magnetismEnabled(editorState.selected);
+      if (disable) editorState.selected.dataset.uiLayoutMagnetism = "false";
+      else delete editorState.selected.dataset.uiLayoutMagnetism;
+      if (disable) refreshAttachment(editorState.selected, false);
+      commitElement(editorState.selected);
+      refreshMagnetismButton();
+      setStatus("Magnetismo " + (disable ? "desactivado" : "activado") + " para este recuadro");
     });
     toolbar.querySelector("#uiLayoutLockButton").addEventListener("click", function (event) {
       if (!editorState.selected) return setStatus("Selecciona un elemento");

@@ -407,6 +407,15 @@ body.perri-mobile-preview > .shell > .panel {
   cursor: pointer;
 }
 
+.ui-layout-context-actions [data-content-fit] {
+  grid-column: 1 / -1;
+}
+
+[data-ui-layout].ui-layout-content-fit {
+  container-type: size;
+  overflow: hidden !important;
+}
+
 [data-ui-layout].ui-layout-content-sized {
   overflow: hidden !important;
 }
@@ -1171,6 +1180,121 @@ body.ui-layout-editing .logo-option:hover,
 body.ui-layout-editing .desktop-stack-back-button:hover {
   transform: none !important;
   filter: none !important;
+}
+
+/* Inventario: la pantalla y su panel no crean un segundo lienzo desplazable.
+   La cuadrícula editada es quien reparte las tarjetas dentro de su caja. */
+#inventoryView,
+#inventoryView > .inventory-panel {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+#inventoryView #inventoryGrid {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  grid-auto-rows: minmax(0, 1fr) !important;
+  align-content: stretch !important;
+  align-items: stretch !important;
+}
+
+/* Cada objeto funciona como una caja autónoma. Ningún texto, icono o botón
+   puede ampliar la tarjeta ni escapar de ella al redimensionarla. */
+#inventoryView #inventoryGrid > .inventory-card {
+  box-sizing: border-box !important;
+  container-type: size;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  align-content: stretch !important;
+  align-items: start !important;
+  justify-items: stretch !important;
+  gap: clamp(1px, 2.2cqmin, 8px) !important;
+  padding: clamp(3px, 4cqmin, 14px) !important;
+  overflow: hidden !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card.no-action {
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card > * {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card .inventory-badge {
+  width: clamp(16px, 25cqmin, 58px) !important;
+  height: clamp(16px, 25cqmin, 58px) !important;
+  border-radius: clamp(5px, 7cqmin, 18px) !important;
+  justify-self: start !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card .inventory-badge img {
+  width: 82% !important;
+  height: 82% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card > div:nth-child(2) {
+  align-self: start !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card h2 {
+  margin: 0 !important;
+  font-size: clamp(6px, min(7cqh, 6cqw), 1.08rem) !important;
+  line-height: 1.08 !important;
+  overflow-wrap: anywhere !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card .inventory-count {
+  margin: clamp(1px, 1cqmin, 4px) 0 0 !important;
+  font-size: clamp(8px, min(12cqh, 9cqw), 2.2rem) !important;
+  line-height: 1 !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card .inventory-copy {
+  align-self: stretch !important;
+  margin: 0 !important;
+  font-size: clamp(5px, min(4.7cqh, 3.8cqw), .82rem) !important;
+  line-height: 1.18 !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+}
+
+#inventoryView #inventoryGrid > .inventory-card .inventory-action {
+  align-self: end !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: clamp(16px, 13cqmin, 32px) !important;
+  max-height: 24% !important;
+  margin: 0 !important;
+  padding: clamp(1px, 2cqmin, 5px) !important;
+  font-size: clamp(5px, min(5cqh, 4cqw), .82rem) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
 }
 
 @media (max-width: 720px) and (pointer: coarse) {
