@@ -852,6 +852,54 @@ body.ui-layout-editing .mobile-session-dropdown.is-editor-preview {
   overflow: hidden !important;
 }
 
+/* La ilustracion de Random Key pertenece a su tarjeta: deja de conservar los
+   80x80 px del CSS base y se mide siempre con respecto al recuadro editable. */
+#shopView .random-key-card.ui-layout-sized {
+  display: grid !important;
+  grid-template-rows: minmax(0, 1.25fr) auto auto auto auto !important;
+  align-content: stretch !important;
+  justify-items: stretch !important;
+}
+
+#shopView .random-key-card.ui-layout-sized .key-hero {
+  box-sizing: border-box !important;
+  align-self: stretch !important;
+  justify-self: start !important;
+  width: min(42%, 100%) !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden !important;
+  border-radius: clamp(4px, 18cqmin, 24px) !important;
+}
+
+#shopView .random-key-card.ui-layout-sized .key-hero > img {
+  width: 82% !important;
+  height: 82% !important;
+  max-width: 82% !important;
+  max-height: 82% !important;
+  object-fit: contain !important;
+}
+
+#shopView .random-key-card.ui-layout-sized .random-key-meta {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  gap: clamp(1px, 1.4cqmin, 6px) !important;
+  overflow: hidden !important;
+}
+
+#shopView .random-key-card.ui-layout-sized .claim-key {
+  align-self: end !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  padding: clamp(2px, 2.5cqmin, 10px) !important;
+}
+
 #shopView .random-key-card.ui-layout-sized h2,
 #shopView .random-key-history.ui-layout-sized h2 {
   font-size: clamp(8px, min(8cqh, 6cqw), 1.35rem) !important;
