@@ -1479,3 +1479,97 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   }
   .ui-layout-editor-status { flex-basis: 100%; }
 }
+
+/* Historial de escritorio: caja centrada al 50% y lista con scroll propio. */
+@media (min-width: 721px) and (pointer: fine) {
+  #historyView {
+    box-sizing: border-box !important;
+    place-items: center !important;
+    overflow: hidden !important;
+  }
+
+  #historyView .history-panel {
+    box-sizing: border-box !important;
+    width: 50% !important;
+    height: 50% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: auto !important;
+    place-self: center !important;
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    gap: clamp(6px, 1cqh, 12px) !important;
+    overflow: hidden !important;
+    container-type: size;
+  }
+
+  #historyView .history-card {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+    padding: clamp(10px, 3cqmin, 20px) !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: clamp(7px, 2cqmin, 14px) !important;
+    overflow: hidden !important;
+    container-type: size;
+  }
+
+  #historyView .history-title {
+    max-width: 100% !important;
+    margin: 0 !important;
+    font-size: clamp(1.15rem, min(8cqh, 5cqw), 2.25rem) !important;
+    line-height: 1 !important;
+    overflow: hidden !important;
+  }
+
+  #historyView .history-list {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    padding-right: 4px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    align-content: start !important;
+  }
+
+  #historyView .history-entry {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: clamp(7px, 2cqmin, 13px) clamp(8px, 2.5cqmin, 15px) !important;
+    gap: clamp(3px, 1cqmin, 7px) !important;
+    overflow: hidden !important;
+  }
+
+  #historyView .history-entry > *,
+  #historyView .history-entry-top > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #historyView .history-entry-game,
+  #historyView .history-entry-date {
+    font-size: clamp(.62rem, min(3.3cqh, 2.1cqw), .8rem) !important;
+  }
+
+  #historyView .history-entry-result {
+    font-size: clamp(.72rem, min(4cqh, 2.6cqw), 1rem) !important;
+  }
+
+  #historyView .history-entry-details,
+  #historyView .history-empty {
+    font-size: clamp(.66rem, min(3.5cqh, 2.2cqw), .9rem) !important;
+    line-height: 1.25 !important;
+  }
+}

@@ -8,6 +8,7 @@
   var MOBILE_PREVIEW_REVISION_KEY = "perrisushi-mobile-editor-revision";
   var MOBILE_PREVIEW_REVISION = "4";
   var GLOBAL_SCREEN = "__global";
+  var VISIBILITY_OVERRIDE_PREFIX = "__visibility__:";
   var GLOBAL_TARGET_KEYS = {
     "user-controls": true,
     "session-user": true,
@@ -110,7 +111,7 @@
     [".menu-side-tools", "side-tools", "Botones laterales"],
     ["#openChatButton", "side-chat", "Botón Chat"],
     ["#openRequestsPanelButton", "side-panel", "Botón Panel"],
-    ["#profileView,#usersView,#inventoryView,#minigamesView,#shopView,#chatView,#personalizeView", "section-panel", "Pantalla de sección"],
+    ["#profileView,#usersView,#inventoryView,#minigamesView,#shopView,#chatView,#personalizeView,#historyView", "section-panel", "Pantalla de sección"],
     ["#minigamesView .minigames-panel", "minigames-panel", "Panel de minijuegos"],
     ["#minigamesView .minigames-grid", "minigames-grid", "Botones de minijuegos"],
     ["#openDuelsFromMinigames", "game-duels", "PerriDuelos"],
@@ -141,6 +142,9 @@
     ["#profileView .profile-stats-panel", "profile-stats", "Estadísticas del perfil"],
     ["#profileView .profile-actions", "profile-actions", "Acciones del perfil"],
     ["#profileView .profile-actions > *", "profile-action", "Botón del perfil", true],
+    ["#historyView .history-panel", "history-panel", "Panel de historial"],
+    ["#historyView .history-card", "history-card", "Recuadro de historial"],
+    ["#historyView .history-list", "history-list", "Lista del historial"],
     ["#backToProfileFromPersonalize", "logos-back", "Botón volver del álbum"],
     ["#personalizeView .personalize-album-wrap", "logos-album-box", "Contenedor del álbum"],
     ["#personalizeView .personalize-album", "logos-album-image", "Imagen del álbum"],
@@ -349,6 +353,24 @@
 
   function editableLayoutFor(element, create) {
     return isGlobalTarget(element) ? globalLayouts(create) : screenLayouts(create);
+  }
+
+  function visibilityOverrideFor(element) {
+    if (!element || !element.dataset.uiLayout) return null;
+    var item = screenLayouts(false)[VISIBILITY_OVERRIDE_PREFIX + element.dataset.uiLayout];
+    return item && typeof item.hidden === "boolean" ? item.hidden : null;
+  }
+
+  function isHiddenOnCurrentScreen(element) {
+    var override = visibilityOverrideFor(element);
+    return override === null ? element.dataset.uiLayoutHidden === "true" : override;
+  }
+
+  function setHiddenOnCurrentScreen(element, hidden) {
+    if (!element || !element.dataset.uiLayout) return;
+    var layout = screenLayouts(true);
+    layout[VISIBILITY_OVERRIDE_PREFIX + element.dataset.uiLayout] = { hidden: Boolean(hidden) };
+    saveDraft();
   }
 
   function layoutItemFor(element) {
@@ -815,12 +837,13 @@
 
   function refreshHidden() {
     allTargets().forEach(function (element) {
-      var hidden = element.dataset.uiLayoutHidden === "true";
+      var hidden = isHiddenOnCurrentScreen(element);
       var reveal = editorState.active && editorState.showHidden;
       element.style.visibility = hidden && !reveal ? "hidden" : "";
       element.style.opacity = hidden && reveal ? ".28" : "";
       element.style.pointerEvents = hidden && !reveal ? "none" : "";
     });
+    refreshRevealButton();
   }
 
   function setStatus(text) {
@@ -940,6 +963,7 @@
       setStatus("Selecciona un elemento");
       refreshLockButton();
       refreshMagnetismButton();
+      refreshRevealButton();
       return;
     }
     element.classList.add("ui-layout-selected");
@@ -952,6 +976,13 @@
     setStatus(element.dataset.uiLayoutLabel || element.dataset.uiLayout);
     refreshLockButton();
     refreshMagnetismButton();
+    refreshRevealButton();
+  }
+
+  function refreshRevealButton() {
+    var button = document.getElementById("uiLayoutRevealButton");
+    if (!button) return;
+    button.disabled = !editorState.selected || !isHiddenOnCurrentScreen(editorState.selected);
   }
 
   function refreshLockButton() {
@@ -1399,6 +1430,7 @@
       "<button id=\"uiLayoutLockButton\" type=\"button\">Anclar</button>" +
       "<button id=\"uiLayoutHideButton\" type=\"button\">Ocultar selección</button>" +
       "<button id=\"uiLayoutShowHiddenButton\" type=\"button\" aria-pressed=\"false\">Ver ocultos</button>" +
+      "<button id=\"uiLayoutRevealButton\" type=\"button\" disabled>Mostrar selección</button>" +
       "<button id=\"uiLayoutUndoButton\" type=\"button\">Deshacer</button>" +
       "<button id=\"uiLayoutRedoButton\" type=\"button\">Rehacer</button>" +
       "<button id=\"uiLayoutSaveButton\" type=\"button\">Guardar diseño</button>" +
@@ -1482,6 +1514,14 @@
       event.currentTarget.textContent = editorState.showHidden ? "Ocultar ocultos" : "Ver ocultos";
       event.currentTarget.setAttribute("aria-pressed", String(editorState.showHidden));
       refreshHidden();
+    });
+    toolbar.querySelector("#uiLayoutRevealButton").addEventListener("click", function () {
+      if (!editorState.selected) return setStatus("Selecciona un elemento oculto");
+      if (!isHiddenOnCurrentScreen(editorState.selected)) return setStatus("El elemento ya está visible");
+      pushHistory();
+      setHiddenOnCurrentScreen(editorState.selected, false);
+      refreshHidden();
+      setStatus("Elemento visible solo en " + currentScreen() + " · " + (currentMode() === "mobile" ? "móvil" : "PC"));
     });
     toolbar.querySelector("#uiLayoutUndoButton").addEventListener("click", function () {
       restoreHistory(editorState.undo, editorState.redo, "Cambio deshecho");
