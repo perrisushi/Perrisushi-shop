@@ -3335,10 +3335,11 @@ async function publicShopResolveAccessRequestPanel(sessionToken, panelKey, reque
 
 function normalizePublishedUiLayouts(value) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const layoutVersion = Number(source.layoutVersion) || 3;
   const normalized = {
-    layoutVersion: 3,
-    editorImplementation: "native-layout-editor-v1",
-    coordinateSystem: "native-offset-ratios",
+    layoutVersion,
+    editorImplementation: source.editorImplementation || "native-layout-editor-v1",
+    coordinateSystem: source.coordinateSystem || (layoutVersion >= 4 ? "absolute-canvas-ratios" : "native-offset-ratios"),
     desktop: source.desktop && typeof source.desktop === "object" && !Array.isArray(source.desktop) ? source.desktop : {},
     mobile: source.mobile && typeof source.mobile === "object" && !Array.isArray(source.mobile) ? source.mobile : {}
   };

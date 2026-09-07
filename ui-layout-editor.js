@@ -1,11 +1,11 @@
 (function () {
   "use strict";
 
-  var LAYOUT_VERSION = 3;
+  var LAYOUT_VERSION = 4;
   var EDITOR_IMPLEMENTATION = "native-layout-editor-v1";
-  var DRAFT_PREFIX = "perrisushi-native-layout-v1:";
+  var DRAFT_PREFIX = "perrisushi-native-layout-v2:";
   var MOBILE_PREVIEW_REVISION_KEY = "perrisushi-mobile-editor-revision";
-  var MOBILE_PREVIEW_REVISION = "3";
+  var MOBILE_PREVIEW_REVISION = "4";
   var editorState = {
     active: false,
     guides: true,
@@ -176,8 +176,8 @@
     var canvas = document.querySelector(".panel") || document.querySelector(".shell") || document.getElementById("appView");
     if (!canvas) return { left: 0, top: 0, width: 1, height: 1, right: 1, bottom: 1 };
     var rect = canvas.getBoundingClientRect();
-    var width = Math.max(1, canvas.clientWidth);
-    var height = Math.max(1, canvas.clientHeight);
+    var width = Math.max(1, rect.width / layoutCanvasScale);
+    var height = Math.max(1, rect.height / layoutCanvasScale);
     return {
       left: rect.left,
       top: rect.top,
@@ -291,7 +291,7 @@
     return {
       layoutVersion: LAYOUT_VERSION,
       editorImplementation: EDITOR_IMPLEMENTATION,
-      coordinateSystem: "native-offset-ratios",
+      coordinateSystem: "absolute-canvas-ratios",
       desktop: { screens: editorState.layouts.desktop },
       mobile: { screens: editorState.layouts.mobile }
     };
@@ -345,15 +345,8 @@
     if (!payload || typeof payload !== "object") return result;
     var modernPayload = Number(payload.layoutVersion) === LAYOUT_VERSION &&
         payload.editorImplementation === EDITOR_IMPLEMENTATION &&
-        payload.coordinateSystem === "native-offset-ratios";
-    /* La primera API de diseños quitaba estos tres metadatos antes de guardar.
-       Aceptamos ese formato ya almacenado para no perder el trabajo existente. */
-    var legacyApiPayload = !("layoutVersion" in payload) &&
-        ["desktop", "mobile"].some(function (modeName) {
-          return payload[modeName] && payload[modeName].screens &&
-            typeof payload[modeName].screens === "object";
-        });
-    if (!modernPayload && !legacyApiPayload) return result;
+        payload.coordinateSystem === "absolute-canvas-ratios";
+    if (!modernPayload) return result;
     ["desktop", "mobile"].forEach(function (modeName) {
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
@@ -364,6 +357,13 @@
   }
 
   function convertPrototypePayload(payload) {
+    if (payload && Number(payload.prototypeLayoutVersion) === 2 &&
+        payload.coordinateSystem === "absolute-canvas-ratios") {
+      return {
+        desktop: payload.desktop && payload.desktop.screens ? cloneValue(payload.desktop.screens) : {},
+        mobile: payload.mobile && payload.mobile.screens ? cloneValue(payload.mobile.screens) : {}
+      };
+    }
     return normalizePayload(payload);
   }
 
@@ -399,10 +399,22 @@
       element.style.setProperty("height", height + "px", "important");
       element.classList.add("ui-layout-sized");
     }
-    if (phase !== "size" && Number.isFinite(offsetX) && Number.isFinite(offsetY)) {
-      element.dataset.uiLayoutX = String(offsetX);
-      element.dataset.uiLayoutY = String(offsetY);
-      element.style.translate = offsetX + "px " + offsetY + "px";
+    if (phase !== "size") {
+      var leftRatio = Number(item.leftRatio);
+      var topRatio = Number(item.topRatio);
+      var hasAbsolutePosition = Number.isFinite(leftRatio) && Number.isFinite(topRatio);
+      if (hasAbsolutePosition) {
+        var rect = element.getBoundingClientRect();
+        var targetLeft = canvas.left + leftRatio * canvas.width * layoutCanvasScale;
+        var targetTop = canvas.top + topRatio * canvas.height * layoutCanvasScale;
+        offsetX = (targetLeft - rect.left) / layoutCanvasScale;
+        offsetY = (targetTop - rect.top) / layoutCanvasScale;
+      }
+      if (Number.isFinite(offsetX) && Number.isFinite(offsetY)) {
+        element.dataset.uiLayoutX = String(offsetX);
+        element.dataset.uiLayoutY = String(offsetY);
+        element.style.translate = offsetX + "px " + offsetY + "px";
+      }
     }
     if (phase !== "position") {
       if (item.hidden) element.dataset.uiLayoutHidden = "true";
@@ -449,6 +461,8 @@
     var canvas = canvasRect();
     var rect = element.getBoundingClientRect();
     return {
+      leftRatio: canvas.width ? (rect.left - canvas.left) / layoutCanvasScale / canvas.width : 0,
+      topRatio: canvas.height ? (rect.top - canvas.top) / layoutCanvasScale / canvas.height : 0,
       offsetXRatio: canvas.width ? Number(element.dataset.uiLayoutX || 0) / canvas.width : 0,
       offsetYRatio: canvas.height ? Number(element.dataset.uiLayoutY || 0) / canvas.height : 0,
       widthRatio: canvas.width ? rect.width / layoutCanvasScale / canvas.width : 0,
@@ -897,31 +911,23 @@
   }
 
   async function loadPublished() {
+    var bundled = null;
     var remote = null;
+    try {
+      var bundledResponse = await fetch("./maqueta-layout.json?v=20260907-3", { cache: "no-store" });
+      if (bundledResponse.ok) bundled = await bundledResponse.json();
+    } catch (error) {}
+    editorState.layouts = convertPrototypePayload(bundled);
+    editorState.loaded = true;
+    markTargets();
+    scheduleLayoutApply();
     try {
       var response = await callApi({ action: "publicShopGetUiLayouts" });
       if (response.data && response.data.ok) remote = response.data.layouts;
     } catch (error) {}
-    editorState.layouts = { desktop: {}, mobile: {} };
     var normalizedRemote = normalizePayload(remote);
     if (Object.keys(normalizedRemote.desktop).length || Object.keys(normalizedRemote.mobile).length) {
       editorState.layouts = normalizedRemote;
-    }
-    /* Las primeras versiones de Vista móvil calcularon las posiciones con el
-       ancho del monitor y dejaron un borrador local recortado. Se descarta una
-       sola vez únicamente ese borrador del PC; el diseño publicado y el
-       borrador de escritorio permanecen intactos. */
-    if (!mobileDevice) {
-      try {
-        if (localStorage.getItem(MOBILE_PREVIEW_REVISION_KEY) !== MOBILE_PREVIEW_REVISION) {
-          localStorage.removeItem(DRAFT_PREFIX + "mobile");
-          localStorage.setItem(MOBILE_PREVIEW_REVISION_KEY, MOBILE_PREVIEW_REVISION);
-          /* También se descarta en memoria la composición móvil publicada por
-             las versiones que usaban coordenadas del escritorio. La primera
-             edición nueva vuelve a guardarse en Supabase con ratios móviles. */
-          editorState.layouts.mobile = {};
-        }
-      } catch (error) {}
     }
     var desktopDraft = readDraft("desktop");
     var mobileDraft = readDraft("mobile");
@@ -935,8 +941,8 @@
         editorState.layouts.mobile[screenName] = mobileDraft[screenName];
       }
     });
-    editorState.loaded = true;
     markTargets();
+    scheduleLayoutApply();
   }
 
   document.addEventListener("pointerdown", pointerDown, true);

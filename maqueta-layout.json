@@ -1,0 +1,1656 @@
+{
+  "prototypeLayoutVersion": 2,
+  "coordinateSystem": "absolute-canvas-ratios",
+  "desktop": {
+    "__canvas": {
+      "width": 1638,
+      "height": 901
+    },
+    "screens": {
+      "menu": {
+        "user-controls": {
+          "leftRatio": 0.004557967965576728,
+          "topRatio": 0.01220414164857515,
+          "widthRatio": 0.12306381207326349,
+          "heightRatio": 0.10876803551609324,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.009123095955317722,
+          "topRatio": 0.02997286391178855,
+          "widthRatio": 0.09766914893260205,
+          "heightRatio": 0.029951286104225556,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.01196615661083121,
+          "topRatio": 0.07102398126159735,
+          "widthRatio": 0.019530437975463805,
+          "heightRatio": 0.033296337402885685,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "avatar": {
+          "leftRatio": 0.9071732005652738,
+          "topRatio": 0.03199377282213556,
+          "widthRatio": 0.07082858017046914,
+          "heightRatio": 0.12874583795782463,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.8055433796842024,
+          "topRatio": 0.21472286516500763,
+          "widthRatio": 0.11850557391809566,
+          "heightRatio": 0.4261930848861508,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.255788331026507,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.3812045183086501,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.5066207225261862,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "side-tools": {
+          "leftRatio": 0.17399729148910242,
+          "topRatio": 0.4899956875715351,
+          "widthRatio": 0,
+          "heightRatio": 0.10321864594894561,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "side-chat": {
+          "leftRatio": 0.17399729148910242,
+          "topRatio": 0.42451289067919323,
+          "widthRatio": 0.02625542195974287,
+          "heightRatio": 0.04772475027746948,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "side-panel": {
+          "leftRatio": 0.1734521606968432,
+          "topRatio": 0.47223764095666276,
+          "widthRatio": 0.026043411641109217,
+          "heightRatio": 0.04661487236403995,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "main-frame": {
+          "leftRatio": 0.19042813543840217,
+          "topRatio": 0.1506813379556569,
+          "widthRatio": 0.5495320875295019,
+          "heightRatio": 0.7491675915649278,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "home-buttons": {
+          "leftRatio": 0.2605650302556441,
+          "topRatio": 0.393467131518365,
+          "widthRatio": 0.4251919929966858,
+          "heightRatio": 0.37846836847946724,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-profile": {
+          "leftRatio": 0.2852006935673635,
+          "topRatio": 0.4134449339600964,
+          "widthRatio": 0.1660808086755828,
+          "heightRatio": 0.08131397683400822,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-users": {
+          "leftRatio": 0.48282445996554246,
+          "topRatio": 0.4134449339600964,
+          "widthRatio": 0.1660808086755828,
+          "heightRatio": 0.08131397683400822,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-inventory": {
+          "leftRatio": 0.2852006935673635,
+          "topRatio": 0.5049096720332443,
+          "widthRatio": 0.1660808086755828,
+          "heightRatio": 0.08131397683400822,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-minigames": {
+          "leftRatio": 0.48282445996554246,
+          "topRatio": 0.5071294278601034,
+          "widthRatio": 0.1660808086755828,
+          "heightRatio": 0.08131397683400822,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-shop": {
+          "leftRatio": 0.2852006935673635,
+          "topRatio": 0.5963743762356063,
+          "widthRatio": 0.1660808086755828,
+          "heightRatio": 0.08131397683400822,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.0061059120836611325,
+          "topRatio": 0.1309655937846837,
+          "widthRatio": 0.028646904968917017,
+          "heightRatio": 0.048834628190899,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "social-buttons": {
+          "leftRatio": 0.49999789671378647,
+          "topRatio": 0.9880071676002359,
+          "widthRatio": 0,
+          "heightRatio": 0,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "social-twitch": {
+          "leftRatio": 0.49999789671378647,
+          "topRatio": 0.9880071676002359,
+          "widthRatio": 0,
+          "heightRatio": 0,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "social-youtube": {
+          "leftRatio": 0.5732688417177201,
+          "topRatio": 0.9880071676002359,
+          "widthRatio": 0,
+          "heightRatio": 0,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "profile": {
+        "user-controls": {
+          "leftRatio": 0.004557967965576728,
+          "topRatio": 0.01220414164857515,
+          "widthRatio": 0.12306381207326349,
+          "heightRatio": 0.10876803551609324,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.009123095955317722,
+          "topRatio": 0.02997286391178855,
+          "widthRatio": 0.09766914893260205,
+          "heightRatio": 0.029951286104225556,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.01196615661083121,
+          "topRatio": 0.07102398126159735,
+          "widthRatio": 0.019530437975463805,
+          "heightRatio": 0.033296337402885685,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.8055433796842024,
+          "topRatio": 0.21472286516500763,
+          "widthRatio": 0.11850557391809566,
+          "heightRatio": 0.4261930848861508,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.255788331026507,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.3812045183086501,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.5066207225261862,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.0061059120836611325,
+          "topRatio": 0.1309655937846837,
+          "widthRatio": 0.028646904968917017,
+          "heightRatio": 0.048834628190899,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.19957401582975595,
+          "topRatio": 0.12703718382298748,
+          "widthRatio": 0.6036033229220278,
+          "heightRatio": 0.7824639289678136,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-card": {
+          "leftRatio": 0.2167492786869606,
+          "topRatio": 0.16587265641257978,
+          "widthRatio": 0.5599757537451072,
+          "heightRatio": 0.5480715871254163,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-logo": {
+          "leftRatio": 0.23194621335809884,
+          "topRatio": 0.2731376927383203,
+          "widthRatio": 0.1692948908825361,
+          "heightRatio": 0.2726600130443171,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-stats": {
+          "leftRatio": 0.4053541351678399,
+          "topRatio": 0.2731376927383203,
+          "widthRatio": 0.3426434455172938,
+          "heightRatio": 0.2726600130443171,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-actions": {
+          "leftRatio": 0.23194621335809884,
+          "topRatio": 0.5624462809335113,
+          "widthRatio": 0.5280723631079778,
+          "heightRatio": 0.0721112334900241,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "users": {
+        "user-controls": {
+          "leftRatio": 0.004557967965576728,
+          "topRatio": 0.01220414164857515,
+          "widthRatio": 0.12306381207326349,
+          "heightRatio": 0.10876803551609324,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.009123095955317722,
+          "topRatio": 0.02997286391178855,
+          "widthRatio": 0.09766914893260205,
+          "heightRatio": 0.029951286104225556,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.01196615661083121,
+          "topRatio": 0.07102398126159735,
+          "widthRatio": 0.019530437975463805,
+          "heightRatio": 0.033296337402885685,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.8055433796842024,
+          "topRatio": 0.21472286516500763,
+          "widthRatio": 0.11850557391809566,
+          "heightRatio": 0.4261930848861508,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.255788331026507,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.3812045183086501,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.5066207225261862,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.0061059120836611325,
+          "topRatio": 0.1309655937846837,
+          "widthRatio": 0.028646904968917017,
+          "heightRatio": 0.048834628190899,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.19957401582975595,
+          "topRatio": 0.12612683024178864,
+          "widthRatio": 0.6036033229220278,
+          "heightRatio": 0.7824639289678136,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "users-title": {
+          "leftRatio": 0.28584996847166977,
+          "topRatio": 0.13833550422490634,
+          "widthRatio": 0.42193548170704664,
+          "heightRatio": 0.1287458548932176,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "users-frame": {
+          "leftRatio": 0.2718514271227864,
+          "topRatio": 0.2693010810741971,
+          "widthRatio": 0.4421189050352532,
+          "heightRatio": 0.6315205327413984,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "users-table": {
+          "leftRatio": 0.30058739450028155,
+          "topRatio": 0.4300715269709004,
+          "widthRatio": 0.3846470075477928,
+          "heightRatio": 0.4139151282104086,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "inventory": {
+        "user-controls": {
+          "leftRatio": 0.004557967965576728,
+          "topRatio": 0.01220414164857515,
+          "widthRatio": 0.12306381207326349,
+          "heightRatio": 0.10876803551609324,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.009123095955317722,
+          "topRatio": 0.02997286391178855,
+          "widthRatio": 0.09766914893260205,
+          "heightRatio": 0.029951286104225556,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.01196615661083121,
+          "topRatio": 0.07102398126159735,
+          "widthRatio": 0.019530437975463805,
+          "heightRatio": 0.033296337402885685,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.8055433796842024,
+          "topRatio": 0.21472286516500763,
+          "widthRatio": 0.11850557391809566,
+          "heightRatio": 0.4261930848861508,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.255788331026507,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.3812045183086501,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.5066207225261862,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.0061059120836611325,
+          "topRatio": 0.1309655937846837,
+          "widthRatio": 0.028646904968917017,
+          "heightRatio": 0.048834628190899,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.19957401582975595,
+          "topRatio": 0.12197789606058372,
+          "widthRatio": 0.6036033229220278,
+          "heightRatio": 0.7824639289678136,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-resources": {
+          "leftRatio": 0.22242242158073208,
+          "topRatio": 0.16292005532589657,
+          "widthRatio": 0.5703939662378541,
+          "heightRatio": 0.0476939193945746,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-resource-chips": {
+          "leftRatio": 0.22812550893470393,
+          "topRatio": 0.16292005532589657,
+          "widthRatio": 0.5589920027607787,
+          "heightRatio": 0.03659514026027938,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-title": {
+          "leftRatio": 0.22046900673834208,
+          "topRatio": 0.2272621518896105,
+          "widthRatio": 0.5703939662378541,
+          "heightRatio": 0.05966363074909172,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-grid": {
+          "leftRatio": 0.2191667301767487,
+          "topRatio": 0.2991344523879717,
+          "widthRatio": 0.5703939662378541,
+          "heightRatio": 0.5915649278579356,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "minigames": {
+        "user-controls": {
+          "leftRatio": 0.004557967965576728,
+          "topRatio": 0.01220414164857515,
+          "widthRatio": 0.12306381207326349,
+          "heightRatio": 0.10876803551609324,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.009123095955317722,
+          "topRatio": 0.02997286391178855,
+          "widthRatio": 0.09766914893260205,
+          "heightRatio": 0.029951286104225556,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.01196615661083121,
+          "topRatio": 0.07102398126159735,
+          "widthRatio": 0.019530437975463805,
+          "heightRatio": 0.033296337402885685,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.8055433796842024,
+          "topRatio": 0.21472286516500763,
+          "widthRatio": 0.11850557391809566,
+          "heightRatio": 0.4261930848861508,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.255788331026507,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.3812045183086501,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.5066207225261862,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.0061059120836611325,
+          "topRatio": 0.1309655937846837,
+          "widthRatio": 0.028646904968917017,
+          "heightRatio": 0.048834628190899,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.19957401582975595,
+          "topRatio": 0.12045559898994607,
+          "widthRatio": 0.6036033229220278,
+          "heightRatio": 0.7824639289678136,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "minigames-grid": {
+          "leftRatio": 0.2090978076071227,
+          "topRatio": 0.17705936410715525,
+          "widthRatio": 0.569092211421678,
+          "heightRatio": 0.4284128745837958,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-duels": {
+          "leftRatio": 0.2090978076071227,
+          "topRatio": 0.17705936410715525,
+          "widthRatio": 0.18188410469045405,
+          "heightRatio": 0.20421753607103219,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-casillas": {
+          "leftRatio": 0.4024559511772999,
+          "topRatio": 0.17705936410715525,
+          "widthRatio": 0.18188410469045405,
+          "heightRatio": 0.20421753607103219,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-rpg": {
+          "leftRatio": 0.5958183059783453,
+          "topRatio": 0.17705936410715525,
+          "widthRatio": 0.18188410469045405,
+          "heightRatio": 0.20421753607103219,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-pet": {
+          "leftRatio": 0.2090978076071227,
+          "topRatio": 0.40125470261991886,
+          "widthRatio": 0.18188410469045405,
+          "heightRatio": 0.20421753607103219,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "shop": {
+        "user-controls": {
+          "leftRatio": 0.004557967965576728,
+          "topRatio": 0.01220414164857515,
+          "widthRatio": 0.12306381207326349,
+          "heightRatio": 0.10876803551609324,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.009123095955317722,
+          "topRatio": 0.02997286391178855,
+          "widthRatio": 0.09766914893260205,
+          "heightRatio": 0.029951286104225556,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.01196615661083121,
+          "topRatio": 0.07102398126159735,
+          "widthRatio": 0.019530437975463805,
+          "heightRatio": 0.033296337402885685,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.8055433796842024,
+          "topRatio": 0.21472286516500763,
+          "widthRatio": 0.11850557391809566,
+          "heightRatio": 0.4261930848861508,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.255788331026507,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.3812045183086501,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.5066207225261862,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.0061059120836611325,
+          "topRatio": 0.1309655937846837,
+          "widthRatio": 0.028646904968917017,
+          "heightRatio": 0.048834628190899,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.19957401582975595,
+          "topRatio": 0.119948087601233,
+          "widthRatio": 0.6036033229220278,
+          "heightRatio": 0.7824639289678136,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-resources": {
+          "leftRatio": 0.2233107490549886,
+          "topRatio": 0.13091584606784562,
+          "widthRatio": 0.551792139607148,
+          "heightRatio": 0.03659514026027938,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-tabs": {
+          "leftRatio": 0.21767973710366448,
+          "topRatio": 0.17860976546242022,
+          "widthRatio": 0.5630499150113982,
+          "heightRatio": 0.06215316315205328,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-content": {
+          "leftRatio": 0.21767973710366448,
+          "topRatio": 0.2496419519219097,
+          "widthRatio": 0.5630499150113982,
+          "heightRatio": 0.651421245274348,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-random-key": {
+          "leftRatio": 0.22677075969114163,
+          "topRatio": 0.266166814027166,
+          "widthRatio": 0.2140758155719392,
+          "heightRatio": 0.6183715549346213,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-key-history": {
+          "leftRatio": 0.44947967307804826,
+          "topRatio": 0.266166814027166,
+          "widthRatio": 0.32111585692399025,
+          "heightRatio": 0.6183715549346213,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "chat": {
+        "user-controls": {
+          "leftRatio": 0.004557967965576728,
+          "topRatio": 0.01220414164857515,
+          "widthRatio": 0.12306381207326349,
+          "heightRatio": 0.10876803551609324,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.009123095955317722,
+          "topRatio": 0.02997286391178855,
+          "widthRatio": 0.09766914893260205,
+          "heightRatio": 0.029951286104225556,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.01196615661083121,
+          "topRatio": 0.07102398126159735,
+          "widthRatio": 0.019530437975463805,
+          "heightRatio": 0.033296337402885685,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.8055433796842024,
+          "topRatio": 0.21472286516500763,
+          "widthRatio": 0.11850557391809566,
+          "heightRatio": 0.4261930848861508,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.255788331026507,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.3812045183086501,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8366358288727206,
+          "topRatio": 0.5066207225261862,
+          "widthRatio": 0.055996303620056045,
+          "heightRatio": 0.09433962264150944,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.0061059120836611325,
+          "topRatio": 0.1309655937846837,
+          "widthRatio": 0.028646904968917017,
+          "heightRatio": 0.048834628190899,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.19957401582975595,
+          "topRatio": 0.11950858028297551,
+          "widthRatio": 0.6036033229220278,
+          "heightRatio": 0.7824639289678136,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-window": {
+          "leftRatio": 0.19957401582975595,
+          "topRatio": 0.11950858028297551,
+          "widthRatio": 0.6036033229220278,
+          "heightRatio": 0.7824639289678136,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-header": {
+          "leftRatio": 0.213549768084162,
+          "topRatio": 0.14491244876027504,
+          "widthRatio": 0.5737946283327886,
+          "heightRatio": 0.08540665163977959,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-feed": {
+          "leftRatio": 0.213549768084162,
+          "topRatio": 0.24807715548262346,
+          "widthRatio": 0.5737946283327886,
+          "heightRatio": 0.4358660055450541,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-composer": {
+          "leftRatio": 0.213549768084162,
+          "topRatio": 0.70170120764255,
+          "widthRatio": 0.5737946283327886,
+          "heightRatio": 0.17486743313093958,
+          "hidden": false,
+          "lockedWith": null
+        }
+      }
+    }
+  },
+  "mobile": {
+    "__canvas": {
+      "width": 390,
+      "height": 844
+    },
+    "screens": {
+      "menu": {
+        "user-controls": {
+          "leftRatio": 0.010256410256410256,
+          "topRatio": -0.017772511557389577,
+          "widthRatio": 1.0000001465997292,
+          "heightRatio": 0.009478672760043636,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.012820732720106667,
+          "topRatio": 0.01184834068543903,
+          "widthRatio": 0.39230765565776,
+          "heightRatio": 0.033175355189383755,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.03076952396868923,
+          "topRatio": 0.053317536789092845,
+          "widthRatio": 0.07690531086839082,
+          "heightRatio": 0.03554502311477915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "avatar": {
+          "leftRatio": 0.783137512745014,
+          "topRatio": 0.03199874759381937,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.09004738963272145,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.7797544307935663,
+          "topRatio": 0.26241606480538116,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.27843601510474475,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8182158959552401,
+          "topRatio": 0.30388527043519353,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8207802184189366,
+          "topRatio": 0.37971464404784616,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.06279622542606739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8259081303476833,
+          "topRatio": 0.4626530214366849,
+          "widthRatio": 0.12564105312847487,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "side-tools": {
+          "leftRatio": 0.019996496266471396,
+          "topRatio": 0.7149816040987444,
+          "widthRatio": 0,
+          "heightRatio": 0.045023639776333585,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "side-chat": {
+          "leftRatio": 0.019996496266471396,
+          "topRatio": 0.7149816040987444,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.045023639776333585,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "main-frame": {
+          "leftRatio": 0.030003686983190142,
+          "topRatio": 0.1199973695947645,
+          "widthRatio": 0.9399929192330782,
+          "heightRatio": 0.6190428739117994,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "home-buttons": {
+          "leftRatio": 0.1521903099044976,
+          "topRatio": 0.2685623931037996,
+          "widthRatio": 0.6956197466903279,
+          "heightRatio": 0.4209616742573356,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-profile": {
+          "leftRatio": 0.1803774796427951,
+          "topRatio": 0.27724295054106546,
+          "widthRatio": 0.30683766792082734,
+          "heightRatio": 0.03818622466329729,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-users": {
+          "leftRatio": 0.5127850356860391,
+          "topRatio": 0.27724295054106546,
+          "widthRatio": 0.30683766792082734,
+          "heightRatio": 0.03818622466329729,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-inventory": {
+          "leftRatio": 0.1803774796427951,
+          "topRatio": 0.315429179438211,
+          "widthRatio": 0.30683766792082734,
+          "heightRatio": 0.0381861950263596,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-minigames": {
+          "leftRatio": 0.5127850356860391,
+          "topRatio": 0.315429179438211,
+          "widthRatio": 0.30683766792082734,
+          "heightRatio": 0.0381861950263596,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "menu-shop": {
+          "leftRatio": 0.1803774796427951,
+          "topRatio": 0.35361537446457064,
+          "widthRatio": 0.30683766792082734,
+          "heightRatio": 0.03818622466329729,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.12307692307692308,
+          "topRatio": 0.052132707060243394,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.03790645620534475,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "social-buttons": {
+          "leftRatio": 0.5000000732998646,
+          "topRatio": 0.9200072293805494,
+          "widthRatio": 0,
+          "heightRatio": 0,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "social-twitch": {
+          "leftRatio": 0.5000000732998646,
+          "topRatio": 0.9200072293805494,
+          "widthRatio": 0,
+          "heightRatio": 0,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "social-youtube": {
+          "leftRatio": 0.5564104763098503,
+          "topRatio": 0.9200072293805494,
+          "widthRatio": 0,
+          "heightRatio": 0,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "profile": {
+        "user-controls": {
+          "leftRatio": 0.010256410256410256,
+          "topRatio": -0.017772511557389577,
+          "widthRatio": 1.0000001465997292,
+          "heightRatio": 0.009478672760043636,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.012820732720106667,
+          "topRatio": 0.01184834068543903,
+          "widthRatio": 0.39230765565776,
+          "heightRatio": 0.033175355189383755,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.03076952396868923,
+          "topRatio": 0.053317536789092845,
+          "widthRatio": 0.07690531086839082,
+          "heightRatio": 0.03554502311477915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.7797544307935663,
+          "topRatio": 0.26241606480538116,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.27843601510474475,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8182158959552401,
+          "topRatio": 0.30388527043519353,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8207802184189366,
+          "topRatio": 0.37971464404784616,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.06279622542606739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8259081303476833,
+          "topRatio": 0.4626530214366849,
+          "widthRatio": 0.12564105312847487,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.12307692307692308,
+          "topRatio": 0.052132707060243394,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.03790645620534475,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.032300611540770484,
+          "topRatio": 0.10801354682405834,
+          "widthRatio": 0.9487181686175425,
+          "heightRatio": 0.8945497434491191,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-card": {
+          "leftRatio": 0.16563423807356228,
+          "topRatio": 0.11867704402064112,
+          "widthRatio": 0.7102565568561395,
+          "heightRatio": 0.6943127698824223,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-logo": {
+          "leftRatio": 0.20124653749764523,
+          "topRatio": 0.1830036701028805,
+          "widthRatio": 0.6390134864420906,
+          "heightRatio": 0.17630165769045678,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-stats": {
+          "leftRatio": 0.20124653749764523,
+          "topRatio": 0.3687922639666863,
+          "widthRatio": 0.6390134864420906,
+          "heightRatio": 0.16812299755913568,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "profile-actions": {
+          "leftRatio": 0.20637474262585037,
+          "topRatio": 0.5452173637364733,
+          "widthRatio": 0.6461539194537108,
+          "heightRatio": 0.09951784766871445,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "users": {
+        "user-controls": {
+          "leftRatio": 0.010256410256410256,
+          "topRatio": -0.017772511557389577,
+          "widthRatio": 1.0000001465997292,
+          "heightRatio": 0.009478672760043636,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.012820732720106667,
+          "topRatio": 0.01184834068543903,
+          "widthRatio": 0.39230765565776,
+          "heightRatio": 0.033175355189383755,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.03076952396868923,
+          "topRatio": 0.053317536789092845,
+          "widthRatio": 0.07690531086839082,
+          "heightRatio": 0.03554502311477915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.7797544307935663,
+          "topRatio": 0.26241606480538116,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.27843601510474475,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8182158959552401,
+          "topRatio": 0.30388527043519353,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8207802184189366,
+          "topRatio": 0.37971464404784616,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.06279622542606739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8259081303476833,
+          "topRatio": 0.4626530214366849,
+          "widthRatio": 0.12564105312847487,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.12307692307692308,
+          "topRatio": 0.052132707060243394,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.03790645620534475,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.032300611540770484,
+          "topRatio": 0.10768699857688506,
+          "widthRatio": 0.9487181686175425,
+          "heightRatio": 0.8945497434491191,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "users-title": {
+          "leftRatio": 0.1831734296786754,
+          "topRatio": 0.11242634289537233,
+          "widthRatio": 0.65722952899706,
+          "heightRatio": 0.0990899749654247,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "users-frame": {
+          "leftRatio": 0.0669160328060874,
+          "topRatio": 0.20560036171289714,
+          "widthRatio": 0.8846154579152492,
+          "heightRatio": 0.7002369058251249,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "users-table": {
+          "leftRatio": 0.14547736170331294,
+          "topRatio": 0.2461069088003347,
+          "widthRatio": 0.7307694506688246,
+          "heightRatio": 0.6042653209758255,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "inventory": {
+        "user-controls": {
+          "leftRatio": 0.010256410256410256,
+          "topRatio": -0.017772511557389577,
+          "widthRatio": 1.0000001465997292,
+          "heightRatio": 0.009478672760043636,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.012820732720106667,
+          "topRatio": 0.01184834068543903,
+          "widthRatio": 0.39230765565776,
+          "heightRatio": 0.033175355189383755,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.03076952396868923,
+          "topRatio": 0.053317536789092845,
+          "widthRatio": 0.07690531086839082,
+          "heightRatio": 0.03554502311477915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.7797544307935663,
+          "topRatio": 0.26241606480538116,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.27843601510474475,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8182158959552401,
+          "topRatio": 0.30388527043519353,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8207802184189366,
+          "topRatio": 0.37971464404784616,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.06279622542606739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8259081303476833,
+          "topRatio": 0.4626530214366849,
+          "widthRatio": 0.12564105312847487,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.12307692307692308,
+          "topRatio": 0.052132707060243394,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.03790645620534475,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.032300611540770484,
+          "topRatio": 0.10644830159685853,
+          "widthRatio": 0.9487181686175425,
+          "heightRatio": 0.8945496757075472,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-resources": {
+          "leftRatio": -0.2551637189126112,
+          "topRatio": 0.12290434673279689,
+          "widthRatio": 1.2358975824971652,
+          "heightRatio": 0.09478673395120872,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-resource-chips": {
+          "leftRatio": 0.21315893829544097,
+          "topRatio": 0.13593753725786453,
+          "widthRatio": 0.5932158776302741,
+          "heightRatio": 0.05212447645926185,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-title": {
+          "leftRatio": 0.25252858877969653,
+          "topRatio": 0.22006073167400805,
+          "widthRatio": 0.47434119914180517,
+          "heightRatio": 0.04146919292826764,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "inventory-grid": {
+          "leftRatio": 0.15765686720776625,
+          "topRatio": 0.2793024806150718,
+          "widthRatio": 0.7051282784280697,
+          "heightRatio": 0.6137439926774071,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "minigames": {
+        "user-controls": {
+          "leftRatio": 0.010256410256410256,
+          "topRatio": -0.017772511557389577,
+          "widthRatio": 1.0000001465997292,
+          "heightRatio": 0.009478672760043636,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.012820732720106667,
+          "topRatio": 0.01184834068543903,
+          "widthRatio": 0.39230765565776,
+          "heightRatio": 0.033175355189383755,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.03076952396868923,
+          "topRatio": 0.053317536789092845,
+          "widthRatio": 0.07690531086839082,
+          "heightRatio": 0.03554502311477915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.7797544307935663,
+          "topRatio": 0.26241606480538116,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.27843601510474475,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8182158959552401,
+          "topRatio": 0.30388527043519353,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8207802184189366,
+          "topRatio": 0.37971464404784616,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.06279622542606739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8259081303476833,
+          "topRatio": 0.4626530214366849,
+          "widthRatio": 0.12564105312847487,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.12307692307692308,
+          "topRatio": 0.052132707060243394,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.03790645620534475,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.032300611540770484,
+          "topRatio": 0.10402563435917557,
+          "widthRatio": 0.9487181686175425,
+          "heightRatio": 0.8945497434491191,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "minigames-grid": {
+          "leftRatio": 0.07845445769461663,
+          "topRatio": 0.14430998909089726,
+          "widthRatio": 0.8820334701841805,
+          "heightRatio": 0.7985782263413915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-duels": {
+          "leftRatio": 0.2169159961561551,
+          "topRatio": 0.18103984193452588,
+          "widthRatio": 0.5871795971292841,
+          "heightRatio": 0.19075830186511514,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-casillas": {
+          "leftRatio": 0.2374288166689756,
+          "topRatio": 0.37535266262312705,
+          "widthRatio": 0.5615386081381908,
+          "heightRatio": 0.1812796132281406,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-rpg": {
+          "leftRatio": 0.2374288166689756,
+          "topRatio": 0.7527223305485224,
+          "widthRatio": 0.5769231135730092,
+          "heightRatio": 0.16113745279767272,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "game-pet": {
+          "leftRatio": 0.2374288166689756,
+          "topRatio": 0.5607791947207096,
+          "widthRatio": 0.5666668499163282,
+          "heightRatio": 0.17534722974906353,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "shop": {
+        "user-controls": {
+          "leftRatio": 0.010256410256410256,
+          "topRatio": -0.017772511557389577,
+          "widthRatio": 1.0000001465997292,
+          "heightRatio": 0.009478672760043636,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.012820732720106667,
+          "topRatio": 0.01184834068543903,
+          "widthRatio": 0.39230765565776,
+          "heightRatio": 0.033175355189383755,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.03076952396868923,
+          "topRatio": 0.053317536789092845,
+          "widthRatio": 0.07690531086839082,
+          "heightRatio": 0.03554502311477915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.7797544307935663,
+          "topRatio": 0.26241606480538116,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.27843601510474475,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8182158959552401,
+          "topRatio": 0.30388527043519353,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8207802184189366,
+          "topRatio": 0.37971464404784616,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.06279622542606739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8259081303476833,
+          "topRatio": 0.4626530214366849,
+          "widthRatio": 0.12564105312847487,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.12307692307692308,
+          "topRatio": 0.052132707060243394,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.03790645620534475,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.032300611540770484,
+          "topRatio": 0.10312354524974421,
+          "widthRatio": 0.9487181686175425,
+          "heightRatio": 0.8945497434491191,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-resources": {
+          "leftRatio": 0.059366146750726954,
+          "topRatio": 0.11141738298862809,
+          "widthRatio": 0.9037038421590036,
+          "heightRatio": 0.03905838469950922,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-tabs": {
+          "leftRatio": 0.05024940278935305,
+          "topRatio": 0.15877782756030626,
+          "widthRatio": 0.9051283517279344,
+          "heightRatio": 0.03554502734862739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-content": {
+          "leftRatio": 0.12204427458422484,
+          "topRatio": 0.2251285294713773,
+          "widthRatio": 0.7692309158304984,
+          "heightRatio": 0.6244075999540442,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-random-key": {
+          "leftRatio": 0.28073379028468937,
+          "topRatio": 0.25935707558008464,
+          "widthRatio": 0.4641025641025641,
+          "heightRatio": 0.24289099622381383,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "shop-key-history": {
+          "leftRatio": 0.28073379028468937,
+          "topRatio": 0.5154128672677061,
+          "widthRatio": 0.4641025641025641,
+          "heightRatio": 0.235773795717432,
+          "hidden": false,
+          "lockedWith": null
+        }
+      },
+      "chat": {
+        "user-controls": {
+          "leftRatio": 0.010256410256410256,
+          "topRatio": -0.017772511557389577,
+          "widthRatio": 1.0000001465997292,
+          "heightRatio": 0.009478672760043636,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-user": {
+          "leftRatio": 0.012820732720106667,
+          "topRatio": 0.01184834068543903,
+          "widthRatio": 0.39230765565776,
+          "heightRatio": 0.033175355189383755,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "session-menu": {
+          "leftRatio": 0.03076952396868923,
+          "topRatio": 0.053317536789092845,
+          "widthRatio": 0.07690531086839082,
+          "heightRatio": 0.03554502311477915,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notifications": {
+          "leftRatio": 0.7797544307935663,
+          "topRatio": 0.26241606480538116,
+          "widthRatio": 0.19487183152172718,
+          "heightRatio": 0.27843601510474475,
+          "hidden": true,
+          "lockedWith": null
+        },
+        "notice-objects": {
+          "leftRatio": 0.8182158959552401,
+          "topRatio": 0.30388527043519353,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-social": {
+          "leftRatio": 0.8207802184189366,
+          "topRatio": 0.37971464404784616,
+          "widthRatio": 0.13331557644113032,
+          "heightRatio": 0.06279622542606739,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "notice-announcement": {
+          "leftRatio": 0.8259081303476833,
+          "topRatio": 0.4626530214366849,
+          "widthRatio": 0.12564105312847487,
+          "heightRatio": 0.059241719304126056,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "global-back-button": {
+          "leftRatio": 0.12307692307692308,
+          "topRatio": 0.052132707060243394,
+          "widthRatio": 0.09743591576086359,
+          "heightRatio": 0.03790645620534475,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "section-panel": {
+          "leftRatio": 0.032300611540770484,
+          "topRatio": 0.10216220766802078,
+          "widthRatio": 0.9487181686175425,
+          "heightRatio": 0.8945498111906909,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-window": {
+          "leftRatio": 0.05537760791755818,
+          "topRatio": 0.14126174537243774,
+          "widthRatio": 0.9153846153846154,
+          "heightRatio": 0.8056790333873821,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-header": {
+          "leftRatio": 0.17405639251784302,
+          "topRatio": 0.15344742955960392,
+          "widthRatio": 0.6974360440356266,
+          "heightRatio": 0.05805687687373188,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-feed": {
+          "leftRatio": 0.08431272947438866,
+          "topRatio": 0.22321276394826062,
+          "widthRatio": 0.8512821978817805,
+          "heightRatio": 0.5509396636658054,
+          "hidden": false,
+          "lockedWith": null
+        },
+        "chat-composer": {
+          "leftRatio": 0.11251793097938148,
+          "topRatio": 0.7879014771998127,
+          "widthRatio": 0.8000000732998647,
+          "heightRatio": 0.12676898647227908,
+          "hidden": false,
+          "lockedWith": null
+        }
+      }
+    }
+  }
+}
