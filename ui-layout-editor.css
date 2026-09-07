@@ -368,6 +368,21 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
   overflow: visible !important;
 }
 
+/* Los límites estructurales no recortan el marco mientras se compone. */
+body.ui-layout-editing .panel,
+body.ui-layout-editing #appView,
+body.ui-layout-editing #menuView,
+body.ui-layout-editing #menuView .menu-panel,
+body.ui-layout-editing #menuView .menu-main-layout {
+  overflow: visible !important;
+}
+
+/* El logo es decorativo fuera del editor, pero debe poder seleccionarse,
+   moverse y redimensionarse dentro de la herramienta. */
+body.ui-layout-editing .session-logo-badge[data-ui-layout] {
+  pointer-events: auto !important;
+}
+
 [data-ui-layout].ui-layout-sized > *:not(.ui-layout-resize-handle) {
   min-width: 0;
   max-width: 100%;
@@ -400,6 +415,7 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
   padding: clamp(1px, 10cqh, 11px) clamp(3px, 6cqw, 18px) !important;
   gap: clamp(2px, 3cqw, 10px) !important;
   flex-wrap: nowrap !important;
+  transform: none !important;
 }
 
 .session-user-card.ui-layout-sized::before {
@@ -806,6 +822,12 @@ a[data-ui-layout].ui-layout-sized > img {
   line-height: 1 !important;
   text-align: center !important;
   overflow: hidden !important;
+}
+
+#openRequestsPanelButton.ui-layout-sized > span {
+  font-size: inherit !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
 }
 
 #openChatButton.ui-layout-sized img {

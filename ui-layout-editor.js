@@ -71,7 +71,6 @@
   var targetDefinitions = [
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
-    ["#mobileSessionMenuToggle", "session-menu-button", "Botón del menú"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
     [".content-view .nav-back", "section-back", "Botón volver", true],
     [".session-logo-badge", "avatar", "Logo del usuario"],
@@ -298,7 +297,7 @@
     try {
       var stored = JSON.parse(localStorage.getItem(DRAFT_PREFIX + modeName) || "{}");
       if (stored && stored.baseLayoutId === BASE_LAYOUT_ID && stored.screens && typeof stored.screens === "object") {
-        return stored.screens;
+        return removeEmptySocialBoxes(stored.screens);
       }
       return {};
     } catch (error) {
@@ -355,6 +354,16 @@
     return JSON.parse(JSON.stringify(value || {}));
   }
 
+  function removeEmptySocialBoxes(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var menu = screens.menu || {};
+    ["social-buttons", "social-twitch", "social-youtube"].forEach(function (key) {
+      var item = menu[key];
+      if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
+    });
+    return screens;
+  }
+
   function pushHistory() {
     editorState.undo.push(cloneValue(screenLayouts(false)));
     if (editorState.undo.length > 40) editorState.undo.shift();
@@ -382,7 +391,7 @@
     ["desktop", "mobile"].forEach(function (modeName) {
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
-        result[modeName] = mode.screens;
+        result[modeName] = removeEmptySocialBoxes(cloneValue(mode.screens));
       }
     });
     return result;
@@ -420,6 +429,8 @@
         var item = menu[key];
         if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
       });
+      removeEmptySocialBoxes(converted.desktop);
+      removeEmptySocialBoxes(converted.mobile);
       return converted;
     }
     return normalizePayload(payload);
@@ -737,7 +748,10 @@
       originY: Number(element.dataset.uiLayoutY || 0),
       width: rect.width / layoutCanvasScale,
       height: rect.height / layoutCanvasScale,
-      descendants: handle ? visibleTargets().filter(function (candidate) {
+      /* También se registran los hijos al mover: su posición publicada debe
+         acompañar al padre y no regresar a la coordenada absoluta anterior al
+         volver a cargar. */
+      descendants: visibleTargets().filter(function (candidate) {
         return candidate !== element && element.contains(candidate);
       }).map(function (candidate) {
         var childRect = candidate.getBoundingClientRect();
@@ -748,7 +762,7 @@
           width: childRect.width / layoutCanvasScale,
           height: childRect.height / layoutCanvasScale
         };
-      }) : []
+      })
     };
     if (element.setPointerCapture) element.setPointerCapture(event.pointerId);
   }
