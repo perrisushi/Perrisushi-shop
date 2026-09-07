@@ -6236,7 +6236,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260907-15">
+  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260907-19">
 </head>
 <body>
   <audio id="backgroundMusic" src="./musica-web.mp3" loop preload="auto"></audio>
@@ -9219,7 +9219,7 @@
           ? `${owned} / ${maxPerUser} en inventario`
           : isOwned ? "Ya comprada" : "Disponible para compra";
         return `
-          <article class="shop-item-cell${isOwned ? " is-owned" : ""}">
+          <article class="shop-item-cell${isOwned ? " is-owned" : ""}" data-item-id="${escapeHtml(item.key)}">
             <div class="shop-item-panel">
               <div class="item-badge"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>
               <div>
@@ -9761,7 +9761,7 @@
     }
     function renderInventoryView() {
       inventoryGrid.innerHTML = inventoryItems.map((item) => `
-        <article class="inventory-card">
+        <article class="inventory-card" data-item-id="${escapeHtml(item.key)}">
           <div class="inventory-badge"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>
           <div>
             <h2>${escapeHtml(item.name)}</h2>
@@ -12064,6 +12064,6 @@
       }
     });
   </script>
-  <script src="./ui-layout-editor.js?v=20260907-15"></script>
+  <script src="./ui-layout-editor.js?v=20260907-19"></script>
 </body>
 </html>

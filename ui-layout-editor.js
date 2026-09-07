@@ -1,8 +1,9 @@
 (function () {
   "use strict";
 
-  var LAYOUT_VERSION = 2;
-  var DRAFT_PREFIX = "perrisushi-ui-layout-draft-v3:";
+  var LAYOUT_VERSION = 3;
+  var EDITOR_IMPLEMENTATION = "native-layout-editor-v1";
+  var DRAFT_PREFIX = "perrisushi-native-layout-v1:";
   var editorState = {
     active: false,
     guides: true,
@@ -10,84 +11,38 @@
     selected: null,
     attached: null,
     pointer: null,
+    undo: [],
+    redo: [],
     layouts: { desktop: {}, mobile: {} },
-    previewMode: null,
     loaded: false
   };
 
   var layoutCanvasScale = 1;
   var settledApplyTimer = 0;
+  var remoteSaveTimer = 0;
+  var originalStyles = new WeakMap();
   var mobileDevice = Boolean(
     navigator.userAgentData && navigator.userAgentData.mobile
-  ) || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || "") || (
-    window.matchMedia("(pointer: coarse)").matches &&
-    Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 900
+  ) || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || "") || Boolean(
+    navigator.maxTouchPoints > 0 && window.matchMedia && window.matchMedia("(pointer: coarse)").matches
   );
 
-  function ensureMobilePreviewStyles() {
-    if (document.getElementById("uiLayoutMobilePreviewStyles")) return;
-    var chunks = [];
-    function scopedSelector(selector) {
-      return selector.split(",").map(function (part) {
-        part = part.trim();
-        if (part.indexOf("body") === 0) return "body.perri-mobile-preview" + part.slice(4);
-        if (part.indexOf(":root") === 0 || part.indexOf("html") === 0) return "body.perri-mobile-preview" + part.replace(/^(:root|html)/, "");
-        return "body.perri-mobile-preview " + part;
-      }).join(",");
-    }
-    function collect(rules) {
-      Array.from(rules || []).forEach(function (rule) {
-        if (rule.type === CSSRule.STYLE_RULE) {
-          chunks.push(scopedSelector(rule.selectorText) + "{" + rule.style.cssText + "}");
-        } else if (rule.cssRules) {
-          collect(rule.cssRules);
-        }
-      });
-    }
-    Array.from(document.styleSheets).forEach(function (sheet) {
-      var rules;
-      try { rules = sheet.cssRules; } catch (error) { return; }
-      Array.from(rules || []).forEach(function (rule) {
-        if (rule.type === CSSRule.MEDIA_RULE && /max-width\s*:\s*720px/i.test(rule.conditionText || "")) {
-          collect(rule.cssRules);
-        }
-      });
-    });
-    var style = document.createElement("style");
-    style.id = "uiLayoutMobilePreviewStyles";
-    style.textContent = chunks.join("\n");
-    document.head.appendChild(style);
-  }
-
   function fitFixedCanvas() {
-    ensureMobilePreviewStyles();
-    var useMobile = editorState.previewMode ? editorState.previewMode === "mobile" : mobileDevice;
-    var canvas = useMobile
-      ? { width: 390, height: 844 }
-      : { width: 1536, height: 901 };
-    layoutCanvasScale = Math.min(
-      window.innerWidth / canvas.width,
-      window.innerHeight / canvas.height
-    );
-    if (!Number.isFinite(layoutCanvasScale) || layoutCanvasScale <= 0) layoutCanvasScale = 1;
-    document.body.classList.add("perri-fixed-canvas");
-    document.body.classList.toggle("perri-mobile-layout", useMobile);
-    document.body.classList.toggle("perri-desktop-layout", !useMobile);
-    document.body.classList.toggle("perri-mobile-preview", Boolean(editorState.previewMode && useMobile));
-    document.body.style.setProperty("--perri-canvas-width", canvas.width + "px");
-    document.body.style.setProperty("--perri-canvas-height", canvas.height + "px");
-    document.body.style.setProperty("--perri-canvas-scale", String(layoutCanvasScale));
+    layoutCanvasScale = 1;
+    document.body.classList.remove("perri-fixed-canvas", "perri-mobile-layout", "perri-desktop-layout", "perri-mobile-preview");
+    document.body.style.removeProperty("--perri-canvas-width");
+    document.body.style.removeProperty("--perri-canvas-height");
+    document.body.style.removeProperty("--perri-canvas-scale");
   }
 
   var targetDefinitions = [
-    [".session-left-stack", "user-controls", "Controles de usuario"],
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
+    [".content-view .nav-back", "section-back", "Botón volver", true],
     [".session-logo-badge", "avatar", "Logo del usuario"],
     ["#notificationDock", "notifications", "Botones de aviso"],
     [".notification-bubble", "notification", "Aviso", true],
-    [".menu-side-tools", "side-tools", "Botones laterales"],
     [".menu-frame", "main-frame", "Marco del menú"],
     [".menu-actions", "home-buttons", "Botones del menú"],
     ["#openProfileButton", "menu-profile", "Botón Mi perfil"],
@@ -113,13 +68,16 @@
     ["#usersView .users-room-table-wrap", "users-table", "Lista de usuarios"],
     ["#shopView .shop-resource-shell", "shop-resource-shell", "Barra de recursos"],
     ["#shopView .resource-group", "shop-resources", "Gemas y PC"],
+    ["#shopView .resource-group > *", "shop-resource-chip", "Recurso", true],
     ["#shopView .shop-tabs-shell", "shop-tabs", "Pestañas de tienda"],
+    ["#shopView .shop-tabs-shell .tab-button", "shop-tab", "Pestaña", true],
     ["#shopView .shop-content-shell", "shop-content", "Contenido de tienda"],
     ["#shopView .random-key-card", "shop-random-key", "Random Key"],
     ["#shopView .random-key-history", "shop-key-history", "Historial de Keys"],
     ["#shopView .shop-item-cell", "shop-item", "Artículo de tienda", true],
     ["#inventoryView .section-topbar", "inventory-resources", "Gemas y PC"],
     ["#inventoryView .resource-group", "inventory-resource-chips", "Recuadro de Gemas y PC"],
+    ["#inventoryView .resource-group > *", "inventory-resource-chip", "Recurso", true],
     ["#inventoryView .inventory-heading", "inventory-title", "Título Inventario"],
     ["#inventoryGrid", "inventory-grid", "Objetos del inventario"],
     ["#inventoryGrid .inventory-card", "inventory-item", "Objeto del inventario", true],
@@ -127,6 +85,7 @@
     ["#profileView .profile-logo-panel", "profile-logo", "Logo del perfil"],
     ["#profileView .profile-stats-panel", "profile-stats", "Estadísticas del perfil"],
     ["#profileView .profile-actions", "profile-actions", "Acciones del perfil"],
+    ["#profileView .profile-actions > *", "profile-action", "Botón del perfil", true],
     ["#chatView .web-chat-view", "chat-window", "Ventana de chat"],
     ["#chatView .web-chat-header", "chat-header", "Cabecera del chat"],
     ["#chatView .web-chat-feed-wrap", "chat-feed", "Mensajes del chat"],
@@ -134,7 +93,7 @@
   ];
 
   function currentMode() {
-    return editorState.previewMode || (mobileDevice ? "mobile" : "desktop");
+    return mobileDevice ? "mobile" : "desktop";
   }
 
   function currentScreen() {
@@ -172,6 +131,27 @@
     });
   }
 
+  function refreshLabels() {
+    if (!editorState.active) {
+      document.querySelectorAll(".ui-layout-target-label").forEach(function (label) { label.remove(); });
+      return;
+    }
+    visibleTargets().forEach(function (element) {
+      var existing = Array.from(element.children).find(function (child) {
+        return child.classList && child.classList.contains("ui-layout-target-label");
+      });
+      if (existing) {
+        existing.textContent = element.dataset.uiLayoutLabel || element.dataset.uiLayout;
+        return;
+      }
+      var label = document.createElement("span");
+      label.className = "ui-layout-target-label";
+      label.textContent = element.dataset.uiLayoutLabel || element.dataset.uiLayout;
+      label.setAttribute("aria-hidden", "true");
+      element.appendChild(label);
+    });
+  }
+
   function screenLayouts(create) {
     var modeName = currentMode();
     var screenName = currentScreen();
@@ -189,12 +169,24 @@
       var label = definition[2];
       var indexed = definition[3];
       document.querySelectorAll(selector).forEach(function (element, index) {
+        if (!originalStyles.has(element)) {
+          var saved = {};
+          ["translate", "position", "left", "top", "width", "height", "visibility", "opacity", "pointer-events"].forEach(function (property) {
+            saved[property] = {
+              value: element.style.getPropertyValue(property),
+              priority: element.style.getPropertyPriority(property)
+            };
+          });
+          originalStyles.set(element, saved);
+          if (getComputedStyle(element).position === "static") element.classList.add("ui-layout-static");
+        }
         if (!element.dataset.uiLayout) {
           var key = baseKey;
           if (baseKey === "notification") {
             key = ["notice-objects", "notice-social", "notice-announcement"][index] || "notice-" + index;
           } else if (indexed) {
-            key = baseKey + "-" + index;
+            var identity = element.id || element.dataset.itemId || element.dataset.kind || element.dataset.tab || String(index);
+            key = baseKey + "-" + String(identity).toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
           }
           element.dataset.uiLayout = key;
         }
@@ -205,6 +197,7 @@
     document.querySelectorAll(".content-view[data-ui-layout=\"section-panel\"]").forEach(function (view) {
       view.dataset.uiLayoutEnabled = view === activeView ? "true" : "false";
     });
+    refreshLabels();
     if (!editorState.active) scheduleLayoutApply();
   }
 
@@ -220,14 +213,62 @@
     try {
       localStorage.setItem(DRAFT_PREFIX + currentMode(), JSON.stringify(editorState.layouts[currentMode()] || {}));
     } catch (error) {}
+    clearTimeout(remoteSaveTimer);
+    remoteSaveTimer = setTimeout(saveRemoteLayout, 900);
+  }
+
+  function layoutPayload() {
+    return {
+      layoutVersion: LAYOUT_VERSION,
+      editorImplementation: EDITOR_IMPLEMENTATION,
+      coordinateSystem: "native-offset-ratios",
+      desktop: { screens: editorState.layouts.desktop },
+      mobile: { screens: editorState.layouts.mobile }
+    };
+  }
+
+  async function saveRemoteLayout() {
+    if (typeof callApi !== "function" || typeof state === "undefined" ||
+        !state.sessionToken || !state.requestsPanelKey) return;
+    try {
+      var response = await callApi({
+        action: "publicShopSaveUiLayouts",
+        sessionToken: state.sessionToken,
+        panelKey: state.requestsPanelKey,
+        layouts: layoutPayload()
+      });
+      if (response.data && response.data.ok) setStatus("Guardado automáticamente");
+    } catch (error) {
+      setStatus("Guardado local; no se pudo sincronizar");
+    }
+  }
+
+  function cloneValue(value) {
+    return JSON.parse(JSON.stringify(value || {}));
+  }
+
+  function pushHistory() {
+    editorState.undo.push(cloneValue(screenLayouts(false)));
+    if (editorState.undo.length > 40) editorState.undo.shift();
+    editorState.redo = [];
+  }
+
+  function restoreHistory(from, to, label) {
+    if (!from.length) return setStatus("No hay más cambios");
+    to.push(cloneValue(screenLayouts(false)));
+    editorState.layouts[currentMode()][currentScreen()] = from.pop();
+    saveDraft();
+    scheduleLayoutApply();
+    selectElement(null);
+    setStatus(label);
   }
 
   function normalizePayload(payload) {
     var result = { desktop: {}, mobile: {} };
     if (!payload || typeof payload !== "object") return result;
-    var isAbsoluteV2 = Number(payload.layoutVersion || payload.prototypeLayoutVersion) === LAYOUT_VERSION &&
-      payload.coordinateSystem === "absolute-canvas-ratios";
-    if (!isAbsoluteV2) return result;
+    if (Number(payload.layoutVersion) !== LAYOUT_VERSION ||
+        payload.editorImplementation !== EDITOR_IMPLEMENTATION ||
+        payload.coordinateSystem !== "native-offset-ratios") return result;
     ["desktop", "mobile"].forEach(function (modeName) {
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
@@ -239,76 +280,15 @@
 
   function convertPrototypePayload(payload) {
     return normalizePayload(payload);
-    /* Compatibilidad v1 retirada: las coordenadas relativas antiguas deformaban la web real.
-    if (!payload || typeof payload !== "object") return normalizePayload(payload);
-    var looksLikePrototype = Boolean(payload.prototypeLayoutVersion) ||
-      Boolean(payload.desktop && payload.desktop.__canvas) ||
-      Boolean(payload.mobile && payload.mobile.__canvas);
-    if (!looksLikePrototype) return normalizePayload(payload);
-
-    var screens = ["menu", "profile", "users", "inventory", "minigames", "shop", "chat"];
-    var globalKeys = new Set([
-      "session-user", "session-menu", "avatar", "notifications",
-      "global-back-button", "side-chat", "side-panel"
-    ]);
-    var menuKeys = new Set([
-      "main-frame", "home-buttons", "menu-profile", "menu-users",
-      "menu-inventory", "menu-minigames", "menu-shop", "social-buttons",
-      "social-twitch", "social-youtube"
-    ]);
-
-    function screenForKey(key) {
-      if (menuKeys.has(key)) return "menu";
-      if (key.indexOf("profile-") === 0) return "profile";
-      if (key.indexOf("users-") === 0) return "users";
-      if (key.indexOf("inventory-") === 0) return "inventory";
-      if (key.indexOf("minigames-") === 0 || key.indexOf("game-") === 0) return "minigames";
-      if (key.indexOf("shop-") === 0) return "shop";
-      if (key.indexOf("chat-") === 0) return "chat";
-      return "";
-    }
-
-    function convertMode(raw) {
-      var result = {};
-      screens.forEach(function (name) { result[name] = {}; });
-      if (!raw || typeof raw !== "object") return result;
-      Object.keys(raw).forEach(function (key) {
-        if (key === "__canvas") return;
-        var sourceItem = raw[key];
-        if (!sourceItem || typeof sourceItem !== "object") return;
-        var targets = globalKeys.has(key) ? screens : [screenForKey(key)].filter(Boolean);
-        targets.forEach(function (screenName) {
-          var hiddenScreens = Array.isArray(sourceItem.hiddenScreens) ? sourceItem.hiddenScreens : [];
-          result[screenName][key] = {
-            xRatio: Number(sourceItem.xRatio || 0),
-            yRatio: Number(sourceItem.yRatio || 0),
-            widthRatio: Number(sourceItem.widthRatio || 0),
-            heightRatio: Number(sourceItem.heightRatio || 0),
-            hidden: hiddenScreens.includes(screenName) || Boolean(sourceItem.hidden),
-            lockedWith: sourceItem.lockedWith || null
-          };
-        });
-      });
-      return result;
-    }
-
-    return {
-      desktop: convertMode(payload.desktop),
-      mobile: convertMode(payload.mobile)
-    };
-    */
   }
 
   function clearStyle(element) {
-    element.style.translate = "";
-    element.style.position = "";
-    element.style.left = "";
-    element.style.top = "";
-    element.style.width = "";
-    element.style.height = "";
-    element.style.visibility = "";
-    element.style.opacity = "";
-    element.style.pointerEvents = "";
+    var saved = originalStyles.get(element) || {};
+    ["translate", "position", "left", "top", "width", "height", "visibility", "opacity", "pointer-events"].forEach(function (property) {
+      var entry = saved[property];
+      if (entry && entry.value) element.style.setProperty(property, entry.value, entry.priority || "");
+      else element.style.removeProperty(property);
+    });
     element.classList.remove("ui-layout-sized", "ui-layout-attached");
     delete element.dataset.uiLayoutX;
     delete element.dataset.uiLayoutY;
@@ -320,8 +300,8 @@
 
   function applyItem(element, item, canvas, phase) {
     if (!item) return;
-    var leftRatio = Number(item.leftRatio);
-    var topRatio = Number(item.topRatio);
+    var offsetX = Number(item.offsetXRatio) * canvas.width;
+    var offsetY = Number(item.offsetYRatio) * canvas.height;
     var width = Number(item.widthRatio) * canvas.width;
     var height = Number(item.heightRatio) * canvas.height;
     if (phase !== "position" && width > 4) {
@@ -334,17 +314,7 @@
       element.style.setProperty("height", height + "px", "important");
       element.classList.add("ui-layout-sized");
     }
-    if (phase !== "size" && Number.isFinite(leftRatio) && Number.isFinite(topRatio) && element.getClientRects().length) {
-      /*
-       * Las posiciones guardadas por Maqueta 2 son absolutas respecto al lienzo.
-       * Conservamos el elemento en su jerarquía real y compensamos su posición
-       * visual. Así los hijos no vuelven a sumar la coordenada de sus padres.
-       */
-      var rect = element.getBoundingClientRect();
-      var desiredLeft = canvas.left + leftRatio * canvas.width * layoutCanvasScale;
-      var desiredTop = canvas.top + topRatio * canvas.height * layoutCanvasScale;
-      var offsetX = (desiredLeft - rect.left) / layoutCanvasScale;
-      var offsetY = (desiredTop - rect.top) / layoutCanvasScale;
+    if (phase !== "size" && Number.isFinite(offsetX) && Number.isFinite(offsetY)) {
       element.dataset.uiLayoutX = String(offsetX);
       element.dataset.uiLayoutY = String(offsetY);
       element.style.translate = offsetX + "px " + offsetY + "px";
@@ -394,8 +364,8 @@
     var canvas = canvasRect();
     var rect = element.getBoundingClientRect();
     return {
-      leftRatio: canvas.width ? (rect.left - canvas.left) / layoutCanvasScale / canvas.width : 0,
-      topRatio: canvas.height ? (rect.top - canvas.top) / layoutCanvasScale / canvas.height : 0,
+      offsetXRatio: canvas.width ? Number(element.dataset.uiLayoutX || 0) / canvas.width : 0,
+      offsetYRatio: canvas.height ? Number(element.dataset.uiLayoutY || 0) / canvas.height : 0,
       widthRatio: canvas.width ? rect.width / layoutCanvasScale / canvas.width : 0,
       heightRatio: canvas.height ? rect.height / layoutCanvasScale / canvas.height : 0,
       hidden: element.dataset.uiLayoutHidden === "true",
@@ -525,7 +495,9 @@
   function linkedElement(element) {
     var key = element && element.dataset.uiLayoutLockedWith;
     if (!key) return null;
-    return document.querySelector("[data-ui-layout=\"" + CSS.escape(key) + "\"]");
+    return visibleTargets().find(function (candidate) {
+      return candidate.dataset.uiLayout === key;
+    }) || null;
   }
 
   function moveElement(element, dx, dy, includeLinked) {
@@ -543,14 +515,48 @@
   function resizeElement(element, width, height, includeLinked) {
     var safeWidth = Math.max(16, width);
     var safeHeight = Math.max(16, height);
+    var linked = includeLinked !== false ? linkedElement(element) : null;
+    var relation = null;
+    if (linked) {
+      var firstRect = element.getBoundingClientRect();
+      var linkedRect = linked.getBoundingClientRect();
+      var centerDx = (linkedRect.left + linkedRect.width / 2) - (firstRect.left + firstRect.width / 2);
+      var centerDy = (linkedRect.top + linkedRect.height / 2) - (firstRect.top + firstRect.height / 2);
+      if (Math.abs(centerDx) >= Math.abs(centerDy)) {
+        relation = centerDx >= 0
+          ? { side: "right", gap: linkedRect.left - firstRect.right, cross: linkedRect.top - firstRect.top }
+          : { side: "left", gap: firstRect.left - linkedRect.right, cross: linkedRect.top - firstRect.top };
+      } else {
+        relation = centerDy >= 0
+          ? { side: "bottom", gap: linkedRect.top - firstRect.bottom, cross: linkedRect.left - firstRect.left }
+          : { side: "top", gap: firstRect.top - linkedRect.bottom, cross: linkedRect.left - firstRect.left };
+      }
+    }
     element.dataset.uiLayoutWidth = String(safeWidth);
     element.dataset.uiLayoutHeight = String(safeHeight);
     element.style.setProperty("width", safeWidth + "px", "important");
     element.style.setProperty("height", safeHeight + "px", "important");
     element.classList.add("ui-layout-sized");
-    if (includeLinked !== false) {
-      var linked = linkedElement(element);
-      if (linked) resizeElement(linked, safeWidth, safeHeight, false);
+    if (linked) {
+      resizeElement(linked, safeWidth, safeHeight, false);
+      var resized = element.getBoundingClientRect();
+      var linkedResized = linked.getBoundingClientRect();
+      var desiredLeft = linkedResized.left;
+      var desiredTop = linkedResized.top;
+      if (relation.side === "right") {
+        desiredLeft = resized.right + relation.gap;
+        desiredTop = resized.top + relation.cross;
+      } else if (relation.side === "left") {
+        desiredLeft = resized.left - relation.gap - linkedResized.width;
+        desiredTop = resized.top + relation.cross;
+      } else if (relation.side === "bottom") {
+        desiredTop = resized.bottom + relation.gap;
+        desiredLeft = resized.left + relation.cross;
+      } else {
+        desiredTop = resized.top - relation.gap - linkedResized.height;
+        desiredLeft = resized.left + relation.cross;
+      }
+      moveElement(linked, (desiredLeft - linkedResized.left) / layoutCanvasScale, (desiredTop - linkedResized.top) / layoutCanvasScale, false);
     }
   }
 
@@ -562,6 +568,7 @@
     event.preventDefault();
     event.stopPropagation();
     selectElement(element);
+    pushHistory();
     var rect = element.getBoundingClientRect();
     editorState.pointer = {
       id: event.pointerId,
@@ -573,8 +580,8 @@
       originY: Number(element.dataset.uiLayoutY || 0),
       width: rect.width / layoutCanvasScale,
       height: rect.height / layoutCanvasScale,
-      descendants: handle ? allTargets().filter(function (candidate) {
-        return candidate !== element && element.contains(candidate) && candidate.getClientRects().length;
+      descendants: handle ? visibleTargets().filter(function (candidate) {
+        return candidate !== element && element.contains(candidate);
       }).map(function (candidate) {
         var childRect = candidate.getBoundingClientRect();
         return {
@@ -641,21 +648,17 @@
       selectElement(null);
       editorState.showHidden = false;
       refreshHidden();
+      refreshLabels();
     } else {
       markTargets();
+      refreshLabels();
       setStatus("Editando " + (currentMode() === "mobile" ? "móvil" : "PC") + " · " + currentScreen());
     }
   }
 
   function exportLayouts() {
     visibleTargets().forEach(commitElement);
-    var blob = new Blob([JSON.stringify({
-      layoutVersion: LAYOUT_VERSION,
-      editorImplementation: "maqueta2-complete-v1",
-      coordinateSystem: "absolute-canvas-ratios",
-      desktop: { __canvas: { width: 1536, height: 901 }, screens: editorState.layouts.desktop },
-      mobile: { __canvas: { width: 390, height: 844 }, screens: editorState.layouts.mobile }
-    }, null, 2)], { type: "application/json" });
+    var blob = new Blob([JSON.stringify(layoutPayload(), null, 2)], { type: "application/json" });
     var link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "perrisushi-diseno-" + new Date().toISOString().slice(0, 10) + ".json";
@@ -672,40 +675,12 @@
       editorState.layouts = convertPrototypePayload(JSON.parse(await file.text()));
       localStorage.setItem(DRAFT_PREFIX + "desktop", JSON.stringify(editorState.layouts.desktop));
       localStorage.setItem(DRAFT_PREFIX + "mobile", JSON.stringify(editorState.layouts.mobile));
-      applyCurrentLayout();
-      setStatus("Diseño importado; pulsa Publicar");
+      scheduleLayoutApply();
+      clearTimeout(remoteSaveTimer);
+      remoteSaveTimer = setTimeout(saveRemoteLayout, 300);
+      setStatus("Diseño importado y guardado");
     } catch (error) {
       setStatus("El archivo no contiene un diseño válido");
-    }
-  }
-
-  async function publishLayouts() {
-    visibleTargets().forEach(commitElement);
-    if (typeof callApi !== "function" || !state || !state.sessionToken || !state.requestsPanelKey) {
-      setStatus("Vuelve a validar el panel privado");
-      return;
-    }
-    setStatus("Publicando diseño...");
-    try {
-      var payload = {
-        layoutVersion: LAYOUT_VERSION,
-        editorImplementation: "maqueta2-complete-v1",
-        coordinateSystem: "absolute-canvas-ratios",
-        desktop: { __canvas: { width: 1536, height: 901 }, screens: editorState.layouts.desktop },
-        mobile: { __canvas: { width: 390, height: 844 }, screens: editorState.layouts.mobile }
-      };
-      var response = await callApi({
-        action: "publicShopSaveUiLayouts",
-        sessionToken: state.sessionToken,
-        panelKey: state.requestsPanelKey,
-        layouts: payload
-      });
-      if (!response.data || !response.data.ok) {
-        throw new Error(response.data && response.data.error ? response.data.error : "unknown_error");
-      }
-      setStatus("Diseño publicado para PC y móvil");
-    } catch (error) {
-      setStatus("No se pudo publicar: " + (error.message || "error"));
     }
   }
 
@@ -718,16 +693,15 @@
     toolbar.innerHTML =
       "<button class=\"ui-layout-editor-toggle\" type=\"button\" aria-label=\"Minimizar\">−</button>" +
       "<button id=\"uiLayoutEditToggle\" type=\"button\" aria-pressed=\"false\">Mover recuadros</button>" +
-      "<button id=\"uiLayoutPreviewButton\" type=\"button\">Vista móvil</button>" +
       "<button id=\"uiLayoutGuidesToggle\" type=\"button\" aria-pressed=\"true\">Ocultar marcos</button>" +
       "<button id=\"uiLayoutEqualButton\" type=\"button\">Igualar tamaño</button>" +
       "<button id=\"uiLayoutLockButton\" type=\"button\">Anclar</button>" +
       "<button id=\"uiLayoutHideButton\" type=\"button\">Ocultar selección</button>" +
       "<button id=\"uiLayoutShowHiddenButton\" type=\"button\" aria-pressed=\"false\">Ver ocultos</button>" +
-      "<button id=\"uiLayoutResetButton\" type=\"button\">Restaurar pantalla</button>" +
+      "<button id=\"uiLayoutUndoButton\" type=\"button\">Deshacer</button>" +
+      "<button id=\"uiLayoutRedoButton\" type=\"button\">Rehacer</button>" +
       "<button id=\"uiLayoutExportButton\" type=\"button\">Exportar</button>" +
       "<button id=\"uiLayoutImportButton\" type=\"button\">Importar</button>" +
-      "<button id=\"uiLayoutPublishButton\" type=\"button\">Publicar</button>" +
       "<button id=\"uiLayoutCloseButton\" type=\"button\">Cerrar</button>" +
       "<span id=\"uiLayoutEditorStatus\" class=\"ui-layout-editor-status\">Modo normal</span>" +
       "<input id=\"uiLayoutImportInput\" type=\"file\" accept=\"application/json,.json\" hidden>";
@@ -740,18 +714,6 @@
     toolbar.querySelector("#uiLayoutEditToggle").addEventListener("click", function () {
       setEditing(!editorState.active);
     });
-    toolbar.querySelector("#uiLayoutPreviewButton").addEventListener("click", function (event) {
-      visibleTargets().forEach(commitElement);
-      editorState.previewMode = currentMode() === "desktop" ? "mobile" : "desktop";
-      event.currentTarget.textContent = editorState.previewMode === "mobile" ? "Vista PC" : "Vista móvil";
-      selectElement(null);
-      fitFixedCanvas();
-      requestAnimationFrame(function () {
-        markTargets();
-        applyCurrentLayout();
-        setStatus("Editando " + (currentMode() === "mobile" ? "móvil" : "PC") + " · " + currentScreen());
-      });
-    });
     toolbar.querySelector("#uiLayoutGuidesToggle").addEventListener("click", function (event) {
       editorState.guides = !editorState.guides;
       document.body.classList.toggle("ui-layout-guides", editorState.active && editorState.guides);
@@ -760,6 +722,7 @@
     });
     toolbar.querySelector("#uiLayoutEqualButton").addEventListener("click", function () {
       if (!editorState.selected || !editorState.attached) return setStatus("Pega primero el elemento a otro");
+      pushHistory();
       var rect = editorState.attached.getBoundingClientRect();
       resizeElement(editorState.selected, rect.width / layoutCanvasScale, rect.height / layoutCanvasScale, false);
       commitElement(editorState.selected);
@@ -767,6 +730,7 @@
     });
     toolbar.querySelector("#uiLayoutLockButton").addEventListener("click", function (event) {
       if (!editorState.selected) return setStatus("Selecciona un elemento");
+      pushHistory();
       var linked = linkedElement(editorState.selected);
       if (linked) {
         delete linked.dataset.uiLayoutLockedWith;
@@ -788,6 +752,7 @@
     });
     toolbar.querySelector("#uiLayoutHideButton").addEventListener("click", function () {
       if (!editorState.selected) return setStatus("Selecciona un elemento");
+      pushHistory();
       var hidden = editorState.selected.dataset.uiLayoutHidden !== "true";
       if (hidden) editorState.selected.dataset.uiLayoutHidden = "true";
       else delete editorState.selected.dataset.uiLayoutHidden;
@@ -801,19 +766,17 @@
       event.currentTarget.setAttribute("aria-pressed", String(editorState.showHidden));
       refreshHidden();
     });
-    toolbar.querySelector("#uiLayoutResetButton").addEventListener("click", function () {
-      if (!window.confirm("¿Restaurar la distribución de esta pantalla?")) return;
-      delete editorState.layouts[currentMode()][currentScreen()];
-      saveDraft();
-      applyCurrentLayout();
-      setStatus("Pantalla restaurada");
+    toolbar.querySelector("#uiLayoutUndoButton").addEventListener("click", function () {
+      restoreHistory(editorState.undo, editorState.redo, "Cambio deshecho");
+    });
+    toolbar.querySelector("#uiLayoutRedoButton").addEventListener("click", function () {
+      restoreHistory(editorState.redo, editorState.undo, "Cambio rehecho");
     });
     toolbar.querySelector("#uiLayoutExportButton").addEventListener("click", exportLayouts);
     toolbar.querySelector("#uiLayoutImportButton").addEventListener("click", function () {
       toolbar.querySelector("#uiLayoutImportInput").click();
     });
     toolbar.querySelector("#uiLayoutImportInput").addEventListener("change", importLayouts);
-    toolbar.querySelector("#uiLayoutPublishButton").addEventListener("click", publishLayouts);
     toolbar.querySelector("#uiLayoutCloseButton").addEventListener("click", closeEditor);
   }
 
@@ -828,9 +791,6 @@
     toolbar.hidden = false;
     toolbar.classList.remove("is-collapsed");
     toolbar.querySelector(".ui-layout-editor-toggle").textContent = "−";
-    editorState.previewMode = mobileDevice ? "mobile" : "desktop";
-    var previewButton = toolbar.querySelector("#uiLayoutPreviewButton");
-    if (previewButton) previewButton.textContent = editorState.previewMode === "mobile" ? "Vista PC" : "Vista móvil";
     fitFixedCanvas();
     requestAnimationFrame(function () {
       scheduleLayoutApply();
@@ -840,7 +800,6 @@
 
   function closeEditor() {
     setEditing(false);
-    editorState.previewMode = null;
     fitFixedCanvas();
     scheduleLayoutApply();
     var toolbar = document.getElementById("uiLayoutEditor");
@@ -849,24 +808,17 @@
 
   async function loadPublished() {
     var remote = null;
-    var defaults = null;
-    try {
-      var defaultsResponse = await fetch("./ui-layout-defaults.json?v=20260907-1", { cache: "no-store" });
-      if (defaultsResponse.ok) defaults = await defaultsResponse.json();
-    } catch (error) {}
     try {
       var response = await callApi({ action: "publicShopGetUiLayouts" });
       if (response.data && response.data.ok) remote = response.data.layouts;
     } catch (error) {}
-    editorState.layouts = normalizePayload(defaults);
+    editorState.layouts = { desktop: {}, mobile: {} };
     var normalizedRemote = normalizePayload(remote);
-    if (remote && remote.editorImplementation === "maqueta2-complete-v1" && (Object.keys(normalizedRemote.desktop).length || Object.keys(normalizedRemote.mobile).length)) {
+    if (Object.keys(normalizedRemote.desktop).length || Object.keys(normalizedRemote.mobile).length) {
       editorState.layouts = normalizedRemote;
     }
     var desktopDraft = readDraft("desktop");
     var mobileDraft = readDraft("mobile");
-    /* Los ajustes de Maqueta 2 son siempre la base. Un borrador solo sustituye
-       las pantallas que realmente contiene; nunca puede borrar la maqueta. */
     Object.keys(desktopDraft).forEach(function (screenName) {
       if (desktopDraft[screenName] && Object.keys(desktopDraft[screenName]).length) {
         editorState.layouts.desktop[screenName] = desktopDraft[screenName];
