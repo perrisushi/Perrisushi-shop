@@ -817,6 +817,39 @@
     });
   }
 
+  function setNotificationEditorPreviews(enabled) {
+    var dock = document.getElementById("notificationDock");
+    if (!dock) return;
+    if (enabled) {
+      if (!dock.dataset.uiEditorPreviewState) {
+        dock.dataset.uiEditorPreviewState = dock.hidden ? "hidden" : "visible";
+      }
+      if (!dock.querySelector(".notification-bubble")) {
+        [
+          ["notice-objects", "is-fragmento", "./assets/icono-notificacion-objetos.png", "Aviso de objetos"],
+          ["notice-social", "is-twitch", "./assets/icono-notificacion-social.png", "Aviso social"],
+          ["notice-announcement", "is-welcome", "./assets/icono-notificacion-comunicado.png", "Comunicado"]
+        ].forEach(function (preview) {
+          var button = document.createElement("button");
+          button.className = "notification-bubble " + preview[1] + " is-unread";
+          button.type = "button";
+          button.dataset.uiEditorPreview = "true";
+          button.dataset.uiLayout = preview[0];
+          button.setAttribute("aria-label", preview[3]);
+          button.innerHTML = '<img class="notification-bubble-icon" src="' + preview[2] + '" alt="">';
+          dock.appendChild(button);
+        });
+      }
+      dock.hidden = false;
+      return;
+    }
+    dock.querySelectorAll('[data-ui-editor-preview="true"]').forEach(function (element) {
+      element.remove();
+    });
+    if (dock.dataset.uiEditorPreviewState === "hidden") dock.hidden = true;
+    delete dock.dataset.uiEditorPreviewState;
+  }
+
   function setEditing(active) {
     var nextActive = Boolean(active);
     /* La vista publicada es la referencia. Antes de añadir las clases y
@@ -833,11 +866,13 @@
       button.setAttribute("aria-pressed", String(editorState.active));
     }
     if (!editorState.active) {
+      setNotificationEditorPreviews(false);
       selectElement(null);
       editorState.showHidden = false;
       refreshHidden();
       refreshLabels();
     } else {
+      setNotificationEditorPreviews(true);
       markTargets();
       refreshLabels();
       setStatus("Editando " + (currentMode() === "mobile" ? "móvil" : "PC") + " · " + currentScreen());
