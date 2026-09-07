@@ -6236,7 +6236,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260907-21">
+  <link rel="stylesheet" href="./ui-layout-editor.css?v=20260907-22">
 </head>
 <body>
   <audio id="backgroundMusic" src="./musica-web.mp3" loop preload="auto"></audio>
@@ -8342,6 +8342,7 @@
       }
     }
     function renderUsersRoom(users) {
+      if (document.body.classList.contains("ui-layout-editing")) return;
       const entries = Array.isArray(users) ? users : [];
       state.usersRoomEntries = entries;
       const totalUsers = entries.length;
@@ -8478,6 +8479,7 @@
       }
     }
     async function loadUsersRoom() {
+      if (document.body.classList.contains("ui-layout-editing")) return;
       usersRoomTableBody.innerHTML = '<tr><td colspan="3"><div class="users-room-empty">Cargando usuarios...</div></td></tr>';
       const { data } = await callApi({
         action: "publicShopListUsers",
@@ -8511,6 +8513,7 @@
       });
     }
     function renderProfileView() {
+      if (document.body.classList.contains("ui-layout-editing")) return;
       const normalizedNick = String(currentNick || "Sin nick").trim() || "Sin nick";
       profileDisplayName.textContent = normalizedNick.toUpperCase();
       profilePcValue.textContent = String(Math.max(0, Number(currentInventory.pc || 0)));
@@ -9206,6 +9209,7 @@
       buyKeysButton.disabled = true;
     }
     function renderShopItemGrid(target, sourceItems) {
+      if (document.body.classList.contains("ui-layout-editing")) return;
       if (!target) {
         return;
       }
@@ -9760,8 +9764,9 @@
       duelStartButton.disabled = state.loading || state.duelTargetLoading || Math.max(0, Number(currentInventory.duelo || 0)) <= 0 || !state.duelTargetToken;
     }
     function renderInventoryView() {
+      if (document.body.classList.contains("ui-layout-editing")) return;
       inventoryGrid.innerHTML = inventoryItems.map((item) => `
-        <article class="inventory-card" data-item-id="${escapeHtml(item.key)}">
+        <article class="inventory-card${["perriCofres", "perriCofresMinijuego", "bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? "" : " no-action"}" data-item-id="${escapeHtml(item.key)}">
           <div class="inventory-badge"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>
           <div>
             <h2>${escapeHtml(item.name)}</h2>
@@ -10420,16 +10425,18 @@
       inventoryDustCount.textContent = dustValue;
       inventoryPcCount.textContent = String(currentPc);
       sessionNick.textContent = currentNick || "Sin nick";
-      renderShop();
-      renderRandomKeyClaims();
-      renderCardsBoard();
-      renderChestsView();
-      renderDuelView();
-      renderEquipmentView();
-      renderInventoryView();
-      renderProfileView();
-      updateKeySummary();
-      renderPerriCasillas();
+      if (!document.body.classList.contains("ui-layout-editing")) {
+        renderShop();
+        renderRandomKeyClaims();
+        renderCardsBoard();
+        renderChestsView();
+        renderDuelView();
+        renderEquipmentView();
+        renderInventoryView();
+        renderProfileView();
+        updateKeySummary();
+        renderPerriCasillas();
+      }
       sendPerriDuelosSession();
     }
     function openInventoryChestConfirm(chestType = "perriCofres") {
@@ -11531,7 +11538,7 @@
       renderEquipmentView();
     });
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && state.sessionToken) {
+      if (document.visibilityState === "visible" && state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
         refreshInventory(false);
         refreshNotifications();
         if (!chatView.hidden) {
@@ -11540,7 +11547,7 @@
       }
     });
     window.addEventListener("pageshow", () => {
-      if (state.sessionToken) {
+      if (state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
         refreshInventory(false);
         refreshNotifications();
         if (!chatView.hidden) {
@@ -11549,17 +11556,17 @@
       }
     });
     window.setInterval(() => {
-      if (document.visibilityState === "visible" && state.sessionToken) {
+      if (document.visibilityState === "visible" && state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
         refreshInventory(false);
       }
     }, INVENTORY_REFRESH_MS);
     window.setInterval(() => {
-      if (document.visibilityState === "visible" && state.sessionToken) {
+      if (document.visibilityState === "visible" && state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
         refreshNotifications();
       }
     }, NOTIFICATION_REFRESH_MS);
     window.setInterval(() => {
-      if (document.visibilityState === "visible" && state.sessionToken && !chatView.hidden) {
+      if (document.visibilityState === "visible" && state.sessionToken && !chatView.hidden && !document.body.classList.contains("ui-layout-editing")) {
         loadWebChatMessages(true);
       }
     }, CHAT_REFRESH_MS);
@@ -11948,7 +11955,7 @@
     });
     perriCasillasNewGame.addEventListener("click", resetPerriCasillasBoard);
     window.setInterval(() => {
-      if (perriCasillasView && !perriCasillasView.hidden && state.perriCasillasCooldownUntil) {
+      if (perriCasillasView && !perriCasillasView.hidden && state.perriCasillasCooldownUntil && !document.body.classList.contains("ui-layout-editing")) {
         renderPerriCasillas();
       }
     }, 1000);
@@ -12064,6 +12071,6 @@
       }
     });
   </script>
-  <script src="./ui-layout-editor.js?v=20260907-21"></script>
+  <script src="./ui-layout-editor.js?v=20260907-22"></script>
 </body>
 </html>

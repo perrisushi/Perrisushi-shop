@@ -203,6 +203,7 @@
   }
 
   function markTargets() {
+    var addedTarget = false;
     targetDefinitions.forEach(function (definition) {
       var selector = definition[0];
       var baseKey = definition[1];
@@ -221,6 +222,7 @@
           if (getComputedStyle(element).position === "static") element.classList.add("ui-layout-static");
         }
         if (!element.dataset.uiLayout) {
+          addedTarget = true;
           var key = baseKey;
           if (baseKey === "notification") {
             key = ["notice-objects", "notice-social", "notice-announcement"][index] || "notice-" + index;
@@ -238,7 +240,7 @@
       view.dataset.uiLayoutEnabled = view === activeView ? "true" : "false";
     });
     refreshLabels();
-    if (!editorState.active) scheduleLayoutApply();
+    if (!editorState.active || (addedTarget && !editorState.pointer)) scheduleLayoutApply();
   }
 
   function readDraft(modeName) {

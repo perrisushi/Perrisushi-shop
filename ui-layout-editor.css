@@ -432,6 +432,83 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
   gap: clamp(1px, 2.2cqmin, 9px) !important;
 }
 
+/* El contenido usa el espacio real de cada tarjeta. Las unidades de
+   contenedor hacen que texto, iconos y botones acompañen al tirador. */
+#inventoryView .inventory-card.ui-layout-sized {
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  align-content: stretch !important;
+  justify-items: stretch !important;
+}
+
+#inventoryView .inventory-card.ui-layout-sized > div:nth-child(2) {
+  align-self: center;
+}
+
+#inventoryView .inventory-card.ui-layout-sized:not(:has(.inventory-action)) {
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+}
+
+#inventoryView .inventory-card.ui-layout-sized h2 {
+  font-size: clamp(7px, min(7cqh, 6cqw), 1.22rem) !important;
+  line-height: 1.12 !important;
+}
+
+#inventoryView .inventory-card.ui-layout-sized .inventory-count {
+  font-size: clamp(10px, min(14cqh, 10cqw), 2.7rem) !important;
+}
+
+#inventoryView .inventory-card.ui-layout-sized .inventory-copy {
+  align-self: center;
+  font-size: clamp(6px, min(5.4cqh, 4.2cqw), .94rem) !important;
+  line-height: 1.28 !important;
+}
+
+#inventoryView .inventory-card.ui-layout-sized .inventory-action {
+  align-self: end;
+  width: 100% !important;
+  font-size: clamp(6px, min(5.2cqh, 4cqw), .9rem) !important;
+}
+
+#shopView .shop-item-cell.ui-layout-sized {
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
+  align-content: stretch !important;
+}
+
+#shopView .shop-item-cell.ui-layout-sized .shop-item-panel {
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  align-content: stretch !important;
+  gap: clamp(1px, 2cqmin, 10px) !important;
+}
+
+#shopView .shop-item-cell.ui-layout-sized .item-name {
+  font-size: clamp(7px, min(7cqh, 5.5cqw), 1.18rem) !important;
+  line-height: 1.12 !important;
+}
+
+#shopView .shop-item-cell.ui-layout-sized .item-price,
+#shopView .shop-item-cell.ui-layout-sized .owned {
+  font-size: clamp(6px, min(5.5cqh, 4.2cqw), .94rem) !important;
+}
+
+#shopView .shop-item-cell.ui-layout-sized .item-price {
+  padding: clamp(2px, 2cqmin, 8px) clamp(4px, 3cqmin, 12px) !important;
+}
+
+#shopView .shop-item-cell.ui-layout-sized .item-effect {
+  align-self: center;
+  font-size: clamp(6px, min(5.2cqh, 4cqw), .9rem) !important;
+  line-height: 1.25 !important;
+}
+
+#shopView .shop-item-cell.ui-layout-sized .buy-button {
+  width: 100% !important;
+  font-size: clamp(6px, min(5cqh, 4cqw), .9rem) !important;
+}
+
 .inventory-card.ui-layout-sized .inventory-badge,
 .shop-item-cell.ui-layout-sized .item-badge {
   width: clamp(16px, 28cqmin, 66px) !important;
@@ -456,7 +533,152 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
 
 .users-room-table-wrap.ui-layout-sized table {
   width: 100% !important;
+  height: auto !important;
   table-layout: fixed;
+}
+
+#usersView .users-room-frame.ui-layout-sized,
+#usersView .users-room-panel.ui-layout-sized,
+#usersView .users-room-table-wrap.ui-layout-sized {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#usersView .users-room-panel.ui-layout-sized {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  align-content: stretch !important;
+  padding: clamp(3px, 3cqmin, 18px) !important;
+  gap: clamp(2px, 3cqmin, 16px) !important;
+}
+
+#usersView .users-room-table-wrap.ui-layout-sized {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: auto !important;
+  padding: 0 !important;
+}
+
+#usersView .users-room-table-wrap.ui-layout-sized .users-room-table {
+  font-size: clamp(7px, min(4.4cqh, 4.2cqw), 1rem) !important;
+}
+
+#usersView .users-room-table-wrap.ui-layout-sized .users-room-name,
+#usersView .users-room-table-wrap.ui-layout-sized .users-room-pc,
+#usersView .users-room-table-wrap.ui-layout-sized .users-room-achievements,
+#usersView .users-room-table-wrap.ui-layout-sized button {
+  font-size: inherit !important;
+  overflow-wrap: anywhere !important;
+}
+
+#usersView .users-room-table-wrap.ui-layout-sized .users-room-logo {
+  width: clamp(15px, 9cqmin, 54px) !important;
+  height: clamp(15px, 9cqmin, 54px) !important;
+}
+
+#profileView .profile-card.ui-layout-sized {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  padding: clamp(4px, 4cqmin, 24px) !important;
+  gap: clamp(3px, 4cqmin, 24px) !important;
+}
+
+#profileView .profile-card.ui-layout-sized .profile-layout {
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 32%) minmax(0, 1fr) !important;
+  gap: clamp(3px, 3cqmin, 24px) !important;
+}
+
+#profileView .profile-logo-panel.ui-layout-sized,
+#profileView .profile-stats-panel.ui-layout-sized {
+  padding: clamp(3px, 5cqmin, 20px) !important;
+  gap: clamp(2px, 3cqmin, 14px) !important;
+  overflow: hidden !important;
+}
+
+#profileView .profile-logo-panel.ui-layout-sized .profile-display-name,
+#profileView .profile-logo-panel.ui-layout-sized .profile-equipped-title,
+#profileView .profile-stats-panel.ui-layout-sized .profile-stat-label,
+#profileView .profile-stats-panel.ui-layout-sized .profile-stat-value {
+  font-size: clamp(6px, min(7cqh, 5cqw), 1.08rem) !important;
+}
+
+#profileView .profile-logo-panel.ui-layout-sized .profile-logo-shell {
+  width: min(72%, 72cqh) !important;
+  max-height: 72% !important;
+}
+
+#profileView .profile-stats-panel.ui-layout-sized .profile-stat-row {
+  min-height: 0 !important;
+  padding: clamp(2px, 3cqmin, 16px) !important;
+  gap: clamp(2px, 3cqmin, 16px) !important;
+}
+
+#profileView .profile-actions.ui-layout-sized {
+  padding: clamp(2px, 3cqmin, 12px) !important;
+  gap: clamp(2px, 3cqmin, 16px) !important;
+}
+
+#shopView .random-key-card.ui-layout-sized,
+#shopView .random-key-history.ui-layout-sized {
+  padding: clamp(4px, 5cqmin, 20px) !important;
+  gap: clamp(2px, 3cqmin, 14px) !important;
+  overflow: hidden !important;
+}
+
+#shopView .random-key-card.ui-layout-sized h2,
+#shopView .random-key-history.ui-layout-sized h2 {
+  font-size: clamp(8px, min(8cqh, 6cqw), 1.35rem) !important;
+}
+
+#shopView .random-key-card.ui-layout-sized p,
+#shopView .random-key-history.ui-layout-sized p,
+#shopView .random-key-history.ui-layout-sized strong,
+#shopView .random-key-history.ui-layout-sized span {
+  font-size: clamp(6px, min(5.5cqh, 4.2cqw), .96rem) !important;
+}
+
+#shopView .shop-tabs-shell.ui-layout-sized {
+  padding: clamp(2px, 3cqmin, 14px) !important;
+  gap: clamp(2px, 3cqmin, 12px) !important;
+  overflow: hidden !important;
+}
+
+#shopView .shop-tabs-shell .tab-button.ui-layout-sized {
+  padding: clamp(2px, 7cqh, 12px) clamp(4px, 6cqw, 18px) !important;
+  font-size: clamp(7px, min(30cqh, 8cqw), 1rem) !important;
+  line-height: 1 !important;
+}
+
+#shopView .resource-group.ui-layout-sized,
+#inventoryView .resource-group.ui-layout-sized {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: clamp(2px, 3cqmin, 12px) !important;
+  overflow: hidden !important;
+}
+
+#shopView .resource-group > .ui-layout-sized,
+#inventoryView .resource-group > .ui-layout-sized {
+  width: 100% !important;
+  height: 100% !important;
+  padding: clamp(2px, 8cqh, 12px) clamp(4px, 5cqw, 16px) !important;
+  font-size: clamp(7px, min(30cqh, 8cqw), 1rem) !important;
+  white-space: nowrap !important;
+}
+
+#shopView .shop-content-shell.ui-layout-sized,
+#inventoryView #inventoryGrid.ui-layout-sized {
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+#usersView .users-room-table-wrap.ui-layout-selected > .ui-layout-resize-handle,
+#shopView .shop-content-shell.ui-layout-selected > .ui-layout-resize-handle,
+#inventoryView #inventoryGrid.ui-layout-selected > .ui-layout-resize-handle {
+  right: 0;
+  bottom: 0;
 }
 
 .users-room-table-wrap.ui-layout-sized th,
