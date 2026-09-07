@@ -544,6 +544,17 @@
     return screens;
   }
 
+  function compactDesktopChatOnce(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var chat = screens.chat;
+    if (!chat || typeof chat !== "object" || chat.__compact_chat_pc_v1) return screens;
+    ["chat-window", "chat-header", "chat-feed", "chat-composer"].forEach(function (key) {
+      delete chat[key];
+    });
+    chat.__compact_chat_pc_v1 = { applied: true };
+    return screens;
+  }
+
   function pushHistory() {
     editorState.undo.push(cloneValue(editorState.layouts[currentMode()] || {}));
     if (editorState.undo.length > 40) editorState.undo.shift();
@@ -575,6 +586,7 @@
         if (modeName === "desktop") {
           compactDesktopPersonalizeOnce(result[modeName]);
           compactDesktopShopOnce(result[modeName]);
+          compactDesktopChatOnce(result[modeName]);
         }
       }
     });
