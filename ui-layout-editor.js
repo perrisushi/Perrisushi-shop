@@ -254,6 +254,9 @@
   }
 
   function markTargets() {
+    /* La carga normal puede ocultar de nuevo el dock si no hay avisos reales.
+       En edición debe seguir visible y seleccionable con sus muestras. */
+    if (editorState.active) setNotificationEditorPreviews(true);
     var addedTarget = false;
     targetDefinitions.forEach(function (definition) {
       var selector = definition[0];
