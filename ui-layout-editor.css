@@ -342,6 +342,46 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
   font-size: clamp(5px, 6cqmin, 1rem) !important;
 }
 
+/* Los bloques con contenido compuesto también reducen espacios, iconos y
+   controles; así no se limita el ajuste a la caja exterior. */
+.inventory-card.ui-layout-sized,
+.shop-item-cell.ui-layout-sized {
+  padding: clamp(2px, 5cqmin, 18px) !important;
+  gap: clamp(1px, 2.2cqmin, 9px) !important;
+}
+
+.inventory-card.ui-layout-sized .inventory-badge,
+.shop-item-cell.ui-layout-sized .item-badge {
+  width: clamp(16px, 28cqmin, 66px) !important;
+  height: clamp(16px, 28cqmin, 66px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.inventory-card.ui-layout-sized .inventory-badge img,
+.shop-item-cell.ui-layout-sized .item-badge img {
+  width: 82% !important;
+  height: 82% !important;
+  object-fit: contain !important;
+}
+
+.inventory-card.ui-layout-sized .buy-button,
+.shop-item-cell.ui-layout-sized .buy-button {
+  min-height: 0 !important;
+  height: clamp(16px, 13cqmin, 34px) !important;
+  padding: clamp(1px, 2cqmin, 6px) !important;
+}
+
+.users-room-table-wrap.ui-layout-sized table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.users-room-table-wrap.ui-layout-sized th,
+.users-room-table-wrap.ui-layout-sized td {
+  padding: clamp(1px, 2cqmin, 8px) !important;
+}
+
 .ui-layout-target-label {
   position: absolute;
   z-index: 9997;
