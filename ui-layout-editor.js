@@ -31,12 +31,12 @@
     undo: [],
     redo: [],
     layouts: { desktop: {}, mobile: {} },
+    dirty: false,
     loaded: false
   };
 
   var layoutCanvasScale = 1;
   var settledApplyTimer = 0;
-  var remoteSaveTimer = 0;
   var originalStyles = new WeakMap();
   var contentOriginalStyles = new WeakMap();
   var targetResizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(function (entries) {
@@ -422,14 +422,9 @@
   }
 
   function saveDraft() {
-    try {
-      localStorage.setItem(DRAFT_PREFIX + currentMode(), JSON.stringify({
-        baseLayoutId: BASE_LAYOUT_ID,
-        screens: editorState.layouts[currentMode()] || {}
-      }));
-    } catch (error) {}
-    clearTimeout(remoteSaveTimer);
-    remoteSaveTimer = setTimeout(saveRemoteLayout, 900);
+    editorState.dirty = true;
+    refreshSaveButton();
+    if (editorState.active) setStatus("Cambios sin guardar");
   }
 
   function layoutPayload() {
@@ -446,9 +441,10 @@
   async function saveRemoteLayout() {
     if (typeof callApi !== "function" || typeof state === "undefined" ||
         !state.sessionToken || !state.requestsPanelKey) {
-      setStatus("Solo guardado en este navegador: falta desbloquear el panel");
-      return;
+      setStatus("NO guardado: desbloquea primero el panel");
+      return false;
     }
+    setStatus("Guardando diseño...");
     try {
       var response = await callApi({
         action: "publicShopSaveUiLayouts",
@@ -457,13 +453,26 @@
         layouts: layoutPayload()
       });
       if (response.data && response.data.ok) {
-        setStatus("Guardado en Supabase");
+        editorState.dirty = false;
+        try {
+          localStorage.removeItem(DRAFT_PREFIX + "desktop");
+          localStorage.removeItem(DRAFT_PREFIX + "mobile");
+        } catch (error) {}
+        refreshSaveButton();
+        setStatus("Diseño guardado en Supabase");
+        return true;
       } else {
         setStatus("NO sincronizado: " + ((response.data && response.data.error) || "respuesta inválida"));
       }
     } catch (error) {
-      setStatus("NO sincronizado: guardado solo en este navegador");
+      setStatus("NO guardado: error al conectar con Supabase");
     }
+    return false;
+  }
+
+  function refreshSaveButton() {
+    var button = document.getElementById("uiLayoutSaveButton");
+    if (button) button.textContent = editorState.dirty ? "Guardar diseño *" : "Guardar diseño";
   }
 
   function cloneValue(value) {
@@ -1366,12 +1375,9 @@
     if (!file) return;
     try {
       editorState.layouts = convertPrototypePayload(JSON.parse(await file.text()));
-      localStorage.setItem(DRAFT_PREFIX + "desktop", JSON.stringify({ baseLayoutId: BASE_LAYOUT_ID, screens: editorState.layouts.desktop }));
-      localStorage.setItem(DRAFT_PREFIX + "mobile", JSON.stringify({ baseLayoutId: BASE_LAYOUT_ID, screens: editorState.layouts.mobile }));
+      saveDraft();
       scheduleLayoutApply();
-      clearTimeout(remoteSaveTimer);
-      remoteSaveTimer = setTimeout(saveRemoteLayout, 300);
-      setStatus("Diseño importado y guardado");
+      setStatus("Diseño importado · pulsa Guardar diseño");
     } catch (error) {
       setStatus("El archivo no contiene un diseño válido");
     }
@@ -1395,12 +1401,14 @@
       "<button id=\"uiLayoutShowHiddenButton\" type=\"button\" aria-pressed=\"false\">Ver ocultos</button>" +
       "<button id=\"uiLayoutUndoButton\" type=\"button\">Deshacer</button>" +
       "<button id=\"uiLayoutRedoButton\" type=\"button\">Rehacer</button>" +
+      "<button id=\"uiLayoutSaveButton\" type=\"button\">Guardar diseño</button>" +
       "<button id=\"uiLayoutExportButton\" type=\"button\">Exportar</button>" +
       "<button id=\"uiLayoutImportButton\" type=\"button\">Importar</button>" +
       "<button id=\"uiLayoutCloseButton\" type=\"button\">Cerrar</button>" +
       "<span id=\"uiLayoutEditorStatus\" class=\"ui-layout-editor-status\">Modo normal</span>" +
       "<input id=\"uiLayoutImportInput\" type=\"file\" accept=\"application/json,.json\" hidden>";
     document.body.appendChild(toolbar);
+    refreshSaveButton();
 
     toolbar.querySelector(".ui-layout-editor-toggle").addEventListener("click", function () {
       var collapsed = toolbar.classList.toggle("is-collapsed");
@@ -1481,6 +1489,14 @@
     toolbar.querySelector("#uiLayoutRedoButton").addEventListener("click", function () {
       restoreHistory(editorState.redo, editorState.undo, "Cambio rehecho");
     });
+    toolbar.querySelector("#uiLayoutSaveButton").addEventListener("click", async function (event) {
+      var button = event.currentTarget;
+      visibleTargets().forEach(commitElement);
+      button.disabled = true;
+      await saveRemoteLayout();
+      button.disabled = false;
+      refreshSaveButton();
+    });
     toolbar.querySelector("#uiLayoutExportButton").addEventListener("click", exportLayouts);
     toolbar.querySelector("#uiLayoutImportButton").addEventListener("click", function () {
       toolbar.querySelector("#uiLayoutImportInput").click();
@@ -1535,18 +1551,26 @@
     if (Object.keys(normalizedRemote.desktop).length || Object.keys(normalizedRemote.mobile).length) {
       editorState.layouts = normalizedRemote;
     }
+    /* Migración única: conserva los cambios que ya estaban atrapados en este
+       navegador para poder enviarlos con Guardar diseño. Tras guardarlos se
+       eliminan y Supabase pasa a ser la única fuente persistente. */
     var desktopDraft = readDraft("desktop");
     var mobileDraft = readDraft("mobile");
+    var hasLegacyDraft = false;
     Object.keys(desktopDraft).forEach(function (screenName) {
       if (desktopDraft[screenName] && Object.keys(desktopDraft[screenName]).length) {
         editorState.layouts.desktop[screenName] = desktopDraft[screenName];
+        hasLegacyDraft = true;
       }
     });
     Object.keys(mobileDraft).forEach(function (screenName) {
       if (mobileDraft[screenName] && Object.keys(mobileDraft[screenName]).length) {
         editorState.layouts.mobile[screenName] = mobileDraft[screenName];
+        hasLegacyDraft = true;
       }
     });
+    editorState.dirty = hasLegacyDraft;
+    refreshSaveButton();
     markTargets();
     /* No mostramos el lienzo entre el diseño incluido y el remoto: esperamos
        también a imágenes y fuentes, aplicamos el resultado definitivo y solo
