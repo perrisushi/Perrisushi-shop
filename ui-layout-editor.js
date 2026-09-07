@@ -1136,6 +1136,10 @@
 
   function boundedParent(element) {
     if (!element) return null;
+    /* En el lienzo móvil estos dos controles son flotantes globales. No deben
+       quedar aprisionados por la altura inicial de session-left-stack, porque
+       el editor tiene que poder bajarlos a cualquier zona del diseño. */
+    if (currentMode() === "mobile" && element.matches(".session-user-card, .mobile-session-menu")) return null;
     if (element.matches("#mobileSessionDropdown")) return null;
     if (element.matches("#openChatButton, #openRequestsPanelButton")) {
       return element.closest(".menu-side-tools");
@@ -1208,10 +1212,26 @@
     var safeWidth = Math.max(16, width);
     var safeHeight = Math.max(16, height);
     var bounded = boundedParent(element);
+    var mobileMenuButtonParent = currentMode() === "mobile" && element.matches(".menu-button") &&
+      bounded && bounded.matches(".menu-actions") ? bounded : null;
     if (bounded) {
       var boundedRect = bounded.getBoundingClientRect();
-      safeWidth = Math.min(safeWidth, boundedRect.width / layoutCanvasScale);
-      safeHeight = Math.min(safeHeight, boundedRect.height / layoutCanvasScale);
+      if (mobileMenuButtonParent) {
+        /* Si un botón necesita más anchura, el recuadro que contiene todos los
+           botones crece con él. De esta forma el tirador horizontal funciona
+           sin que el botón quede recortado ni fuera de su contenedor. */
+        var outerBoundary = boundedParent(bounded);
+        var maximumWidth = canvasRect().width;
+        if (outerBoundary) maximumWidth = outerBoundary.getBoundingClientRect().width / layoutCanvasScale;
+        safeWidth = Math.min(safeWidth, maximumWidth);
+        safeHeight = Math.min(safeHeight, boundedRect.height / layoutCanvasScale);
+        if (safeWidth > boundedRect.width / layoutCanvasScale) {
+          resizeElement(bounded, safeWidth, boundedRect.height / layoutCanvasScale, false);
+        }
+      } else {
+        safeWidth = Math.min(safeWidth, boundedRect.width / layoutCanvasScale);
+        safeHeight = Math.min(safeHeight, boundedRect.height / layoutCanvasScale);
+      }
     }
     var linked = includeLinked !== false ? linkedElement(element) : null;
     var relation = null;
@@ -1339,6 +1359,10 @@
       clampInsideParent(pointer.element);
     }
     commitElement(pointer.element);
+    if (currentMode() === "mobile" && pointer.type === "resize" && pointer.element.matches(".menu-button")) {
+      var menuButtonsParent = pointer.element.closest(".menu-actions");
+      if (menuButtonsParent) commitElement(menuButtonsParent);
+    }
     (pointer.descendants || []).forEach(function (snapshot) { commitElement(snapshot.element); });
     var linked = linkedElement(pointer.element);
     if (linked) commitElement(linked);
