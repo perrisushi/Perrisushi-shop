@@ -255,10 +255,10 @@ body.perri-mobile-preview {
 }
 
 body.perri-mobile-preview > .shell {
-  width: min(430px, 100vw) !important;
+  width: min(390px, 100vw) !important;
   min-width: 0 !important;
-  max-width: 430px !important;
-  min-height: 900px !important;
+  max-width: 390px !important;
+  min-height: 844px !important;
   height: auto !important;
   margin: 0 auto !important;
   transform: none !important;
@@ -268,7 +268,7 @@ body.perri-mobile-preview > .shell {
 body.perri-mobile-preview > .shell > .panel {
   width: 100% !important;
   min-width: 0 !important;
-  min-height: 900px !important;
+  min-height: 844px !important;
   height: auto !important;
   overflow: visible !important;
 }

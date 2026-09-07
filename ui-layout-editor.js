@@ -106,6 +106,22 @@
   }
 
   function mobilePreviewRules() {
+    var previewWidth = 390;
+    var previewHeight = 844;
+    function replaceViewportUnits(cssText) {
+      return String(cssText || "").replace(/(-?(?:\d*\.)?\d+)(dvw|svw|lvw|vw|dvh|svh|lvh|vh|vmin|vmax)\b/gi, function (_, amount, unit) {
+        var value = Number(amount);
+        var normalizedUnit = String(unit).toLowerCase();
+        var basis = /vw$/.test(normalizedUnit)
+          ? previewWidth
+          : /vh$/.test(normalizedUnit)
+            ? previewHeight
+            : normalizedUnit === "vmin"
+              ? Math.min(previewWidth, previewHeight)
+              : Math.max(previewWidth, previewHeight);
+        return String(Math.round(value * basis * 100 / 10000)) + "px";
+      });
+    }
     var css = [];
     Array.from(document.styleSheets).forEach(function (sheet) {
       var rules;
@@ -114,7 +130,9 @@
         if (rule.type !== CSSRule.MEDIA_RULE) return;
         var condition = String(rule.conditionText || "");
         if (!/max-width\s*:\s*720px/i.test(condition) || !/pointer\s*:\s*coarse/i.test(condition)) return;
-        Array.from(rule.cssRules || []).forEach(function (innerRule) { css.push(innerRule.cssText); });
+        Array.from(rule.cssRules || []).forEach(function (innerRule) {
+          css.push(replaceViewportUnits(innerRule.cssText));
+        });
       });
     });
     return css.join("\n");
