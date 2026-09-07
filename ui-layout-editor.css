@@ -309,6 +309,61 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
   object-fit: contain !important;
 }
 
+/* Controles visuales: el sprite sigue exactamente las dimensiones elegidas. */
+[data-ui-layout].ui-layout-sized:is(.menu-button, .menu-social-button, .mobile-session-menu-toggle, .desktop-stack-back-button, .nav-back, .notification-bubble) img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+}
+
+.mobile-session-menu.ui-layout-sized > .mobile-session-menu-toggle {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.session-user-card.ui-layout-sized {
+  padding: clamp(1px, 10cqh, 11px) clamp(3px, 6cqw, 18px) !important;
+  gap: clamp(2px, 3cqw, 10px) !important;
+  flex-wrap: nowrap !important;
+}
+
+.session-user-card.ui-layout-sized::before {
+  width: clamp(4px, 28cqh, 14px) !important;
+  height: clamp(4px, 28cqh, 14px) !important;
+}
+
+.session-user-card.ui-layout-sized .session-user-label {
+  font-size: clamp(5px, min(35cqh, 5cqw), .8rem) !important;
+}
+
+.session-user-card.ui-layout-sized .session-user {
+  flex: 1 1 auto;
+  font-size: clamp(8px, min(55cqh, 10cqw), 1.35rem) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.session-logo-badge.ui-layout-sized .session-logo-frame {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+}
+
+.session-logo-badge.ui-layout-sized .session-logo-image {
+  left: 12% !important;
+  top: 12% !important;
+  width: 76% !important;
+  height: 76% !important;
+  object-fit: contain !important;
+}
+
+.notification-bubble.ui-layout-sized .notification-bubble-icon {
+  width: 82% !important;
+  height: 82% !important;
+}
+
 [data-ui-layout].ui-layout-sized > img[class*="frame"],
 [data-ui-layout].ui-layout-sized.menu-frame {
   object-fit: fill !important;

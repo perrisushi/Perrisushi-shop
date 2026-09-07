@@ -38,6 +38,7 @@
   var targetDefinitions = [
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
+    ["#mobileSessionMenuToggle", "session-menu-button", "Botón del menú"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
     [".content-view .nav-back", "section-back", "Botón volver", true],
     [".session-logo-badge", "avatar", "Logo del usuario"],
