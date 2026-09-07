@@ -527,6 +527,23 @@
     return screens;
   }
 
+  function compactDesktopShopOnce(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var shop = screens.shop;
+    if (!shop || typeof shop !== "object" || shop.__compact_shop_pc_v1) return screens;
+    [
+      "shop-resource-shell", "shop-resources", "shop-tabs", "shop-content",
+      "shop-random-key", "shop-key-history"
+    ].forEach(function (key) { delete shop[key]; });
+    Object.keys(shop).forEach(function (key) {
+      if (key.indexOf("shop-resource-chip-") === 0 ||
+          key.indexOf("shop-tab-") === 0 ||
+          key.indexOf("shop-item-") === 0) delete shop[key];
+    });
+    shop.__compact_shop_pc_v1 = { applied: true };
+    return screens;
+  }
+
   function pushHistory() {
     editorState.undo.push(cloneValue(editorState.layouts[currentMode()] || {}));
     if (editorState.undo.length > 40) editorState.undo.shift();
@@ -555,7 +572,10 @@
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
         result[modeName] = removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens))));
-        if (modeName === "desktop") compactDesktopPersonalizeOnce(result[modeName]);
+        if (modeName === "desktop") {
+          compactDesktopPersonalizeOnce(result[modeName]);
+          compactDesktopShopOnce(result[modeName]);
+        }
       }
     });
     return result;

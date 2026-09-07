@@ -1715,11 +1715,268 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
     overflow: hidden !important;
   }
 
-  #personalizeView #logoGrid > .logo-option > img {
+#personalizeView #logoGrid > .logo-option > img {
     width: 100% !important;
     height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
     object-fit: contain !important;
+}
+}
+
+/* Las entradas del historial crecen con su texto; nunca recortan líneas. */
+@media (min-width: 721px) and (pointer: fine) {
+  #historyView .history-list {
+    container-type: inline-size;
+    grid-auto-rows: max-content !important;
+    align-items: start !important;
+  }
+
+  #historyView .history-entry {
+    width: 100% !important;
+    height: auto !important;
+    min-height: max-content !important;
+    align-self: start !important;
+    grid-auto-rows: max-content !important;
+    overflow: visible !important;
+  }
+
+  #historyView .history-entry-top {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    gap: 6px !important;
+  }
+
+  #historyView .history-entry-game,
+  #historyView .history-entry-date {
+    font-size: clamp(8px, 1.55cqw, 12px) !important;
+    line-height: 1.15 !important;
+  }
+
+  #historyView .history-entry-date {
+    text-align: right !important;
+    white-space: normal !important;
+  }
+
+  #historyView .history-entry-result {
+    font-size: clamp(9px, 1.8cqw, 14px) !important;
+    line-height: 1.18 !important;
+  }
+
+  #historyView .history-entry-details,
+  #historyView .history-empty {
+    font-size: clamp(8px, 1.65cqw, 12px) !important;
+    line-height: 1.25 !important;
+  }
+}
+
+/* Tienda de escritorio: zona compacta, legible y sin tarjetas superpuestas. */
+@media (min-width: 721px) and (pointer: fine) {
+  #shopView {
+    box-sizing: border-box !important;
+    grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+    align-content: stretch !important;
+    justify-items: center !important;
+    gap: 8px !important;
+    overflow: hidden !important;
+  }
+
+  #shopView .shop-resource-shell {
+    width: min(760px, 72%) !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+  }
+
+  #shopView .shop-resource-shell .section-topbar,
+  #shopView .shop-resource-shell .resource-group {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+  }
+
+  #shopView .shop-tabs-shell {
+    box-sizing: border-box !important;
+    width: min(760px, 72%) !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+  }
+
+  #shopView .shop-tabs {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    gap: 8px !important;
+  }
+
+  #shopView .shop-tabs .tab-button {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 8px 12px !important;
+    font-size: clamp(.67rem, .75vw, .84rem) !important;
+    line-height: 1.1 !important;
+    white-space: normal !important;
+  }
+
+  #shopView .shop-content-shell {
+    box-sizing: border-box !important;
+    width: min(980px, 84%) !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    margin: 0 auto !important;
+    padding: 12px !important;
+    border: 1px solid rgba(255, 226, 173, .15) !important;
+    border-radius: 24px !important;
+    background: linear-gradient(180deg, rgba(31, 20, 14, .62), rgba(17, 12, 9, .54)) !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .2) !important;
+    overflow: hidden !important;
+  }
+
+  #shopView .shop-panel {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  #equipmentPanel .shop-grid {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 2px !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-auto-rows: 184px !important;
+    align-content: start !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    overflow: visible !important;
+  }
+
+  #equipmentPanel .shop-item-cell.ui-layout-template {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 184px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: 184px !important;
+    padding: 10px !important;
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) 30px !important;
+    gap: 7px !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  #equipmentPanel .shop-item-panel {
+    min-width: 0 !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    align-content: stretch !important;
+    align-items: start !important;
+    gap: 5px 8px !important;
+    overflow: hidden !important;
+  }
+
+  #equipmentPanel .item-badge {
+    grid-column: 1 !important;
+    grid-row: 1 / 3 !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 5px !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+
+  #equipmentPanel .item-badge img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  #equipmentPanel .shop-item-panel > div:nth-child(2) {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #equipmentPanel .item-name {
+    margin: 0 !important;
+    font-size: clamp(.68rem, .72vw, .86rem) !important;
+    line-height: 1.08 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #equipmentPanel .item-price {
+    margin: 4px 0 0 !important;
+    padding: 3px 7px !important;
+    font-size: clamp(.58rem, .62vw, .72rem) !important;
+    line-height: 1 !important;
+  }
+
+  #equipmentPanel .item-effect {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    align-self: start !important;
+    margin: 0 !important;
+    font-size: clamp(.56rem, .58vw, .68rem) !important;
+    line-height: 1.18 !important;
+    overflow-wrap: anywhere !important;
+    overflow: hidden !important;
+  }
+
+  #equipmentPanel .owned {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+    align-self: end !important;
+    margin: 0 !important;
+    padding-top: 4px !important;
+    border-top: 1px solid rgba(255, 226, 173, .12) !important;
+    font-size: clamp(.55rem, .57vw, .66rem) !important;
+    line-height: 1.12 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #equipmentPanel .shop-item-action {
+    width: 100% !important;
+    height: 30px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #equipmentPanel .buy-button {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 30px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 4px 8px !important;
+    font-size: .64rem !important;
+    line-height: 1 !important;
+  }
+
+  #sorteosPanel .shop-grid {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 260px)) !important;
+    justify-content: center !important;
+    gap: 12px !important;
   }
 }
