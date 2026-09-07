@@ -681,6 +681,113 @@ body.ui-layout-editing [data-ui-layout].ui-layout-sized {
   bottom: 0;
 }
 
+/* Escalado universal final. El editor escribe las dimensiones reales de cada
+   objetivo en estas variables; así un elemento se mide respecto a sí mismo y
+   no respecto al contenedor exterior más cercano. */
+[data-ui-layout].ui-layout-sized {
+  --ui-fit-text: clamp(6px, min(calc(var(--ui-box-w, 200px) * .047), calc(var(--ui-box-h, 100px) * .105)), 18px);
+  --ui-fit-heading: clamp(8px, min(calc(var(--ui-box-w, 200px) * .07), calc(var(--ui-box-h, 100px) * .17)), 42px);
+  --ui-fit-control: clamp(7px, min(calc(var(--ui-box-w, 120px) * .09), calc(var(--ui-box-h, 42px) * .28)), 20px);
+}
+
+[data-ui-layout].ui-layout-sized :is(p, span:not(.ui-layout-target-label):not(.ui-layout-resize-handle), strong, small, label, td, th, li) {
+  max-width: 100% !important;
+  font-size: var(--ui-fit-text) !important;
+  line-height: 1.2 !important;
+  overflow-wrap: anywhere !important;
+}
+
+[data-ui-layout].ui-layout-sized :is(h1, h2, h3, h4) {
+  max-width: 100% !important;
+  font-size: var(--ui-fit-heading) !important;
+  line-height: 1.08 !important;
+  overflow-wrap: anywhere !important;
+}
+
+[data-ui-layout].ui-layout-sized :is(button, a, input, textarea, select),
+button[data-ui-layout].ui-layout-sized,
+a[data-ui-layout].ui-layout-sized {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  font-size: var(--ui-fit-control) !important;
+  line-height: 1.05 !important;
+  overflow-wrap: anywhere !important;
+}
+
+button[data-ui-layout].ui-layout-sized > img,
+a[data-ui-layout].ui-layout-sized > img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+#mobileSessionMenu.ui-layout-sized {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+#mobileSessionMenu.ui-layout-sized > #mobileSessionMenuToggle {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  translate: none !important;
+}
+
+#mobileSessionMenu.ui-layout-sized > #mobileSessionMenuToggle img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+}
+
+#openChatButton.ui-layout-sized,
+#openRequestsPanelButton.ui-layout-sized {
+  display: grid !important;
+  place-items: center !important;
+  padding: clamp(1px, 5%, 8px) !important;
+  font-size: var(--ui-fit-control) !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  overflow: hidden !important;
+}
+
+#openChatButton.ui-layout-sized img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+#profileView .profile-actions.ui-layout-sized > button {
+  min-height: 0 !important;
+  height: min(76%, 64px) !important;
+  align-self: center !important;
+  font-size: var(--ui-fit-control) !important;
+}
+
+#profileView .profile-actions.ui-layout-sized .profile-history-button img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+#profileView .profile-logo-panel.ui-layout-sized,
+#profileView .profile-stats-panel.ui-layout-sized,
+#profileView .profile-actions.ui-layout-sized,
+#inventoryView .inventory-card.ui-layout-sized,
+#shopView .shop-item-cell.ui-layout-sized,
+#usersView .users-room-panel.ui-layout-sized,
+#chatView .web-chat-view.ui-layout-sized,
+#minigamesView .minigames-panel.ui-layout-sized {
+  box-sizing: border-box !important;
+  contain: layout style !important;
+}
+
 .users-room-table-wrap.ui-layout-sized th,
 .users-room-table-wrap.ui-layout-sized td {
   padding: clamp(1px, 2cqmin, 8px) !important;

@@ -22,6 +22,13 @@
   var settledApplyTimer = 0;
   var remoteSaveTimer = 0;
   var originalStyles = new WeakMap();
+  var targetResizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(function (entries) {
+    entries.forEach(function (entry) {
+      var box = entry.contentRect;
+      entry.target.style.setProperty("--ui-box-w", Math.max(1, box.width) + "px");
+      entry.target.style.setProperty("--ui-box-h", Math.max(1, box.height) + "px");
+    });
+  }) : null;
   var mobileDevice = Boolean(
     navigator.userAgentData && navigator.userAgentData.mobile
   ) || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || "") || Boolean(
@@ -219,6 +226,7 @@
             };
           });
           originalStyles.set(element, saved);
+          if (targetResizeObserver) targetResizeObserver.observe(element);
           if (getComputedStyle(element).position === "static") element.classList.add("ui-layout-static");
         }
         if (!element.dataset.uiLayout) {
