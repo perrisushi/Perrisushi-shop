@@ -791,6 +791,55 @@ body.ui-layout-editing .mobile-session-dropdown.is-editor-preview {
   overflow: hidden !important;
   align-content: stretch !important;
   align-items: stretch !important;
+  grid-auto-rows: minmax(0, 1fr) !important;
+}
+
+/* Componentes repetidos: el recuadro padre decide la distribución y todas
+   las tarjetas, incluidas las creadas después, usan la misma plantilla. */
+.ui-layout-template {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  contain: layout style paint !important;
+}
+
+#inventoryView #inventoryGrid.ui-layout-sized > .inventory-card.ui-layout-template {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#personalizeView #logoGrid.ui-layout-sized {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-rows: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+#personalizeView #logoGrid.ui-layout-sized > .logo-option.ui-layout-template {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  padding: clamp(2px, 8cqmin, 10px) !important;
+}
+
+#personalizeView #logoGrid.ui-layout-sized > .logo-option.ui-layout-template > img {
+  width: 90% !important;
+  height: 90% !important;
+  object-fit: contain !important;
+}
+
+#shopView .shop-content-shell.ui-layout-sized .shop-grid {
+  min-height: 0 !important;
+  grid-auto-rows: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+}
+
+#shopView .shop-content-shell.ui-layout-sized .shop-item-cell.ui-layout-template {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 #usersView .users-room-table-wrap.ui-layout-selected > .ui-layout-resize-handle,

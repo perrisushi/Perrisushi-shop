@@ -15,6 +15,11 @@
     "session-dropdown": true,
     "global-back-button": true
   };
+  var TEMPLATE_TARGET_KEYS = {
+    "inventory-item": true,
+    "shop-item": true,
+    "logos-option": true
+  };
   var editorState = {
     active: false,
     guides: true,
@@ -318,6 +323,24 @@
     return screens;
   }
 
+  function removeLegacyRepeatedLayouts(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    Object.keys(screens).forEach(function (screenName) {
+      var layout = screens[screenName];
+      if (!layout || typeof layout !== "object") return;
+      Object.keys(layout).forEach(function (key) {
+        if (Object.keys(TEMPLATE_TARGET_KEYS).some(function (baseKey) {
+          return key.indexOf(baseKey + "-") === 0;
+        })) delete layout[key];
+      });
+    });
+    return screens;
+  }
+
+  function isTemplateTarget(element) {
+    return Boolean(element && element.dataset && element.dataset.uiLayoutTemplate);
+  }
+
   function markTargets() {
     /* La carga normal puede ocultar de nuevo el dock si no hay avisos reales.
        En edición debe seguir visible y seleccionable con sus muestras. */
@@ -343,6 +366,10 @@
           originalStyles.set(element, saved);
           if (targetResizeObserver) targetResizeObserver.observe(element);
           if (getComputedStyle(element).position === "static") element.classList.add("ui-layout-static");
+        }
+        if (TEMPLATE_TARGET_KEYS[baseKey]) {
+          element.dataset.uiLayoutTemplate = baseKey;
+          element.classList.add("ui-layout-template", "ui-layout-sized");
         }
         if (!element.dataset.uiLayout) {
           addedTarget = true;
@@ -370,7 +397,7 @@
     try {
       var stored = JSON.parse(localStorage.getItem(DRAFT_PREFIX + modeName) || "{}");
       if (stored && stored.baseLayoutId === BASE_LAYOUT_ID && stored.screens && typeof stored.screens === "object") {
-        return promoteGlobalTargets(removeEmptySocialBoxes(stored.screens));
+        return removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(stored.screens)));
       }
       return {};
     } catch (error) {
@@ -464,7 +491,7 @@
     ["desktop", "mobile"].forEach(function (modeName) {
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
-        result[modeName] = promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens)));
+        result[modeName] = removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens))));
       }
     });
     return result;
@@ -502,8 +529,8 @@
         var item = menu[key];
         if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
       });
-      promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop));
-      promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile));
+      removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop)));
+      removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile)));
       return converted;
     }
     return normalizePayload(payload);
@@ -572,12 +599,17 @@
     allTargets().forEach(clearStyle);
     allTargets().forEach(function (element) {
       if (element.dataset.uiLayoutEnabled === "false") return;
+      if (isTemplateTarget(element)) {
+        element.classList.add("ui-layout-template", "ui-layout-sized");
+        return;
+      }
       var key = element.dataset.uiLayout;
       applyItem(element, isGlobalTarget(key) ? global[key] : layout[key], canvas, "size");
     });
     void document.documentElement.offsetHeight;
     allTargets().forEach(function (element) {
       if (element.dataset.uiLayoutEnabled === "false") return;
+      if (isTemplateTarget(element)) return;
       var key = element.dataset.uiLayout;
       applyItem(element, isGlobalTarget(key) ? global[key] : layout[key], canvas, "position");
     });
@@ -620,6 +652,7 @@
 
   function commitElement(element) {
     if (!element || !element.dataset.uiLayout) return;
+    if (isTemplateTarget(element)) return;
     var layout = isGlobalTarget(element) ? globalLayouts(true) : screenLayouts(true);
     layout[element.dataset.uiLayout] = captureElement(element);
     saveDraft();
@@ -657,10 +690,12 @@
       return;
     }
     element.classList.add("ui-layout-selected");
-    var handle = document.createElement("span");
-    handle.className = "ui-layout-resize-handle";
-    handle.setAttribute("aria-hidden", "true");
-    element.appendChild(handle);
+    if (!isTemplateTarget(element)) {
+      var handle = document.createElement("span");
+      handle.className = "ui-layout-resize-handle";
+      handle.setAttribute("aria-hidden", "true");
+      element.appendChild(handle);
+    }
     setStatus(element.dataset.uiLayoutLabel || element.dataset.uiLayout);
     refreshLockButton();
   }
@@ -750,6 +785,7 @@
 
   function boundedParent(element) {
     if (!element) return null;
+    if (element.matches("#mobileSessionDropdown")) return null;
     if (element.matches("#openChatButton, #openRequestsPanelButton")) {
       return element.closest(".menu-side-tools");
     }
@@ -777,10 +813,12 @@
     if (element.matches("#backToProfileFromPersonalize, #personalizeView .personalize-album-wrap, #personalizeView .hero-card, #personalizeView .logos-shell")) {
       return element.closest("#personalizeView");
     }
-    return null;
+    var ancestor = element.parentElement && element.parentElement.closest("[data-ui-layout]");
+    return ancestor && ancestor !== element ? ancestor : null;
   }
 
   function clampInsideParent(element) {
+    if (isTemplateTarget(element)) return;
     var parent = boundedParent(element);
     if (!parent) return;
     var rect = element.getBoundingClientRect();
@@ -875,6 +913,10 @@
     var handle = event.target.closest(".ui-layout-resize-handle");
     var element = handle ? handle.parentElement : event.target.closest("[data-ui-layout]");
     if (!element || element.closest("[hidden]")) return;
+    if (isTemplateTarget(element)) {
+      element = boundedParent(element) || element;
+      handle = null;
+    }
     event.preventDefault();
     event.stopPropagation();
     selectElement(element);
@@ -894,7 +936,7 @@
          acompañar al padre y no regresar a la coordenada absoluta anterior al
          volver a cargar. */
       descendants: visibleTargets().filter(function (candidate) {
-        return candidate !== element && element.contains(candidate);
+        return candidate !== element && !isTemplateTarget(candidate) && element.contains(candidate);
       }).map(function (candidate) {
         var childRect = candidate.getBoundingClientRect();
         return {
@@ -955,6 +997,7 @@
     if (!editorState.loaded) return;
     visibleTargets().forEach(function (element) {
       if (!element.dataset.uiLayout) return;
+      if (isTemplateTarget(element)) return;
       var layout = isGlobalTarget(element) ? globalLayouts(true) : screenLayouts(true);
       layout[element.dataset.uiLayout] = captureElement(element);
     });
