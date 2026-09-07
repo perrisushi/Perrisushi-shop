@@ -69,6 +69,7 @@
   }
 
   var targetDefinitions = [
+    [".session-left-stack", "user-controls", "Controles de usuario"],
     [".session-user-card", "session-user", "Usuario y nick"],
     [".mobile-session-menu", "session-menu", "Menú desplegable"],
     ["#desktopStackBackButton", "global-back-button", "Botón volver"],
@@ -86,6 +87,7 @@
     [".menu-socials", "social-buttons", "Botones sociales"],
     ["#openTwitchButton", "social-twitch", "Botón Twitch"],
     ["#openYoutubeButton", "social-youtube", "Botón YouTube"],
+    [".menu-side-tools", "side-tools", "Botones laterales"],
     ["#openChatButton", "side-chat", "Botón Chat"],
     ["#openRequestsPanelButton", "side-panel", "Botón Panel"],
     ["#profileView,#usersView,#inventoryView,#minigamesView,#shopView,#chatView", "section-panel", "Pantalla de sección"],
@@ -1011,10 +1013,6 @@
     editorState.loaded = true;
     markTargets();
     applyCurrentLayout();
-    requestAnimationFrame(function () {
-      applyCurrentLayout();
-      document.documentElement.classList.remove("ui-layout-pending");
-    });
     try {
       var response = await callApi({ action: "publicShopGetUiLayouts" });
       if (response.data && response.data.ok) remote = response.data.layouts;
@@ -1036,7 +1034,26 @@
       }
     });
     markTargets();
-    scheduleLayoutApply();
+    /* No mostramos el lienzo entre el diseño incluido y el remoto: esperamos
+       también a imágenes y fuentes, aplicamos el resultado definitivo y solo
+       entonces retiramos el bloqueo visual. */
+    var pageReady = document.readyState === "complete"
+      ? Promise.resolve()
+      : new Promise(function (resolve) {
+          window.addEventListener("load", resolve, { once: true });
+        });
+    var fontsReady = document.fonts && document.fonts.ready
+      ? document.fonts.ready.catch(function () {})
+      : Promise.resolve();
+    await Promise.all([pageReady, fontsReady]);
+    applyCurrentLayout();
+    requestAnimationFrame(function () {
+      applyCurrentLayout();
+      requestAnimationFrame(function () {
+        applyCurrentLayout();
+        document.documentElement.classList.remove("ui-layout-pending");
+      });
+    });
   }
 
   document.addEventListener("pointerdown", pointerDown, true);
