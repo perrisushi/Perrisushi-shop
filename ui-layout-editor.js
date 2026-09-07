@@ -956,7 +956,11 @@
     editorState.layouts = convertPrototypePayload(bundled);
     editorState.loaded = true;
     markTargets();
-    scheduleLayoutApply();
+    applyCurrentLayout();
+    requestAnimationFrame(function () {
+      applyCurrentLayout();
+      document.documentElement.classList.remove("ui-layout-pending");
+    });
     try {
       var response = await callApi({ action: "publicShopGetUiLayouts" });
       if (response.data && response.data.ok) remote = response.data.layouts;

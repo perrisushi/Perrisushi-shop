@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Perrisushi Shop</title>
+  <script>
+    document.documentElement.classList.add("ui-layout-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ui-layout-pending");
+    }, 2500);
+  </script>
   <style>
     :root {
       --ink: #f8f3ea;
@@ -22,6 +28,7 @@
       --selected-logo-frame-size: 73.44%;
     }
     * { box-sizing: border-box; }
+    html.ui-layout-pending .panel { visibility: hidden !important; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -12088,6 +12095,6 @@
       }
     });
   </script>
-  <script src="./ui-layout-editor.js?v=20260907-33"></script>
+  <script src="./ui-layout-editor.js?v=20260907-34"></script>
 </body>
 </html>
