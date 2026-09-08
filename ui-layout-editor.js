@@ -616,12 +616,19 @@
   function resetInventoryGridOnce(screens) {
     if (!screens || typeof screens !== "object") return screens || {};
     var inventory = screens.inventory;
-    if (!inventory || typeof inventory !== "object" || inventory.__inventory_grid_position_v1) return screens;
-    /* Una geometría antigua desplazaba la cuadrícula hacia arriba y el panel
-       recortaba la primera fila. Solo se restablece la caja de la cuadrícula;
-       el título, los recursos y el resto del diseño permanecen intactos. */
-    delete inventory["inventory-grid"];
-    inventory.__inventory_grid_position_v1 = { applied: true };
+    if (!inventory || typeof inventory !== "object" || inventory.__inventory_grid_position_v2) return screens;
+    /* Conserva el ancho y el alto elegidos para la cuadrícula. Únicamente se
+       eliminan las coordenadas antiguas que la empujaban hacia arriba y
+       provocaban el recorte de la primera fila. */
+    var grid = inventory["inventory-grid"];
+    if (grid && typeof grid === "object") {
+      delete grid.leftRatio;
+      delete grid.topRatio;
+      delete grid.offsetXRatio;
+      delete grid.offsetYRatio;
+    }
+    delete inventory.__inventory_grid_position_v1;
+    inventory.__inventory_grid_position_v2 = { applied: true };
     return screens;
   }
 
