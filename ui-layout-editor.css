@@ -96,6 +96,13 @@ body {
 }
 
 @media (max-width: 720px) and (pointer: coarse) {
+  /* La regla base de escritorio lo ocultaba antes de que el diseño móvil
+     guardado pudiera colocarlo. data-hidden sigue permitiendo ocultarlo de
+     forma explícita cuando corresponda. */
+  #desktopStackBackButton:not([data-hidden="true"]) {
+    display: inline-flex !important;
+  }
+
   .panel {
     background-image:
       linear-gradient(rgba(18, 8, 3, .12), rgba(18, 8, 3, .12)),

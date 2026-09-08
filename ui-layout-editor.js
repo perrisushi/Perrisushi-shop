@@ -329,6 +329,10 @@
         if (screenName !== GLOBAL_SCREEN && screens[screenName]) delete screens[screenName][key];
       });
     });
+    /* La flecha global debe partir siempre de visible en PC y móvil. Las
+       ocultaciones deliberadas de una página se conservan aparte mediante
+       __visibility__:global-back-button y siguen teniendo prioridad. */
+    if (global["global-back-button"]) global["global-back-button"].hidden = false;
     screens[GLOBAL_SCREEN] = global;
     return screens;
   }
