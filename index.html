@@ -6174,32 +6174,6 @@
         align-self: start;
         margin-top: 0;
       }
-      /* Controles globales de PC: usuario arriba y menú/flecha en una fila
-         independiente sobre el fondo general. */
-      .session-left-stack {
-        display: grid;
-        grid-template-columns: 24px 34px;
-        grid-template-rows: auto 34px;
-        column-gap: 5px;
-        row-gap: 6px;
-        align-items: start;
-      }
-      .session-user-card {
-        grid-column: 1 / -1;
-        grid-row: 1;
-      }
-      .mobile-session-menu {
-        grid-column: 1;
-        grid-row: 2;
-        align-self: start;
-        margin: 0;
-      }
-      .desktop-stack-back-button {
-        grid-column: 2;
-        grid-row: 2;
-        align-self: start;
-        margin: 0;
-      }
     }
     @media (max-width: 620px) and (hover: none) and (pointer: coarse) {
       .perricasillas-view { padding-top: 48px; }
@@ -7171,6 +7145,10 @@
     const SESSION_TOKEN_STORAGE_KEY = STORAGE_KEYS.sessionToken;
     const USER_LOGO_STORAGE_KEY = STORAGE_KEYS.selectedLogoMap;
     const MUSIC_ENABLED_STORAGE_KEY = "perri-shop-music-enabled";
+    /* Solo para esta copia local de INTENTO. Mantiene el login disponible en el
+       código, pero entra directamente al menú principal al abrir la página. */
+    const LOCAL_SKIP_LOGIN = true;
+    const LOCAL_PREVIEW_NICK = "Perrisushi";
     const INVENTORY_REFRESH_MS = 30000;
     const NOTIFICATION_REFRESH_MS = 5000;
     const CHAT_REFRESH_MS = 5000;
@@ -12051,24 +12029,32 @@
     setActiveTab("randomKeys");
     updateKeySummary();
     showAppSection("menu", { resetHistory: true, recordHistory: false });
-    loginView.hidden = false;
-    appView.hidden = true;
-    updateStatus("online");
-    if (hasPendingActivation()) {
-      showLogin("Configura tu contrasena para activar la cuenta.");
-      refreshActivationState(true).catch(() => {
-        showLogin("No se pudo cargar el enlace de activacion.");
-      });
-    } else if (hasPendingPerriChest()) {
-      showLogin("Inicia sesion para abrir tu Perricofre.");
-    }
-    tryRestoreSession().catch(() => {
+    if (LOCAL_SKIP_LOGIN) {
+      setLoggedNick((SHOP_RUNTIME && SHOP_RUNTIME.getNick()) || LOCAL_PREVIEW_NICK);
+      loginView.hidden = true;
+      appView.hidden = false;
+      showAppSection("menu", { resetHistory: true, recordHistory: false });
+      updateStatus("online");
+    } else {
+      loginView.hidden = false;
+      appView.hidden = true;
+      updateStatus("online");
       if (hasPendingActivation()) {
         showLogin("Configura tu contrasena para activar la cuenta.");
+        refreshActivationState(true).catch(() => {
+          showLogin("No se pudo cargar el enlace de activacion.");
+        });
       } else if (hasPendingPerriChest()) {
         showLogin("Inicia sesion para abrir tu Perricofre.");
       }
-    });
+      tryRestoreSession().catch(() => {
+        if (hasPendingActivation()) {
+          showLogin("Configura tu contrasena para activar la cuenta.");
+        } else if (hasPendingPerriChest()) {
+          showLogin("Inicia sesion para abrir tu Perricofre.");
+        }
+      });
+    }
   </script>
 </body>
 </html>
