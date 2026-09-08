@@ -487,6 +487,29 @@ body.ui-layout-editing [data-ui-layout] {
 
 body.ui-layout-editing [data-ui-layout].ui-layout-static { position: relative; }
 
+/* La flecha móvil es un control flotante independiente. Su tirador no debe
+   quedar recortado por el botón ni por el pequeño stack que lo contiene. */
+body.ui-layout-editing #desktopStackBackButton[data-ui-layout] {
+  position: relative !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  touch-action: none !important;
+  flex: none !important;
+}
+
+body.ui-layout-editing #desktopStackBackButton > .ui-layout-resize-handle {
+  display: block !important;
+  right: -12px !important;
+  bottom: -12px !important;
+  width: 28px !important;
+  height: 28px !important;
+  pointer-events: auto !important;
+}
+
 [data-ui-layout].ui-layout-sized {
   min-width: 0 !important;
   min-height: 0 !important;

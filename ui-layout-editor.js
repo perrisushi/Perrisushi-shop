@@ -356,12 +356,14 @@
     var global = screens[GLOBAL_SCREEN] && typeof screens[GLOBAL_SCREEN] === "object"
       ? screens[GLOBAL_SCREEN]
       : (screens[GLOBAL_SCREEN] = {});
-    var migrationKey = "__mobile_back_button_visible_v2";
+    var migrationKey = "__mobile_back_button_visible_v3";
     if (global[migrationKey]) return screens;
     var menuButton = global["session-menu"];
     var backButton = global["global-back-button"] || (global["global-back-button"] = {});
     backButton.hidden = false;
     backButton.unbounded = true;
+    backButton.magnetism = false;
+    delete backButton.lockedWith;
     /* Sitúa la flecha inmediatamente a la derecha del botón de menú usando
        las mismas coordenadas del lienzo móvil, sin depender de posiciones
        antiguas guardadas por la herramienta. */
@@ -385,6 +387,7 @@
       delete layout[VISIBILITY_OVERRIDE_PREFIX + "global-back-button"];
     });
     delete global["__mobile_back_button_visible_v1"];
+    delete global["__mobile_back_button_visible_v2"];
     global[migrationKey] = { applied: true };
     return screens;
   }
