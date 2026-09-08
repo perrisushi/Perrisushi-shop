@@ -613,6 +613,18 @@
     return screens;
   }
 
+  function resetInventoryGridOnce(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var inventory = screens.inventory;
+    if (!inventory || typeof inventory !== "object" || inventory.__inventory_grid_position_v1) return screens;
+    /* Una geometría antigua desplazaba la cuadrícula hacia arriba y el panel
+       recortaba la primera fila. Solo se restablece la caja de la cuadrícula;
+       el título, los recursos y el resto del diseño permanecen intactos. */
+    delete inventory["inventory-grid"];
+    inventory.__inventory_grid_position_v1 = { applied: true };
+    return screens;
+  }
+
   function pushHistory() {
     editorState.undo.push(cloneValue(editorState.layouts[currentMode()] || {}));
     if (editorState.undo.length > 40) editorState.undo.shift();
@@ -642,6 +654,7 @@
       if (mode && mode.screens && typeof mode.screens === "object") {
         result[modeName] = removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens))));
         resetUsersListOnce(result[modeName]);
+        resetInventoryGridOnce(result[modeName]);
         if (modeName === "mobile") restoreMobileBackButtonOnce(result[modeName]);
         if (modeName === "desktop") {
           compactDesktopPersonalizeOnce(result[modeName]);
@@ -685,9 +698,9 @@
         var item = menu[key];
         if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
       });
-      resetUsersListOnce(removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop))));
+      resetInventoryGridOnce(resetUsersListOnce(removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop)))));
       restoreMobileBackButtonOnce(
-        resetUsersListOnce(removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile))))
+        resetInventoryGridOnce(resetUsersListOnce(removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile)))))
       );
       return converted;
     }
