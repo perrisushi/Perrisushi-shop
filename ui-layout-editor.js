@@ -356,14 +356,35 @@
     var global = screens[GLOBAL_SCREEN] && typeof screens[GLOBAL_SCREEN] === "object"
       ? screens[GLOBAL_SCREEN]
       : (screens[GLOBAL_SCREEN] = {});
-    var migrationKey = "__mobile_back_button_visible_v1";
+    var migrationKey = "__mobile_back_button_visible_v2";
     if (global[migrationKey]) return screens;
-    if (global["global-back-button"]) global["global-back-button"].hidden = false;
+    var menuButton = global["session-menu"];
+    var backButton = global["global-back-button"] || (global["global-back-button"] = {});
+    backButton.hidden = false;
+    backButton.unbounded = true;
+    /* Sitúa la flecha inmediatamente a la derecha del botón de menú usando
+       las mismas coordenadas del lienzo móvil, sin depender de posiciones
+       antiguas guardadas por la herramienta. */
+    if (menuButton) {
+      var menuLeft = Number(menuButton.leftRatio);
+      var menuTop = Number(menuButton.topRatio);
+      var menuWidth = Number(menuButton.widthRatio);
+      var menuHeight = Number(menuButton.heightRatio);
+      if (Number.isFinite(menuLeft) && Number.isFinite(menuWidth)) {
+        backButton.leftRatio = menuLeft + menuWidth + (6 / 390);
+      }
+      if (Number.isFinite(menuTop)) backButton.topRatio = menuTop;
+      if (Number.isFinite(menuWidth) && menuWidth > 0) backButton.widthRatio = menuWidth;
+      if (Number.isFinite(menuHeight) && menuHeight > 0) backButton.heightRatio = menuHeight;
+      backButton.offsetXRatio = 0;
+      backButton.offsetYRatio = 0;
+    }
     Object.keys(screens).forEach(function (screenName) {
       var layout = screens[screenName];
       if (!layout || typeof layout !== "object") return;
       delete layout[VISIBILITY_OVERRIDE_PREFIX + "global-back-button"];
     });
+    delete global["__mobile_back_button_visible_v1"];
     global[migrationKey] = { applied: true };
     return screens;
   }
@@ -1181,7 +1202,7 @@
     /* En el lienzo móvil estos dos controles son flotantes globales. No deben
        quedar aprisionados por la altura inicial de session-left-stack, porque
        el editor tiene que poder bajarlos a cualquier zona del diseño. */
-    if (currentMode() === "mobile" && element.matches(".session-user-card, .mobile-session-menu")) return null;
+    if (currentMode() === "mobile" && element.matches(".session-user-card, .mobile-session-menu, #desktopStackBackButton")) return null;
     if (element.matches("#mobileSessionDropdown")) return null;
     if (element.matches("#openChatButton, #openRequestsPanelButton")) {
       return element.closest(".menu-side-tools");
