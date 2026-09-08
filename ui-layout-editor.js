@@ -1397,6 +1397,13 @@
         var desiredTop = parentRect.top + snapshot.top * scaleY * layoutCanvasScale;
         moveElement(snapshot.element, (desiredLeft - childRect.left) / layoutCanvasScale, (desiredTop - childRect.top) / layoutCanvasScale, false);
       });
+      /* Los controles flotantes globales pueden perder pointerup al pasar el
+         cursor sobre la barra de la herramienta. Guardamos cada medida de la
+         flecha mientras se arrastra para que Terminar edición nunca restaure
+         el tamaño anterior. */
+      if (currentMode() === "mobile" && pointer.element.matches("#desktopStackBackButton")) {
+        commitElement(pointer.element);
+      }
       setStatus(Math.round(newWidth) + " × " + Math.round(newHeight));
     } else {
       var currentX = Number(pointer.element.dataset.uiLayoutX || 0);
@@ -1487,6 +1494,15 @@
        usuario está viendo; así ningún cambio de containing block puede
        recolocar el diseño al pulsar "Mover recuadros". */
     if (nextActive && !editorState.active) captureRenderedLayout();
+    if (!nextActive && editorState.active) {
+      /* Consolida el último rectángulo antes de retirar las clases visuales
+         del editor, incluso si el navegador no entregó pointerup. */
+      if (editorState.pointer && editorState.pointer.element) {
+        commitElement(editorState.pointer.element);
+        editorState.pointer = null;
+      }
+      if (editorState.selected) commitElement(editorState.selected);
+    }
     editorState.active = nextActive;
     document.body.classList.toggle("ui-layout-editing", editorState.active);
     document.body.classList.toggle("ui-layout-guides", editorState.active && editorState.guides);
