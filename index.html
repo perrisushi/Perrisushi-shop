@@ -46,7 +46,9 @@
       display: grid;
       place-items: center;
     }
-    @media (min-width: 721px) {
+    /* En ordenadores con puntero preciso se mantiene siempre la maqueta de PC,
+       aunque la ventana del navegador se haga estrecha. */
+    @media (min-width: 721px), (hover: hover) and (pointer: fine) {
       html,
       body {
         width: 100vw;
@@ -4323,7 +4325,7 @@
       color: var(--muted);
       font-size: 0.98rem;
     }
-    @media (max-width: 1180px) {
+    @media (max-width: 1180px) and (hover: none) and (pointer: coarse) {
       body { overflow: auto; }
       .shop-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
       .equipment-layout { grid-template-columns: 1fr; }
@@ -4350,7 +4352,7 @@
       }
       .gear-tile[data-gear] { grid-area: auto; }
     }
-      @media (max-width: 720px) {
+      @media (max-width: 720px) and (hover: none) and (pointer: coarse) {
       body {
         height: 100vh;
         height: 100dvh;
@@ -5944,7 +5946,7 @@
         width: 100%;
       }
     }
-    @media (min-width: 721px) {
+    @media (min-width: 721px), (hover: hover) and (pointer: fine) {
       .shell {
         width: 100vw;
         height: 100vh;
@@ -6141,7 +6143,7 @@
       .menu-social-button {
         width: min(230px, 22vw, 22dvh);
       }
-      @media (min-width: 721px) {
+      @media (min-width: 721px), (hover: hover) and (pointer: fine) {
         #shopView .shop-panel {
           padding-top: 0;
         }
@@ -6172,8 +6174,34 @@
         align-self: start;
         margin-top: 0;
       }
+      /* Controles globales de PC: usuario arriba y menú/flecha en una fila
+         independiente sobre el fondo general. */
+      .session-left-stack {
+        display: grid;
+        grid-template-columns: 24px 34px;
+        grid-template-rows: auto 34px;
+        column-gap: 5px;
+        row-gap: 6px;
+        align-items: start;
+      }
+      .session-user-card {
+        grid-column: 1 / -1;
+        grid-row: 1;
+      }
+      .mobile-session-menu {
+        grid-column: 1;
+        grid-row: 2;
+        align-self: start;
+        margin: 0;
+      }
+      .desktop-stack-back-button {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: start;
+        margin: 0;
+      }
     }
-    @media (max-width: 620px) {
+    @media (max-width: 620px) and (hover: none) and (pointer: coarse) {
       .perricasillas-view { padding-top: 48px; }
       .perricasillas-view > .section-topbar { top: 2px; left: 2px; }
       .perricasillas-shell { width: 100%; padding: 0 2px 4px; }
