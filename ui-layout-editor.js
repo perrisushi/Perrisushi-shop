@@ -1202,6 +1202,10 @@
   function boundedParent(element, ignoreUnbounded) {
     if (!element) return null;
     if (!ignoreUnbounded && element.dataset.uiLayoutUnbounded === "true") return null;
+    /* La sala de usuarios es un lienzo libre en PC y móvil. El marco, el
+       panel y sus piezas se pueden sacar de sus contenedores visuales sin
+       que el editor recorte ni limite el arrastre o el redimensionado. */
+    if (element.closest("#usersView")) return null;
     /* En el lienzo móvil estos dos controles son flotantes globales. No deben
        quedar aprisionados por la altura inicial de session-left-stack, porque
        el editor tiene que poder bajarlos a cualquier zona del diseño. */

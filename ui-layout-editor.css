@@ -2688,3 +2688,30 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
     line-height: 1 !important;
   }
 }
+
+/* Sala de usuarios: lienzo sin máscaras para edición libre en PC y móvil.
+   La lista conserva su propio scroll, pero ninguno de sus contenedores
+   exteriores recorta los elementos al moverlos o redimensionarlos. */
+#usersView,
+#usersView .users-room-view,
+#usersView .users-room-frame,
+#usersView .users-room-frame-content,
+#usersView .users-room-panel,
+#usersView .users-room-panel-top {
+  overflow: visible !important;
+}
+
+#usersView[data-ui-layout].ui-layout-sized,
+#usersView .users-room-hero[data-ui-layout].ui-layout-sized,
+#usersView .users-room-frame[data-ui-layout].ui-layout-sized,
+#usersView .users-room-panel[data-ui-layout].ui-layout-sized,
+#usersView .users-room-table-wrap[data-ui-layout].ui-layout-sized {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+#usersView .users-room-table-wrap,
+#usersView .users-room-table-wrap[data-ui-layout].ui-layout-sized {
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
