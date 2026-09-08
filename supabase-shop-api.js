@@ -360,6 +360,10 @@ const NOTIFICATION_KINDS = {
   perri_cofres: "perri_cofres",
   perri_cofres_minijuego: "perri_cofres_minijuego",
   random_key: "random_key",
+  bolsa_especial: "bolsa_especial",
+  bolsa_chatarra: "bolsa_chatarra",
+  cajita_armas: "cajita_armas",
+  bolsa_gemas: "bolsa_gemas",
   welcome: "welcome",
   twitch: "twitch",
   youtube: "youtube"
