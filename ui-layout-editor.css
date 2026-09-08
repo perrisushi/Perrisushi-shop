@@ -2715,3 +2715,156 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   overflow-x: auto !important;
   overflow-y: auto !important;
 }
+
+/* Sala de usuarios: la lista es el único contenido interior del marco. */
+#usersView .users-room-panel-top,
+#usersView .users-room-panel-title {
+  display: none !important;
+}
+
+#usersView .users-room-frame-content,
+#usersView .users-room-frame-content > .users-room-panel {
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+#usersView .users-room-frame-content > .users-room-panel {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: clamp(8px, 1.5vw, 18px) !important;
+}
+
+#usersView .users-room-table-wrap,
+#usersView .users-room-table-wrap[data-ui-layout].ui-layout-sized {
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  padding: 0 8px 0 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
+}
+
+#usersView .users-room-table {
+  width: 100% !important;
+  height: auto !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+}
+
+#usersView .users-room-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+  padding: 7px 8px 9px !important;
+  background: rgba(244, 222, 174, .96) !important;
+  color: #6b4017 !important;
+  font-size: .72rem !important;
+  line-height: 1.1 !important;
+}
+
+#usersView .users-room-table tbody tr {
+  border-bottom: 1px solid rgba(107, 64, 23, .18) !important;
+}
+
+#usersView .users-room-table tbody td {
+  box-sizing: border-box !important;
+  height: auto !important;
+  padding: 9px 8px !important;
+  vertical-align: middle !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+#usersView .users-room-table :is(th, td):nth-child(1) { width: 46% !important; }
+#usersView .users-room-table :is(th, td):nth-child(2) { width: 20% !important; }
+#usersView .users-room-table :is(th, td):nth-child(3) { width: 34% !important; }
+
+#usersView .users-room-identity {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  gap: 9px !important;
+  overflow: visible !important;
+}
+
+#usersView .users-room-logo {
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  max-width: 42px !important;
+  overflow: hidden !important;
+}
+
+#usersView :is(.users-room-name, .users-room-name-button, .users-room-pc, .users-room-achievements) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  font-size: .9rem !important;
+  line-height: 1.18 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+#usersView .users-room-name-button {
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+
+body.ui-layout-editing #usersView .users-room-frame-content,
+body.ui-layout-editing #usersView .users-room-panel {
+  overflow: visible !important;
+}
+
+body.perri-mobile-layout #usersView .users-room-frame-content > .users-room-panel,
+body.perri-mobile-preview #usersView .users-room-frame-content > .users-room-panel {
+  padding: 5px !important;
+}
+
+body.perri-mobile-layout #usersView .users-room-table-wrap,
+body.perri-mobile-preview #usersView .users-room-table-wrap {
+  padding-right: 3px !important;
+}
+
+body.perri-mobile-layout #usersView .users-room-table thead th,
+body.perri-mobile-preview #usersView .users-room-table thead th {
+  padding: 4px 2px 5px !important;
+  font-size: .48rem !important;
+  letter-spacing: .03em !important;
+}
+
+body.perri-mobile-layout #usersView .users-room-table tbody td,
+body.perri-mobile-preview #usersView .users-room-table tbody td {
+  padding: 5px 2px !important;
+}
+
+body.perri-mobile-layout #usersView .users-room-identity,
+body.perri-mobile-preview #usersView .users-room-identity {
+  gap: 4px !important;
+}
+
+body.perri-mobile-layout #usersView .users-room-logo,
+body.perri-mobile-preview #usersView .users-room-logo {
+  flex-basis: 27px !important;
+  width: 27px !important;
+  height: 27px !important;
+  max-width: 27px !important;
+}
+
+body.perri-mobile-layout #usersView :is(.users-room-name, .users-room-name-button, .users-room-pc, .users-room-achievements),
+body.perri-mobile-preview #usersView :is(.users-room-name, .users-room-name-button, .users-room-pc, .users-room-achievements) {
+  font-size: .54rem !important;
+  line-height: 1.12 !important;
+}

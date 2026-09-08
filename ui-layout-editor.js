@@ -601,6 +601,18 @@
     return screens;
   }
 
+  function resetUsersListOnce(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var users = screens.users;
+    if (!users || typeof users !== "object" || users.__users_list_layout_v1) return screens;
+    /* Descarta únicamente la geometría antigua del interior del marco. El
+       título y el propio marco conservan la colocación elegida por el usuario. */
+    delete users["users-panel"];
+    delete users["users-table"];
+    users.__users_list_layout_v1 = { applied: true };
+    return screens;
+  }
+
   function pushHistory() {
     editorState.undo.push(cloneValue(editorState.layouts[currentMode()] || {}));
     if (editorState.undo.length > 40) editorState.undo.shift();
@@ -629,6 +641,7 @@
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
         result[modeName] = removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens))));
+        resetUsersListOnce(result[modeName]);
         if (modeName === "mobile") restoreMobileBackButtonOnce(result[modeName]);
         if (modeName === "desktop") {
           compactDesktopPersonalizeOnce(result[modeName]);
@@ -672,9 +685,9 @@
         var item = menu[key];
         if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
       });
-      removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop)));
+      resetUsersListOnce(removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop))));
       restoreMobileBackButtonOnce(
-        removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile)))
+        resetUsersListOnce(removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile))))
       );
       return converted;
     }
