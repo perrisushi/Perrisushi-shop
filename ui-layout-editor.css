@@ -2729,23 +2729,24 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
 }
 
 #usersView .users-room-frame-content > .users-room-panel {
-  display: block !important;
+  display: grid !important;
+  place-items: center !important;
   width: 100% !important;
   height: 100% !important;
-  padding: clamp(8px, 1.5vw, 18px) !important;
+  padding: 0 !important;
 }
 
 #usersView .users-room-table-wrap,
 #usersView .users-room-table-wrap[data-ui-layout].ui-layout-sized {
   box-sizing: border-box !important;
   display: block !important;
-  width: 100% !important;
-  height: 100% !important;
+  width: 90% !important;
+  height: 90% !important;
   min-width: 0 !important;
   min-height: 0 !important;
   max-width: 100% !important;
   max-height: 100% !important;
-  padding: 0 8px 0 0 !important;
+  padding: 0 7px 0 0 !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
@@ -2763,10 +2764,10 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   position: sticky !important;
   top: 0 !important;
   z-index: 2 !important;
-  padding: 7px 8px 9px !important;
+  padding: 6px 7px 8px !important;
   background: rgba(244, 222, 174, .96) !important;
   color: #6b4017 !important;
-  font-size: .72rem !important;
+  font-size: .65rem !important;
   line-height: 1.1 !important;
 }
 
@@ -2777,7 +2778,7 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
 #usersView .users-room-table tbody td {
   box-sizing: border-box !important;
   height: auto !important;
-  padding: 9px 8px !important;
+  padding: 8px 7px !important;
   vertical-align: middle !important;
   overflow: visible !important;
   white-space: normal !important;
@@ -2794,22 +2795,22 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
   align-items: center !important;
   width: 100% !important;
   min-width: 0 !important;
-  gap: 9px !important;
+  gap: 8px !important;
   overflow: visible !important;
 }
 
 #usersView .users-room-logo {
-  flex: 0 0 42px !important;
-  width: 42px !important;
-  height: 42px !important;
-  max-width: 42px !important;
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  height: 38px !important;
+  max-width: 38px !important;
   overflow: hidden !important;
 }
 
 #usersView :is(.users-room-name, .users-room-name-button, .users-room-pc, .users-room-achievements) {
   min-width: 0 !important;
   max-width: 100% !important;
-  font-size: .9rem !important;
+  font-size: .81rem !important;
   line-height: 1.18 !important;
   white-space: normal !important;
   overflow: visible !important;
@@ -2830,18 +2831,18 @@ body.ui-layout-editing #usersView .users-room-panel {
 
 body.perri-mobile-layout #usersView .users-room-frame-content > .users-room-panel,
 body.perri-mobile-preview #usersView .users-room-frame-content > .users-room-panel {
-  padding: 5px !important;
+  padding: 0 !important;
 }
 
 body.perri-mobile-layout #usersView .users-room-table-wrap,
 body.perri-mobile-preview #usersView .users-room-table-wrap {
-  padding-right: 3px !important;
+  padding-right: 2px !important;
 }
 
 body.perri-mobile-layout #usersView .users-room-table thead th,
 body.perri-mobile-preview #usersView .users-room-table thead th {
   padding: 4px 2px 5px !important;
-  font-size: .48rem !important;
+  font-size: .43rem !important;
   letter-spacing: .03em !important;
 }
 
@@ -2852,19 +2853,19 @@ body.perri-mobile-preview #usersView .users-room-table tbody td {
 
 body.perri-mobile-layout #usersView .users-room-identity,
 body.perri-mobile-preview #usersView .users-room-identity {
-  gap: 4px !important;
+  gap: 3px !important;
 }
 
 body.perri-mobile-layout #usersView .users-room-logo,
 body.perri-mobile-preview #usersView .users-room-logo {
-  flex-basis: 27px !important;
-  width: 27px !important;
-  height: 27px !important;
-  max-width: 27px !important;
+  flex-basis: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  max-width: 24px !important;
 }
 
 body.perri-mobile-layout #usersView :is(.users-room-name, .users-room-name-button, .users-room-pc, .users-room-achievements),
 body.perri-mobile-preview #usersView :is(.users-room-name, .users-room-name-button, .users-room-pc, .users-room-achievements) {
-  font-size: .54rem !important;
+  font-size: .49rem !important;
   line-height: 1.12 !important;
 }
