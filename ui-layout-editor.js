@@ -351,6 +351,23 @@
     return screens;
   }
 
+  function restoreMobileBackButtonOnce(screens) {
+    if (!screens || typeof screens !== "object") return screens || {};
+    var global = screens[GLOBAL_SCREEN] && typeof screens[GLOBAL_SCREEN] === "object"
+      ? screens[GLOBAL_SCREEN]
+      : (screens[GLOBAL_SCREEN] = {});
+    var migrationKey = "__mobile_back_button_visible_v1";
+    if (global[migrationKey]) return screens;
+    if (global["global-back-button"]) global["global-back-button"].hidden = false;
+    Object.keys(screens).forEach(function (screenName) {
+      var layout = screens[screenName];
+      if (!layout || typeof layout !== "object") return;
+      delete layout[VISIBILITY_OVERRIDE_PREFIX + "global-back-button"];
+    });
+    global[migrationKey] = { applied: true };
+    return screens;
+  }
+
   function isTemplateTarget(element) {
     return Boolean(element && element.dataset && element.dataset.uiLayoutTemplate);
   }
@@ -439,7 +456,8 @@
     try {
       var stored = JSON.parse(localStorage.getItem(DRAFT_PREFIX + modeName) || "{}");
       if (stored && stored.baseLayoutId === BASE_LAYOUT_ID && stored.screens && typeof stored.screens === "object") {
-        return removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(stored.screens)));
+        var screens = removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(stored.screens)));
+        return modeName === "mobile" ? restoreMobileBackButtonOnce(screens) : screens;
       }
       return {};
     } catch (error) {
@@ -587,6 +605,7 @@
       var mode = payload[modeName];
       if (mode && mode.screens && typeof mode.screens === "object") {
         result[modeName] = removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(cloneValue(mode.screens))));
+        if (modeName === "mobile") restoreMobileBackButtonOnce(result[modeName]);
         if (modeName === "desktop") {
           compactDesktopPersonalizeOnce(result[modeName]);
           compactDesktopShopOnce(result[modeName]);
@@ -630,7 +649,9 @@
         if (item && Number(item.widthRatio) === 0 && Number(item.heightRatio) === 0) delete menu[key];
       });
       removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.desktop)));
-      removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile)));
+      restoreMobileBackButtonOnce(
+        removeLegacyRepeatedLayouts(promoteGlobalTargets(removeEmptySocialBoxes(converted.mobile)))
+      );
       return converted;
     }
     return normalizePayload(payload);
