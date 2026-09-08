@@ -2729,19 +2729,18 @@ body.ui-layout-editing .desktop-stack-back-button:hover {
 }
 
 #usersView .users-room-frame-content > .users-room-panel {
-  display: grid !important;
-  place-items: center !important;
+  display: block !important;
   width: 100% !important;
   height: 100% !important;
-  padding: 0 !important;
+  padding: 5% !important;
 }
 
 #usersView .users-room-table-wrap,
 #usersView .users-room-table-wrap[data-ui-layout].ui-layout-sized {
   box-sizing: border-box !important;
   display: block !important;
-  width: 90% !important;
-  height: 90% !important;
+  width: 100% !important;
+  height: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
   max-width: 100% !important;
@@ -2831,7 +2830,7 @@ body.ui-layout-editing #usersView .users-room-panel {
 
 body.perri-mobile-layout #usersView .users-room-frame-content > .users-room-panel,
 body.perri-mobile-preview #usersView .users-room-frame-content > .users-room-panel {
-  padding: 0 !important;
+  padding: 5% !important;
 }
 
 body.perri-mobile-layout #usersView .users-room-table-wrap,
