@@ -4,12 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Perrisushi Shop</title>
-  <script>
-    document.documentElement.classList.add("ui-layout-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ui-layout-pending");
-    }, 12000);
-  </script>
   <style>
     :root {
       --ink: #f8f3ea;
@@ -28,7 +22,6 @@
       --selected-logo-frame-size: 73.44%;
     }
     * { box-sizing: border-box; }
-    html.ui-layout-pending .panel { visibility: hidden !important; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -53,7 +46,7 @@
       display: grid;
       place-items: center;
     }
-    @media (min-width: 721px), (pointer: fine) {
+    @media (min-width: 721px) {
       html,
       body {
         width: 100vw;
@@ -1097,17 +1090,6 @@
       cursor: pointer;
       z-index: 8;
       transition: transform 140ms ease, opacity 140ms ease;
-    }
-    .menu-side-tools {
-      position: absolute;
-      inset: 0 auto auto 0;
-      width: 120px;
-      height: 220px;
-      z-index: 8;
-    }
-    .menu-side-tools .menu-chat-button,
-    .menu-side-tools .menu-requests-button {
-      left: 0;
     }
     .menu-chat-button:hover {
       transform: translateY(-2px);
@@ -4341,7 +4323,7 @@
       color: var(--muted);
       font-size: 0.98rem;
     }
-    @media (max-width: 1180px) and (pointer: coarse) {
+    @media (max-width: 1180px) {
       body { overflow: auto; }
       .shop-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
       .equipment-layout { grid-template-columns: 1fr; }
@@ -4368,7 +4350,7 @@
       }
       .gear-tile[data-gear] { grid-area: auto; }
     }
-      @media (max-width: 720px) and (pointer: coarse) {
+      @media (max-width: 720px) {
       body {
         height: 100vh;
         height: 100dvh;
@@ -5962,7 +5944,7 @@
         width: 100%;
       }
     }
-    @media (min-width: 721px), (pointer: fine) {
+    @media (min-width: 721px) {
       .shell {
         width: 100vw;
         height: 100vh;
@@ -6159,7 +6141,7 @@
       .menu-social-button {
         width: min(230px, 22vw, 22dvh);
       }
-      @media (min-width: 721px), (pointer: fine) {
+      @media (min-width: 721px) {
         #shopView .shop-panel {
           padding-top: 0;
         }
@@ -6191,7 +6173,7 @@
         margin-top: 0;
       }
     }
-    @media (max-width: 620px) and (pointer: coarse) {
+    @media (max-width: 620px) {
       .perricasillas-view { padding-top: 48px; }
       .perricasillas-view > .section-topbar { top: 2px; left: 2px; }
       .perricasillas-shell { width: 100%; padding: 0 2px 4px; }
@@ -6208,7 +6190,7 @@
       .perricasillas-reward-card { padding: 26px 18px 22px; }
       .perricasillas-result { min-height: 17px; font-size: .62rem; }
     }
-    @media (max-height: 620px) and (pointer: coarse) {
+    @media (max-height: 620px) {
       .perricasillas-game { padding: 7px; gap: 3px; border-radius: 14px; }
       .perricasillas-title-logo { max-height: 32px; }
       .perricasillas-new-game { min-height: 24px; font-size: .55rem; }
@@ -6243,8 +6225,6 @@
       }
     }
   </style>
-    <link rel="stylesheet" href="./ui-layout-editor.css?v=20260908-66">
-    <link rel="stylesheet" href="./home-layout.css?v=20260907-3">
 </head>
 <body>
   <audio id="backgroundMusic" src="./musica-web.mp3" loop preload="auto"></audio>
@@ -6329,8 +6309,8 @@
                   <button id="mobileLogoutButton" class="mobile-session-menu-item" type="button">Cerrar sesion</button>
                 </div>
               </div>
-              <button id="desktopStackBackButton" class="desktop-stack-back-button" type="button" aria-label="Volver a la pagina anterior" data-hidden="false">
-                <img class="desktop-stack-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt="">
+              <button id="desktopStackBackButton" class="desktop-stack-back-button" type="button" aria-label="Volver a la pagina anterior" data-hidden="true">
+                <img class="desktop-stack-back-icon" src="./assets/boton-atras.png" alt="">
               </button>
               <div class="session-user-card">
                 <span class="session-user-label">Usuario:</span>
@@ -6448,7 +6428,6 @@
                 </div>
               </div>
               <div id="requestsPanelContent" hidden>
-                <button id="openUiLayoutEditorButton" class="buy-button requests-layout-launch" type="button" hidden>Editar interfaz</button>
                 <div class="requests-panel-toolbar">
                   <label class="nick-field" for="requestsPanelStatusFilter">
                     <span class="field-label">Filtro</span>
@@ -6477,27 +6456,25 @@
                   <div class="menu-inner-area">
                     <div class="menu-frame-content">
                       <div class="menu-actions">
-                        <button id="openProfileButton" class="menu-button" type="button" aria-label="Mi perfil"><img src="./assets/boton-miperfil.png?v=20260906-2" alt=""></button>
-                        <button id="openUsersButton" class="menu-button" type="button" aria-label="Usuarios"><img src="./assets/boton-usuarios.png?v=20260906-2" alt=""></button>
-                        <button id="openInventoryButton" class="menu-button" type="button" aria-label="Inventario"><img src="./assets/boton-inventario.png?v=20260906-2" alt=""></button>
-                        <button id="openMinigamesButton" class="menu-button" type="button" aria-label="Minijuegos"><img src="./assets/boton-minijuegos.png?v=20260906-2" alt=""></button>
-                        <button id="openShopButton" class="menu-button" type="button" aria-label="Tienda"><img src="./assets/boton-tienda.png?v=20260906-2" alt=""></button>
+                        <button id="openProfileButton" class="menu-button" type="button" aria-label="Mi perfil"><img src="./assets/boton-miperfil.png" alt=""></button>
+                        <button id="openUsersButton" class="menu-button" type="button" aria-label="Usuarios"><img src="./assets/boton-usuarios.png" alt=""></button>
+                        <button id="openInventoryButton" class="menu-button" type="button" aria-label="Inventario"><img src="./assets/boton-inventario.png" alt=""></button>
+                        <button id="openMinigamesButton" class="menu-button" type="button" aria-label="Minijuegos"><img src="./assets/boton-minijuegos.png" alt=""></button>
+                        <button id="openShopButton" class="menu-button" type="button" aria-label="Tienda"><img src="./assets/boton-tienda.png" alt=""></button>
                       </div>
                     </div>
                   </div>
                 </div>
               <div class="menu-socials">
-                <a id="openTwitchButton" class="menu-social-button" href="https://www.twitch.tv/perrisushi" target="_blank" rel="noopener noreferrer" aria-label="Twitch"><img src="./assets/boton-twitch-l.png?v=20260906-2" alt=""></a>
-                <a id="openYoutubeButton" class="menu-social-button" href="https://www.youtube.com/@perrisushi" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><img src="./assets/boton-youtube-l.png?v=20260906-2" alt=""></a>
+                <a id="openTwitchButton" class="menu-social-button" href="https://www.twitch.tv/perrisushi" target="_blank" rel="noopener noreferrer" aria-label="Twitch"><img src="./assets/boton-twitch-l.png" alt=""></a>
+                <a id="openYoutubeButton" class="menu-social-button" href="https://www.youtube.com/@perrisushi" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><img src="./assets/boton-youtube-l.png" alt=""></a>
               </div>
-              <div class="menu-side-tools">
-                <button id="openChatButton" class="menu-chat-button" type="button" aria-label="Abrir chat">
-                  <img src="./assets/logo-chat.png" alt="">
-                </button>
-                <button id="openRequestsPanelButton" class="menu-requests-button" type="button" aria-label="Abrir panel de solicitudes" hidden>
-                  <span>Panel</span>
-                </button>
-              </div>
+              <button id="openChatButton" class="menu-chat-button" type="button" aria-label="Abrir chat">
+                <img src="./assets/logo-chat.png" alt="">
+              </button>
+              <button id="openRequestsPanelButton" class="menu-requests-button" type="button" aria-label="Abrir panel de solicitudes" hidden>
+                <span>Panel</span>
+              </button>
               </div>
               <section id="dailyPassPanel" class="daily-pass-floating is-cloaked" hidden>
                 <header class="daily-pass-header">
@@ -6522,7 +6499,7 @@
           </section>
         <section id="minigamesView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMenuFromMinigames" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMenuFromMinigames" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="minigames-panel">
             <div class="minigames-grid">
@@ -6546,7 +6523,7 @@
         </section>
         <section id="perriRpgView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMinigamesFromPerriRpg" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMinigamesFromPerriRpg" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="perrirpg-frame-shell">
             <iframe id="perriRpgFrame" class="perrirpg-frame" src="./perrirpg.html?v=20260906-1" title="PerriRPG: Tienda, Equipo y Combate"></iframe>
@@ -6554,7 +6531,7 @@
         </section>
         <section id="perriPetView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMinigamesFromPerriPet" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMinigamesFromPerriPet" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="perripet-frame-shell">
             <iframe id="perriPetFrame" class="perripet-frame" src="./perripet-app/index.html?v=20260906-1" title="PerriPet" allow="fullscreen" allowfullscreen allowtransparency="true"></iframe>
@@ -6567,7 +6544,7 @@
         </section>
         <section id="perriCasillasView" class="content-view view perricasillas-view" hidden>
           <div class="section-topbar">
-            <button id="backToMinigamesFromPerriCasillas" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMinigamesFromPerriCasillas" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="perricasillas-shell">
             <section class="perricasillas-game" aria-labelledby="perriCasillasTitle">
@@ -6595,6 +6572,9 @@
             <section class="users-room-frame">
               <div class="users-room-frame-content">
                 <section class="users-room-panel">
+                  <div class="users-room-panel-top">
+                    <img class="users-room-panel-title" src="./assets/usuarios-registrados.png" alt="Usuarios registrados">
+                  </div>
                   <div class="users-room-table-wrap">
                     <table class="users-room-table">
                       <thead>
@@ -6611,7 +6591,7 @@
               </div>
             </section>
             <div class="users-room-bottom">
-              <button id="backToMenuFromUsers" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+              <button id="backToMenuFromUsers" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
             </div>
           </div>
         </section>
@@ -6679,12 +6659,12 @@
             </footer>
           </div>
           <div class="shop-bottom">
-            <button id="backToMenuFromShop" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMenuFromShop" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
         </section>
         <section id="cardsView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMenuFromCards" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMenuFromCards" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="cards-view">
             <section class="cards-hero">
@@ -6710,7 +6690,7 @@
         </section>
         <section id="chestsView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMenuFromChests" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMenuFromChests" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="chests-view">
             <section class="chests-hero">
@@ -6754,7 +6734,7 @@
         </section>
         <section id="duelView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMenuFromDuel" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMenuFromDuel" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
             <div class="resource-group">
               <div class="duel-resource-wrap">
                 <p class="dust-chip"><img class="chip-icon" src="./assets/duelo.png" alt="Duelos">Duelos <strong id="duelHeroCount">0</strong></p>
@@ -6813,7 +6793,7 @@
         </section>
         <section id="equipmentView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMenuFromEquipment" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMenuFromEquipment" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
             <div class="resource-group">
               <p class="dust-chip"><img class="chip-icon" src="./assets/gemas-moneda.png" alt="Gemas">Gemas <strong id="equipmentDustCount">0</strong></p>
             </div>
@@ -6843,33 +6823,21 @@
           </div>
         </section>
         <section id="inventoryView" class="content-view view" hidden>
-          <img class="inventory-title-image" src="./assets/nombre-inventario.png" alt="Inventario">
           <div class="inventory-panel">
             <div class="section-topbar">
-              <button id="backToMenuFromInventory" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+              <button id="backToMenuFromInventory" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
               <div class="resource-group">
                 <p class="dust-chip"><img class="chip-icon" src="./assets/gemas-moneda.png" alt="Gemas">Gemas <strong id="inventoryDustCount">0</strong></p>
                 <p class="pc-chip">PC <strong id="inventoryPcCount">0</strong></p>
               </div>
             </div>
+            <h1 class="inventory-heading">Inventario</h1>
             <div id="inventoryGrid" class="inventory-grid"></div>
             <footer class="footer">
               <p id="inventoryMessage" class="message"></p>
             </footer>
           </div>
         </section>
-        <div id="inventoryInfoModal" class="notification-modal inventory-info-modal" hidden>
-          <div id="inventoryInfoModalBackdrop" class="notification-modal-backdrop"></div>
-          <article class="notification-modal-card inventory-info-modal-card" role="dialog" aria-modal="true" aria-labelledby="inventoryInfoModalTitle">
-            <button id="inventoryInfoModalClose" class="notification-modal-close" type="button" aria-label="Cerrar informacion del objeto">×</button>
-            <div class="inventory-info-modal-icon">
-              <img id="inventoryInfoModalImage" src="./assets/perricofre1-cerrado.png" alt="">
-            </div>
-            <h2 id="inventoryInfoModalTitle" class="notification-modal-title">Objeto</h2>
-            <p class="inventory-info-modal-quantity">Cantidad: <strong id="inventoryInfoModalCount">0</strong></p>
-            <p id="inventoryInfoModalDescription" class="notification-modal-message"></p>
-          </article>
-        </div>
         <section id="profileView" class="content-view view" hidden>
           <div class="inventory-panel profile-panel">
             <section class="profile-card">
@@ -6914,7 +6882,7 @@
               </div>
             </section>
             <div class="profile-bottom">
-              <button id="backToMenuFromProfile" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+              <button id="backToMenuFromProfile" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
             </div>
           </div>
         </section>
@@ -6927,14 +6895,14 @@
               </div>
             </section>
             <div class="profile-bottom">
-              <button id="backToProfileFromHistory" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+              <button id="backToProfileFromHistory" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
             </div>
           </div>
         </section>
         <section id="personalizeView" class="content-view view" hidden>
           <div class="inventory-panel personalize-panel">
             <div class="section-topbar topbar-back">
-              <button id="backToProfileFromPersonalize" class="secondary-button personalize-back-button" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+              <button id="backToProfileFromPersonalize" class="secondary-button personalize-back-button" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
             </div>
             <div class="personalize-album-wrap" aria-hidden="true">
               <img class="personalize-album" src="./assets/album.png" alt="">
@@ -6982,7 +6950,7 @@
                 </section>
                 <div class="perri-chest-actions">
                   <button id="redeemPerriChestButton" class="buy-button" type="button">Abrir Perricofre</button>
-                  <button id="backToMenuFromPerriChest" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+                  <button id="backToMenuFromPerriChest" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
                 </div>
                 <p id="perriChestMessage" class="message perri-chest-message"></p>
               </article>
@@ -6991,7 +6959,7 @@
         </section>
         <section id="chatView" class="content-view view" hidden>
           <div class="section-topbar">
-            <button id="backToMenuFromChat" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png?v=20260906-2" alt=""></button>
+            <button id="backToMenuFromChat" class="tab-button nav-back" type="button" aria-label="Volver a la pagina anterior"><img class="nav-back-icon" src="./assets/boton-atras.png" alt=""></button>
           </div>
           <div class="web-chat-view">
             <header class="web-chat-header">
@@ -7390,13 +7358,6 @@
     const backToProfileFromPersonalize = document.getElementById("backToProfileFromPersonalize");
     const inventoryGrid = document.getElementById("inventoryGrid");
     const inventoryMessage = document.getElementById("inventoryMessage");
-    const inventoryInfoModal = document.getElementById("inventoryInfoModal");
-    const inventoryInfoModalBackdrop = document.getElementById("inventoryInfoModalBackdrop");
-    const inventoryInfoModalClose = document.getElementById("inventoryInfoModalClose");
-    const inventoryInfoModalImage = document.getElementById("inventoryInfoModalImage");
-    const inventoryInfoModalTitle = document.getElementById("inventoryInfoModalTitle");
-    const inventoryInfoModalCount = document.getElementById("inventoryInfoModalCount");
-    const inventoryInfoModalDescription = document.getElementById("inventoryInfoModalDescription");
     const perriCasillasBoard = document.getElementById("perriCasillasBoard");
     const perriCasillasCoins = document.getElementById("perriCasillasCoins");
     const perriCasillasOpened = document.getElementById("perriCasillasOpened");
@@ -7442,7 +7403,6 @@
     const requestsPanelLockButton = document.getElementById("requestsPanelLockButton");
     const requestsPanelMessage = document.getElementById("requestsPanelMessage");
     const requestsPanelList = document.getElementById("requestsPanelList");
-    const openUiLayoutEditorButton = document.getElementById("openUiLayoutEditorButton");
     const loginCard = document.getElementById("loginCard");
     const loginBrandFrame = document.getElementById("loginBrandFrame");
     const duelHeroCount = document.getElementById("duelHeroCount");
@@ -8367,7 +8327,6 @@
       }
     }
     function renderUsersRoom(users) {
-      if (document.body.classList.contains("ui-layout-editing")) return;
       const entries = Array.isArray(users) ? users : [];
       state.usersRoomEntries = entries;
       const totalUsers = entries.length;
@@ -8504,7 +8463,6 @@
       }
     }
     async function loadUsersRoom() {
-      if (document.body.classList.contains("ui-layout-editing")) return;
       usersRoomTableBody.innerHTML = '<tr><td colspan="3"><div class="users-room-empty">Cargando usuarios...</div></td></tr>';
       const { data } = await callApi({
         action: "publicShopListUsers",
@@ -8538,7 +8496,6 @@
       });
     }
     function renderProfileView() {
-      if (document.body.classList.contains("ui-layout-editing")) return;
       const normalizedNick = String(currentNick || "Sin nick").trim() || "Sin nick";
       profileDisplayName.textContent = normalizedNick.toUpperCase();
       profilePcValue.textContent = String(Math.max(0, Number(currentInventory.pc || 0)));
@@ -9125,7 +9082,7 @@
     let currentAppSection = "";
     function updateDesktopBackButton(sectionName) {
       if (!desktopStackBackButton) return;
-      desktopStackBackButton.dataset.hidden = "false";
+      desktopStackBackButton.dataset.hidden = sectionName === "menu" ? "true" : "false";
       desktopStackBackButton.setAttribute("aria-label", "Volver a la pagina anterior");
     }
     function showAppSection(sectionName, options = {}) {
@@ -9183,7 +9140,6 @@
       renderNotifications();
       renderDailyPassPanel();
       renderRequestsPanelAccessButton();
-      requestAnimationFrame(() => window.PerriUiEditor?.screenChanged?.());
     }
     function goToPreviousAppSection() {
       if (!currentAppSection || currentAppSection === "menu") return;
@@ -9234,7 +9190,6 @@
       buyKeysButton.disabled = true;
     }
     function renderShopItemGrid(target, sourceItems) {
-      if (document.body.classList.contains("ui-layout-editing")) return;
       if (!target) {
         return;
       }
@@ -9248,7 +9203,7 @@
           ? `${owned} / ${maxPerUser} en inventario`
           : isOwned ? "Ya comprada" : "Disponible para compra";
         return `
-          <article class="shop-item-cell${isOwned ? " is-owned" : ""}" data-item-id="${escapeHtml(item.key)}">
+          <article class="shop-item-cell${isOwned ? " is-owned" : ""}">
             <div class="shop-item-panel">
               <div class="item-badge"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>
               <div>
@@ -9568,7 +9523,6 @@
       if (requestsPanelMessage) requestsPanelMessage.textContent = "";
       if (requestsPanelAuth) requestsPanelAuth.hidden = false;
       if (requestsPanelContent) requestsPanelContent.hidden = true;
-      if (openUiLayoutEditorButton) openUiLayoutEditorButton.hidden = true;
     }
     function closeRequestsPanelModal() {
       if (requestsPanelModal) {
@@ -9641,7 +9595,6 @@
           return;
         }
         state.accessRequests = Array.isArray(data.accessRequests) ? data.accessRequests : [];
-        if (openUiLayoutEditorButton) openUiLayoutEditorButton.hidden = false;
         requestsPanelMessage.textContent = "";
         renderRequestsPanelList(state.accessRequests);
       } catch (error) {
@@ -9789,49 +9742,20 @@
       duelStartButton.disabled = state.loading || state.duelTargetLoading || Math.max(0, Number(currentInventory.duelo || 0)) <= 0 || !state.duelTargetToken;
     }
     function renderInventoryView() {
-      if (document.body.classList.contains("ui-layout-editing")) return;
-      const existingCards = Array.from(inventoryGrid.children).filter((element) => element.classList.contains("inventory-card"));
-      const canReuseCards = existingCards.length === inventoryItems.length && existingCards.every((card, index) => (
-        card.dataset.itemId === inventoryItems[index].key
-      ));
-      if (canReuseCards) {
-        existingCards.forEach((card, index) => {
-          const item = inventoryItems[index];
-          const count = Math.max(0, Number(currentInventory[item.key] || 0));
-          const countNode = card.querySelector(".inventory-count");
-          const actionButton = card.querySelector(".inventory-action");
-          if (countNode && countNode.textContent !== String(count)) countNode.textContent = String(count);
-          if (actionButton) actionButton.disabled = count <= 0 || state.loading;
-        });
-        renderDuelView();
-        return;
-      }
       inventoryGrid.innerHTML = inventoryItems.map((item) => `
-        <article class="inventory-card${["perriCofres", "perriCofresMinijuego", "bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? "" : " no-action"}" data-item-id="${escapeHtml(item.key)}" role="button" tabindex="0" aria-label="Ver informacion de ${escapeHtml(item.name)}">
+        <article class="inventory-card">
           <div class="inventory-badge"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>
-          <p class="inventory-count" aria-label="Cantidad: ${Math.max(0, Number(currentInventory[item.key] || 0))}">${Math.max(0, Number(currentInventory[item.key] || 0))}</p>
+          <div>
+            <h2>${escapeHtml(item.name)}</h2>
+            <p class="inventory-count">${Math.max(0, Number(currentInventory[item.key] || 0))}</p>
+          </div>
+          <p class="inventory-copy">${escapeHtml(item.effect)}</p>
           ${item.key === "perriCofres" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-perri-chest" ${Math.max(0, Number(currentInventory.perriCofres || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir Perricofre</button>` : ""}
           ${item.key === "perriCofresMinijuego" ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-minigame-chest" ${Math.max(0, Number(currentInventory.perriCofresMinijuego || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir cofre</button>` : ""}
           ${["bolsaGemas", "bolsaEspecial", "bolsaChatarra", "cajitaArmas"].includes(item.key) ? `<button class="buy-button inventory-action" type="button" data-inventory-action="open-reward-container" data-item-key="${escapeHtml(item.key)}" ${Math.max(0, Number(currentInventory[item.key] || 0)) > 0 && !state.loading ? "" : "disabled"}>Abrir</button>` : ""}
         </article>
       `).join("");
       renderDuelView();
-    }
-    function closeInventoryInfoModal() {
-      inventoryInfoModal.hidden = true;
-    }
-    function openInventoryInfoModal(itemKey) {
-      if (document.body.classList.contains("ui-layout-editing")) return;
-      const item = inventoryItems.find((entry) => entry.key === String(itemKey || ""));
-      if (!item) return;
-      const count = Math.max(0, Number(currentInventory[item.key] || 0));
-      inventoryInfoModalImage.src = item.image;
-      inventoryInfoModalImage.alt = item.name;
-      inventoryInfoModalTitle.textContent = item.name;
-      inventoryInfoModalCount.textContent = String(count);
-      inventoryInfoModalDescription.textContent = item.effect;
-      inventoryInfoModal.hidden = false;
-      inventoryInfoModalClose.focus();
     }
     function getInventoryChestConfig(chestType) {
       const rewardContainerConfigs = {
@@ -10478,18 +10402,16 @@
       inventoryDustCount.textContent = dustValue;
       inventoryPcCount.textContent = String(currentPc);
       sessionNick.textContent = currentNick || "Sin nick";
-      if (!document.body.classList.contains("ui-layout-editing")) {
-        renderShop();
-        renderRandomKeyClaims();
-        renderCardsBoard();
-        renderChestsView();
-        renderDuelView();
-        renderEquipmentView();
-        renderInventoryView();
-        renderProfileView();
-        updateKeySummary();
-        renderPerriCasillas();
-      }
+      renderShop();
+      renderRandomKeyClaims();
+      renderCardsBoard();
+      renderChestsView();
+      renderDuelView();
+      renderEquipmentView();
+      renderInventoryView();
+      renderProfileView();
+      updateKeySummary();
+      renderPerriCasillas();
       sendPerriDuelosSession();
     }
     function openInventoryChestConfirm(chestType = "perriCofres") {
@@ -11571,33 +11493,16 @@
     });
     inventoryGrid.addEventListener("click", (event) => {
       const button = event.target.closest("[data-inventory-action]");
-      if (button) {
-        if (button.dataset.inventoryAction === "open-perri-chest") {
-          openInventoryChestConfirm("perriCofres");
-        }
-        if (button.dataset.inventoryAction === "open-minigame-chest") {
-          openInventoryChestConfirm("perriCofresMinijuego");
-        }
-        if (button.dataset.inventoryAction === "open-reward-container") {
-          openInventoryChestConfirm(String(button.dataset.itemKey || ""));
-        }
-        return;
+      if (!button) return;
+      if (button.dataset.inventoryAction === "open-perri-chest") {
+        openInventoryChestConfirm("perriCofres");
       }
-      const card = event.target.closest(".inventory-card[data-item-id]");
-      if (card) openInventoryInfoModal(card.dataset.itemId);
-    });
-    inventoryGrid.addEventListener("keydown", (event) => {
-      if (event.target.closest("[data-inventory-action]")) return;
-      if (event.key !== "Enter" && event.key !== " ") return;
-      const card = event.target.closest(".inventory-card[data-item-id]");
-      if (!card) return;
-      event.preventDefault();
-      openInventoryInfoModal(card.dataset.itemId);
-    });
-    inventoryInfoModalClose.addEventListener("click", closeInventoryInfoModal);
-    inventoryInfoModalBackdrop.addEventListener("click", closeInventoryInfoModal);
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && !inventoryInfoModal.hidden) closeInventoryInfoModal();
+      if (button.dataset.inventoryAction === "open-minigame-chest") {
+        openInventoryChestConfirm("perriCofresMinijuego");
+      }
+      if (button.dataset.inventoryAction === "open-reward-container") {
+        openInventoryChestConfirm(String(button.dataset.itemKey || ""));
+      }
     });
     gearGrid.addEventListener("click", (event) => {
       const button = event.target.closest(".gear-tile");
@@ -11608,7 +11513,7 @@
       renderEquipmentView();
     });
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
+      if (document.visibilityState === "visible" && state.sessionToken) {
         refreshInventory(false);
         refreshNotifications();
         if (!chatView.hidden) {
@@ -11617,7 +11522,7 @@
       }
     });
     window.addEventListener("pageshow", () => {
-      if (state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
+      if (state.sessionToken) {
         refreshInventory(false);
         refreshNotifications();
         if (!chatView.hidden) {
@@ -11626,17 +11531,17 @@
       }
     });
     window.setInterval(() => {
-      if (document.visibilityState === "visible" && state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
+      if (document.visibilityState === "visible" && state.sessionToken) {
         refreshInventory(false);
       }
     }, INVENTORY_REFRESH_MS);
     window.setInterval(() => {
-      if (document.visibilityState === "visible" && state.sessionToken && !document.body.classList.contains("ui-layout-editing")) {
+      if (document.visibilityState === "visible" && state.sessionToken) {
         refreshNotifications();
       }
     }, NOTIFICATION_REFRESH_MS);
     window.setInterval(() => {
-      if (document.visibilityState === "visible" && state.sessionToken && !chatView.hidden && !document.body.classList.contains("ui-layout-editing")) {
+      if (document.visibilityState === "visible" && state.sessionToken && !chatView.hidden) {
         loadWebChatMessages(true);
       }
     }, CHAT_REFRESH_MS);
@@ -11667,10 +11572,6 @@
     requestsPanelUnlockButton.addEventListener("click", unlockRequestsPanel);
     requestsPanelRefreshButton.addEventListener("click", loadRequestsPanelList);
     requestsPanelStatusFilter.addEventListener("change", loadRequestsPanelList);
-    openUiLayoutEditorButton.addEventListener("click", () => {
-      if (!state.requestsPanelUnlocked || !state.requestsPanelKey || !isRequestsPanelOwner()) return;
-      window.PerriUiEditor?.open();
-    });
     requestsPanelKeyInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -12025,7 +11926,7 @@
     });
     perriCasillasNewGame.addEventListener("click", resetPerriCasillasBoard);
     window.setInterval(() => {
-      if (perriCasillasView && !perriCasillasView.hidden && state.perriCasillasCooldownUntil && !document.body.classList.contains("ui-layout-editing")) {
+      if (perriCasillasView && !perriCasillasView.hidden && state.perriCasillasCooldownUntil) {
         renderPerriCasillas();
       }
     }, 1000);
@@ -12141,6 +12042,5 @@
       }
     });
   </script>
-    <script src="./ui-layout-editor.js?v=20260908-72"></script>
 </body>
 </html>
