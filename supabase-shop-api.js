@@ -158,6 +158,8 @@ const FALLBACK_LOGO_ID_SET = new Set(LOGO_CATALOG_SEED.map((entry) => entry.id))
 let logoCatalogSeedAttempted = false;
 let logoCatalogCache = [];
 let logoCatalogCacheAt = 0;
+let menuRankingCache = [];
+let menuRankingCacheAt = 0;
 
 const CHEST_REWARD_CONFIG = [
   {
@@ -377,7 +379,7 @@ const CHAT_MESSAGE_MAX_LENGTH = 220;
 const CHAT_MESSAGE_COOLDOWN_MS = 5000;
 const CHAT_MESSAGE_LIST_LIMIT = 40;
 const CHAT_REACTION_KEYS = ["corazon", "khe", "like", "llorar", "nolike", "risa", "saludo"];
-const CHAT_PRESENCE_TTL_MS = 20000;
+const CHAT_PRESENCE_TTL_MS = 45000;
 const PERRI_CHEST_GUARANTEED_REWARDS = {
   monedas: [
     { quantity: 1, weight: 95 },
@@ -664,7 +666,7 @@ async function ensureLogoCatalogSeed() {
 
 async function listLogoCatalog() {
   const now = Date.now();
-  if (logoCatalogCache.length && (now - logoCatalogCacheAt) < 30000) {
+  if (logoCatalogCache.length && (now - logoCatalogCacheAt) < 300000) {
     return logoCatalogCache;
   }
 
@@ -1285,10 +1287,12 @@ function mapChatMessageForClient(message, viewerNick = "") {
   };
 }
 
-async function listChatMessages(limit = CHAT_MESSAGE_LIST_LIMIT, viewerNick = "") {
+async function listChatMessages(limit = CHAT_MESSAGE_LIST_LIMIT, viewerNick = "", afterCreatedAt = "") {
   const normalizedLimit = Math.max(1, Math.min(CHAT_MESSAGE_LIST_LIMIT, Math.floor(Number(limit) || CHAT_MESSAGE_LIST_LIMIT)));
+  const normalizedAfterCreatedAt = String(afterCreatedAt || "").trim();
   const rows = await fetchRows("shop_chat_messages", {
     select: "id,nick,logo_id,message,liked_by_nicks,reactions,reply_to_message_id,created_at",
+    filters: normalizedAfterCreatedAt ? { created_at: `gte.${normalizedAfterCreatedAt}` } : undefined,
     orderBy: "created_at.desc",
     limit: normalizedLimit
   });
@@ -1330,7 +1334,7 @@ async function countActiveChatUsers() {
   return rows.length;
 }
 
-async function publicShopListChatMessages(sessionToken) {
+async function publicShopListChatMessages(sessionToken, afterCreatedAt = "") {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) {
     return sessionResult;
@@ -1341,7 +1345,8 @@ async function publicShopListChatMessages(sessionToken) {
   return {
     ok: true,
     nick: sessionResult.nick,
-    messages: await listChatMessages(CHAT_MESSAGE_LIST_LIMIT, sessionResult.nick),
+    messages: await listChatMessages(CHAT_MESSAGE_LIST_LIMIT, sessionResult.nick, afterCreatedAt),
+    incremental: Boolean(String(afterCreatedAt || "").trim()),
     activeChatUsers: await countActiveChatUsers()
   };
 }
@@ -1866,18 +1871,24 @@ async function syncAchievementSystem(nick, inventory, profile) {
 }
 
 async function getMenuRanking() {
+  const now = Date.now();
+  if (menuRankingCache.length && (now - menuRankingCacheAt) < 60000) {
+    return menuRankingCache;
+  }
   const rows = await fetchRows("shop_inventories", {
     select: "nick,pc",
     orderBy: "pc.desc,nick.asc",
     limit: 10
   });
 
-  return rows
+  menuRankingCache = rows
     .map((row) => ({
       nick: normalizeNick(row.nick),
       pc: toNumber(row.pc)
     }))
     .filter((entry) => entry.nick);
+  menuRankingCacheAt = now;
+  return menuRankingCache;
 }
 
 async function countAvailableRandomKeys() {
@@ -3624,6 +3635,18 @@ async function publicShopRefresh(sessionToken) {
   return {
     ok: true,
     ...(await buildShopState(sessionResult.nick))
+  };
+}
+
+async function publicShopRefreshInventory(sessionToken) {
+  const sessionResult = await requireSession(sessionToken);
+  if (!sessionResult.ok) {
+    return sessionResult;
+  }
+  return {
+    ok: true,
+    nick: sessionResult.nick,
+    inventory: await getInventory(sessionResult.nick)
   };
 }
 
@@ -6502,6 +6525,28 @@ async function publicShopGetNotifications(sessionToken) {
   };
 }
 
+async function publicShopGetNotificationStatus(sessionToken) {
+  const sessionResult = await requireSession(sessionToken);
+  if (!sessionResult.ok) {
+    return sessionResult;
+  }
+
+  const [unreadNotificationCount, latestNotification] = await Promise.all([
+    countUnreadNotificationsForNick(sessionResult.nick),
+    fetchRow("shop_notifications", {
+      select: "created_at",
+      filters: { nick: `eq.${normalizeNick(sessionResult.nick)}` },
+      orderBy: "created_at.desc"
+    })
+  ]);
+  return {
+    ok: true,
+    nick: sessionResult.nick,
+    unreadNotificationCount,
+    latestNotificationAt: String(latestNotification?.created_at || "")
+  };
+}
+
 async function publicShopReadNotification(sessionToken, notificationId) {
   const sessionResult = await requireSession(sessionToken);
   if (!sessionResult.ok) {
@@ -6589,6 +6634,8 @@ async function handleShopAction(payload) {
       return publicShopLogin(payload.nick, payload.accessCode);
     case "publicShopRefresh":
       return publicShopRefresh(payload.sessionToken);
+    case "publicShopRefreshInventory":
+      return publicShopRefreshInventory(payload.sessionToken);
     case "publicShopGetProfile":
       return publicShopGetProfile(payload.sessionToken);
     case "publicShopRpgState":
@@ -6615,6 +6662,8 @@ async function handleShopAction(payload) {
       return publicShopRpgClearCombat(payload.sessionToken);
     case "publicShopGetNotifications":
       return publicShopGetNotifications(payload.sessionToken);
+    case "publicShopGetNotificationStatus":
+      return publicShopGetNotificationStatus(payload.sessionToken);
     case "publicShopReadNotification":
       return publicShopReadNotification(payload.sessionToken, payload.notificationId);
     case "publicShopReadAllNotifications":
@@ -6686,7 +6735,7 @@ async function handleShopAction(payload) {
     case "publicShopPerformAttack":
       return publicShopPerformAttack(payload.sessionToken, payload.targetToken);
       case "publicShopListChatMessages":
-        return publicShopListChatMessages(payload.sessionToken);
+        return publicShopListChatMessages(payload.sessionToken, payload.afterCreatedAt);
       case "publicShopSendChatMessage":
         return publicShopSendChatMessage(payload.sessionToken, payload.message, payload.replyToMessageId);
       case "publicShopLeaveChat":

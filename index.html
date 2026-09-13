@@ -7179,9 +7179,9 @@
     const SESSION_TOKEN_STORAGE_KEY = STORAGE_KEYS.sessionToken;
     const USER_LOGO_STORAGE_KEY = STORAGE_KEYS.selectedLogoMap;
     const MUSIC_ENABLED_STORAGE_KEY = "perri-shop-music-enabled";
-    const INVENTORY_REFRESH_MS = 30000;
-    const NOTIFICATION_REFRESH_MS = 5000;
-    const CHAT_REFRESH_MS = 5000;
+    const INVENTORY_REFRESH_MS = 120000;
+    const NOTIFICATION_REFRESH_MS = 30000;
+    const CHAT_REFRESH_MS = 15000;
     const PERRI_CHEST_QUERY_PARAM = "perricofre";
     const ACCOUNT_ACTIVATION_QUERY_PARAM = "activar";
     const PERRI_CASILLAS_TOTAL = 36;
@@ -7208,6 +7208,7 @@
       logoCatalog: [],
       notifications: [],
       unreadNotificationCount: 0,
+      latestNotificationAt: "",
       activeNotificationId: "",
       notificationsLoading: false,
       dailyFreePlays: {
@@ -7223,6 +7224,7 @@
       chatNextMessageId: 1,
       chatMessagesLoading: false,
       chatMessagesLoaded: false,
+      chatIncrementalPolls: 0,
       chatSending: false,
       chatForceScrollToBottom: false,
       chatSelectedMessageId: "",
@@ -7906,15 +7908,36 @@
         .map((entry) => normalizeNotificationEntry(entry))
         .filter(Boolean);
       state.unreadNotificationCount = Math.max(0, Number(unreadNotificationCount || 0));
+      state.latestNotificationAt = state.notifications.reduce((latest, entry) => {
+        const createdAt = String(entry.createdAt || "");
+        return createdAt > latest ? createdAt : latest;
+      }, "");
       renderNotifications();
     }
-    async function refreshNotifications() {
+    async function refreshNotifications(statusOnly = false) {
       if (!state.sessionToken || state.notificationsLoading) {
         return;
       }
 
       state.notificationsLoading = true;
       try {
+        if (statusOnly) {
+          const { data: statusData } = await callApi({
+            action: "publicShopGetNotificationStatus",
+            sessionToken: state.sessionToken
+          });
+          if (!statusData || !statusData.ok) {
+            if (statusData?.error === "missing_session" || statusData?.error === "session_expired") {
+              logout("La sesion ha caducado. Vuelve a entrar.");
+            }
+            return;
+          }
+          const nextUnreadCount = Math.max(0, Number(statusData.unreadNotificationCount || 0));
+          const nextLatestAt = String(statusData.latestNotificationAt || "");
+          if (nextUnreadCount === state.unreadNotificationCount && nextLatestAt === state.latestNotificationAt) {
+            return;
+          }
+        }
         const { data } = await callApi({
           action: "publicShopGetNotifications",
           sessionToken: state.sessionToken
@@ -8173,6 +8196,21 @@
       state.chatMessagesLoaded = true;
       renderWebChatMessages();
     }
+    function mergeChatMessages(messages, activeChatUsers) {
+      const mergedById = new Map(state.chatMessages.map((entry) => [entry.id, entry]));
+      (Array.isArray(messages) ? messages : [])
+        .map((entry) => normalizeChatMessageEntry(entry))
+        .filter(Boolean)
+        .forEach((entry) => mergedById.set(entry.id, entry));
+      state.chatMessages = Array.from(mergedById.values())
+        .sort((left, right) => String(left.createdAt).localeCompare(String(right.createdAt)))
+        .slice(-40);
+      if (typeof activeChatUsers !== "undefined") {
+        updateWebChatStatusCount(activeChatUsers);
+      }
+      state.chatMessagesLoaded = true;
+      renderWebChatMessages();
+    }
     function findChatMessageById(messageId) {
       return state.chatMessages.find((message) => message.id === messageId) || null;
     }
@@ -8293,6 +8331,13 @@
         return;
       }
 
+      const useIncrementalLoad = Boolean(
+        silent
+        && state.chatMessagesLoaded
+        && state.chatMessages.length
+        && state.chatIncrementalPolls < 7
+      );
+      const latestMessage = useIncrementalLoad ? state.chatMessages[state.chatMessages.length - 1] : null;
       state.chatMessagesLoading = true;
       if (!silent && webChatFeed && !state.chatMessagesLoaded) {
         webChatFeed.innerHTML = '<p class="history-empty">Cargando chat...</p>';
@@ -8301,7 +8346,8 @@
       try {
         const { data } = await callApi({
           action: "publicShopListChatMessages",
-          sessionToken: state.sessionToken
+          sessionToken: state.sessionToken,
+          afterCreatedAt: latestMessage ? latestMessage.createdAt : ""
         });
 
         if (!data || !data.ok) {
@@ -8315,7 +8361,13 @@
           return;
         }
 
-        applyChatMessages(data.messages, data.activeChatUsers);
+        if (data.incremental) {
+          mergeChatMessages(data.messages, data.activeChatUsers);
+          state.chatIncrementalPolls += 1;
+        } else {
+          applyChatMessages(data.messages, data.activeChatUsers);
+          state.chatIncrementalPolls = 0;
+        }
       } catch (error) {
         if (!silent && webChatFeed && !state.chatMessagesLoaded) {
           webChatFeed.innerHTML = '<p class="history-empty">No se pudo cargar el chat.</p>';
@@ -10828,6 +10880,7 @@
       state.activityHistory = [];
       state.notifications = [];
       state.unreadNotificationCount = 0;
+      state.latestNotificationAt = "";
       state.activeNotificationId = "";
       state.notificationsLoading = false;
       state.chestResult = null;
@@ -10852,6 +10905,7 @@
       state.chatReplyToId = null;
       state.chatMessagesLoading = false;
       state.chatMessagesLoaded = false;
+      state.chatIncrementalPolls = 0;
       state.chatSending = false;
       state.requestsPanelUnlocked = false;
       state.requestsPanelKey = "";
@@ -11029,7 +11083,7 @@
         cancelRequestButton.disabled = false;
       }
     }
-    async function refreshInventory(showChecking = false) {
+    async function refreshInventory(showChecking = false, lightweight = false) {
       if (!state.sessionToken) {
         return;
       }
@@ -11040,7 +11094,7 @@
 
       try {
         const { data } = await callApi({
-          action: "publicShopRefresh",
+          action: lightweight ? "publicShopRefreshInventory" : "publicShopRefresh",
           sessionToken: state.sessionToken
         });
 
@@ -11054,16 +11108,18 @@
         }
 
           setLoggedNick(data.nick || currentNick);
-          applyLogoCatalog(data.logoCatalog || []);
-          applyProfile(data.profile || null, data.achievementSystem || null);
-          applyDailyFreePlays(data.dailyFreePlays || null);
-          applyDailyPassState(data.dailyPass || null);
           updateInventory(data.inventory || {});
-          updateMenuRanking(data.menuRanking || []);
-          updateRandomKeyTickets(data.randomKeyTickets || []);
-          updateRandomKeyClaims(data.randomKeyClaims || []);
-          updateAvailableRandomKeys(data.availableRandomKeys || 0);
-          applyNotifications(data.notifications || [], data.unreadNotificationCount || 0);
+          if (!lightweight) {
+            applyLogoCatalog(data.logoCatalog || []);
+            applyProfile(data.profile || null, data.achievementSystem || null);
+            applyDailyFreePlays(data.dailyFreePlays || null);
+            applyDailyPassState(data.dailyPass || null);
+            updateMenuRanking(data.menuRanking || []);
+            updateRandomKeyTickets(data.randomKeyTickets || []);
+            updateRandomKeyClaims(data.randomKeyClaims || []);
+            updateAvailableRandomKeys(data.availableRandomKeys || 0);
+            applyNotifications(data.notifications || [], data.unreadNotificationCount || 0);
+          }
           updateStatus("online");
           if (!duelView.hidden && !state.duelTargetToken) refreshDuelTarget();
       } catch (error) {
@@ -11601,12 +11657,12 @@
     });
     window.setInterval(() => {
       if (document.visibilityState === "visible" && state.sessionToken) {
-        refreshInventory(false);
+        refreshInventory(false, true);
       }
     }, INVENTORY_REFRESH_MS);
     window.setInterval(() => {
       if (document.visibilityState === "visible" && state.sessionToken) {
-        refreshNotifications();
+        refreshNotifications(true);
       }
     }, NOTIFICATION_REFRESH_MS);
     window.setInterval(() => {
