@@ -10,8 +10,9 @@ const REQUEST_PANEL_OWNER_NICK = "Perrisushi";
 const DEFAULT_LOGO_ID = "logo-pelusa-1";
 const DEFAULT_LOGO_ASSET_PATH = "./assets/logos-usuario/logo-pelusa-1.png";
 const APP_TIMEZONE = "Europe/Madrid";
-const DAILY_PASS_START_DAY = "2026-05-05";
-const DAILY_PASS_END_DAY = "2026-06-15";
+const DAILY_PASS_SEASON_ID = "2026-09-revivir-pet";
+const DAILY_PASS_START_DAY = "2026-09-13";
+const DAILY_PASS_END_DAY = "2026-10-24";
 const ACCESS_REQUEST_STATUS = {
   pending: "pending",
   approved: "approved",
@@ -57,7 +58,8 @@ const INVENTORY_KEYS = [
   "bolsaGemas",
   "bolsaEspecial",
   "bolsaChatarra",
-  "cajitaArmas"
+  "cajitaArmas",
+  "revivirPet"
 ];
 
 const SPECIAL_ITEM_KEYS = new Set([
@@ -66,7 +68,8 @@ const SPECIAL_ITEM_KEYS = new Set([
   "gemaExperiencia",
   "incubadoraMejorada",
   "pocionDivina",
-  "relojCronotiempo"
+  "relojCronotiempo",
+  "revivirPet"
 ]);
 
 const SPECIAL_REWARD_ITEMS = [
@@ -313,36 +316,36 @@ const PERRI_CASILLAS_REWARDS = [
 const PERRI_CASILLAS_TOTAL = PERRI_CASILLAS_REWARDS.reduce((total, reward) => total + reward.count, 0);
 
 const DAILY_PASS_REWARDS = [
-  { day: 1, items: [{ type: "perriCofres", qty: 1 }, { type: "perriCofresMinijuego", qty: 1 }] },
-  { day: 2, items: [{ type: "perricita", qty: 2 }] },
-  { day: 3, items: [{ type: "duelo", qty: 1 }] },
-  { day: 4, items: [{ type: "monedas", qty: 2 }] },
-  { day: 5, items: [{ type: "polvoGema", qty: 300 }] },
+  { day: 1, items: [{ type: "monedas", qty: 1 }] },
+  { day: 2, items: [{ type: "bolsaChatarra", qty: 1 }] },
+  { day: 3, items: [{ type: "polvoGema", qty: 50 }] },
+  { day: 4, items: [{ type: "revivirPet", qty: 1 }] },
+  { day: 5, items: [{ type: "monedas", qty: 1 }] },
   { day: 6, items: [{ type: "perriCofres", qty: 1 }] },
-  { day: 7, items: [{ type: "perricita", qty: 1 }] },
-  { day: 8, items: [{ type: "monedas", qty: 3 }] },
-  { day: 9, items: [{ type: "polvoGema", qty: 400 }] },
-  { day: 10, items: [{ type: "perriCofresMinijuego", qty: 2 }] },
-  { day: 11, items: [{ type: "duelo", qty: 1 }] },
-  { day: 12, items: [{ type: "perricita", qty: 1 }] },
-  { day: 13, items: [{ type: "monedas", qty: 4 }] },
-  { day: 14, items: [{ type: "perricita", qty: 1 }] },
-  { day: 15, items: [{ type: "duelo", qty: 1 }] },
-  { day: 16, items: [{ type: "polvoGema", qty: 500 }] },
-  { day: 17, items: [{ type: "perriCofres", qty: 2 }] },
-  { day: 18, items: [{ type: "perricita", qty: 1 }] },
-  { day: 19, items: [{ type: "monedas", qty: 5 }] },
-  { day: 20, items: [{ type: "duelo", qty: 2 }] },
-  { day: 21, items: [{ type: "specialLogo", qty: 1 }] },
-  { day: 22, items: [{ type: "perriCofres", qty: 1 }] },
-  { day: 23, items: [{ type: "polvoGema", qty: 700 }] },
-  { day: 24, items: [{ type: "perricita", qty: 2 }] },
-  { day: 25, items: [{ type: "duelo", qty: 1 }] },
-  { day: 26, items: [{ type: "monedas", qty: 6 }] },
-  { day: 27, items: [{ type: "perriCofres", qty: 1 }, { type: "perriCofresMinijuego", qty: 1 }] },
-  { day: 28, items: [{ type: "duelo", qty: 2 }] },
-  { day: 29, items: [{ type: "polvoGema", qty: 800 }] },
-  { day: 30, items: [{ type: "specialFrame", qty: 1 }] }
+  { day: 7, items: [{ type: "bolsaChatarra", qty: 1 }] },
+  { day: 8, items: [{ type: "polvoGema", qty: 75 }] },
+  { day: 9, items: [{ type: "bolsaEspecial", qty: 1 }] },
+  { day: 10, items: [{ type: "monedas", qty: 2 }] },
+  { day: 11, items: [{ type: "bolsaChatarra", qty: 1 }] },
+  { day: 12, items: [{ type: "cajitaArmas", qty: 1 }] },
+  { day: 13, items: [{ type: "polvoGema", qty: 75 }] },
+  { day: 14, items: [{ type: "perriCofres", qty: 1 }] },
+  { day: 15, items: [{ type: "specialLogo", qty: 1 }] },
+  { day: 16, items: [{ type: "revivirPet", qty: 1 }] },
+  { day: 17, items: [{ type: "bolsaChatarra", qty: 1 }] },
+  { day: 18, items: [{ type: "polvoGema", qty: 100 }] },
+  { day: 19, items: [{ type: "perriCofres", qty: 1 }] },
+  { day: 20, items: [{ type: "bolsaGemas", qty: 1 }] },
+  { day: 21, items: [{ type: "monedas", qty: 1 }] },
+  { day: 22, items: [{ type: "bolsaChatarra", qty: 1 }] },
+  { day: 23, items: [{ type: "bolsaEspecial", qty: 1 }] },
+  { day: 24, items: [{ type: "polvoGema", qty: 100 }] },
+  { day: 25, items: [{ type: "perriCofres", qty: 1 }] },
+  { day: 26, items: [{ type: "monedas", qty: 2 }] },
+  { day: 27, items: [{ type: "bolsaEspecial", qty: 1 }] },
+  { day: 28, items: [{ type: "bolsaGemas", qty: 1 }] },
+  { day: 29, items: [{ type: "perriCofres", qty: 2 }] },
+  { day: 30, items: [{ type: "specialLogo", qty: 1 }, { type: "monedas", qty: 3 }, { type: "bolsaGemas", qty: 1 }, { type: "bolsaEspecial", qty: 1 }] }
 ];
 
 const ACCOUNT_ACTIVATION_STATUS = {
@@ -460,8 +463,23 @@ function mapDailyPassRewardItemForClient(item) {
       return { type: "polvoGema", qty, label: "Gemas", icon: "./assets/gemas-moneda.png" };
     case "perricita":
       return { type: "perricita", qty, label: "Perricita", icon: "./assets/perricita.png" };
+    case "bolsaGemas":
+      return { type: "bolsaGemas", qty, label: "Bolsa de Gemas", icon: "./assets/objetos-especiales/bolsa-gemas.png" };
+    case "bolsaEspecial":
+      return { type: "bolsaEspecial", qty, label: "Bolsa Especial", icon: "./assets/objetos-especiales/bolsa-especial.png" };
+    case "bolsaChatarra":
+      return { type: "bolsaChatarra", qty, label: "Bolsa de Chatarra", icon: "./assets/objetos-especiales/saco-chatarra.png" };
+    case "cajitaArmas":
+      return { type: "cajitaArmas", qty, label: "Cajita de Armas", icon: "./assets/objetos-especiales/cajita-armas.png" };
+    case "revivirPet":
+      return { type: "revivirPet", qty, label: "Revivir Pet", icon: "./assets/objetos-especiales/revivir-pet.png" };
     case "specialLogo":
-      return { type: "specialLogo", qty, label: "Logo especial", icon: "./assets/logos-usuario/logo-perriweb1.png" };
+      return {
+        type: "specialLogo",
+        qty,
+        label: String(item?.label || "Perrilogo aleatorio"),
+        icon: String(item?.icon || "./assets/logos-usuario/logo-perriweb1.png")
+      };
     case "specialFrame":
       return { type: "specialFrame", qty, label: "Marco especial", icon: "./assets/marco-logo-2026.png" };
     default:
@@ -1518,8 +1536,10 @@ function normalizeDailyPassClaimedDays(value) {
 
 function buildDailyPassState(row) {
   const todayKey = getAppDayKey();
-  const claimedDays = normalizeDailyPassClaimedDays(row?.daily_pass_claimed_days);
-  const lastClaimedDay = String(row?.daily_pass_last_claim_day || "").trim();
+  const storedSeasonId = String(row?.daily_pass_season_id || "").trim();
+  const isCurrentSeason = storedSeasonId === DAILY_PASS_SEASON_ID;
+  const claimedDays = isCurrentSeason ? normalizeDailyPassClaimedDays(row?.daily_pass_claimed_days) : 0;
+  const lastClaimedDay = isCurrentSeason ? String(row?.daily_pass_last_claim_day || "").trim() : "";
   const active = todayKey >= DAILY_PASS_START_DAY && todayKey <= DAILY_PASS_END_DAY;
   const expired = todayKey > DAILY_PASS_END_DAY;
   const notStarted = todayKey < DAILY_PASS_START_DAY;
@@ -1527,6 +1547,7 @@ function buildDailyPassState(row) {
   const canClaimToday = active && !completed && lastClaimedDay !== todayKey;
   const currentRewardDay = canClaimToday ? (claimedDays + 1) : 0;
   return {
+    seasonId: DAILY_PASS_SEASON_ID,
     startDay: DAILY_PASS_START_DAY,
     endDay: DAILY_PASS_END_DAY,
     todayKey,
@@ -1562,30 +1583,40 @@ function buildDailyPassInventoryDelta(items = []) {
   return (Array.isArray(items) ? items : []).reduce((delta, item) => {
     const normalizedType = String(item?.type || "").trim();
     const qty = Math.max(1, Math.floor(Number(item?.qty || 1)));
-    if (["perriCofres", "perriCofresMinijuego", "duelo", "monedas", "polvoGema", "perricita"].includes(normalizedType)) {
+    if (INVENTORY_KEYS.includes(normalizedType)) {
       return mergeInventoryDelta(delta, { [normalizedType]: qty });
     }
     return delta;
   }, {});
 }
 
-function applyDailyPassProfileRewards(profile, items = []) {
+function resolveDailyPassProfileRewards(profile, items = []) {
   const nextProfile = profile && typeof profile === "object" ? { ...profile } : defaultProfile("");
   const achievements = new Set(Array.isArray(nextProfile.achievements) ? nextProfile.achievements.map((entry) => String(entry || "").trim()).filter(Boolean) : []);
   const ownedLogoIds = new Set(Array.isArray(nextProfile.ownedLogoIds) ? nextProfile.ownedLogoIds.map((entry) => String(entry || "").trim()).filter(Boolean) : []);
-  (Array.isArray(items) ? items : []).forEach((item) => {
+  const resolvedItems = (Array.isArray(items) ? items : []).map((item) => {
     const normalizedType = String(item?.type || "").trim();
     if (normalizedType === "specialLogo") {
-      achievements.add("Logo especial del pase diario");
-      ownedLogoIds.add("logo-perriweb1");
+      const availableLogos = LOGO_CATALOG_SEED.filter((entry) => !ownedLogoIds.has(entry.id));
+      const logoPool = availableLogos.length ? availableLogos : LOGO_CATALOG_SEED;
+      const selectedLogo = logoPool[Math.floor(Math.random() * logoPool.length)] || LOGO_CATALOG_SEED[0];
+      if (selectedLogo) ownedLogoIds.add(selectedLogo.id);
+      achievements.add("Perrilogo aleatorio del pase diario");
+      return {
+        ...item,
+        logoId: selectedLogo?.id || "",
+        label: selectedLogo ? `Perrilogo: ${selectedLogo.name}` : "Perrilogo aleatorio",
+        icon: selectedLogo?.src || "./assets/logos-usuario/logo-perriweb1.png"
+      };
     }
     if (normalizedType === "specialFrame") {
       achievements.add("Marco especial del pase diario");
     }
+    return { ...item };
   });
   nextProfile.achievements = Array.from(achievements);
   nextProfile.ownedLogoIds = Array.from(ownedLogoIds);
-  return nextProfile;
+  return { profile: nextProfile, items: resolvedItems };
 }
 
 function formatDailyPassRewardSummary(items = []) {
@@ -4020,12 +4051,26 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       + (positiveDelta("egg-green") * 500)
       + (positiveDelta("food-normal") * 10)
       + (positiveDelta("food-prime") * 100);
-    const reviveGemSpend = previousPet
+    const isRevive = previousPet
       && previousPet.hasActiveCreature !== false
       && Number(previousPet.hp) <= 0
-      && Number(incomingPet.hp) > 0
-      ? 5000
-      : 0;
+      && Number(incomingPet.hp) > 0;
+    const incomingReviveItems = toNumber(incomingPet?.specialInventory?.revivirPet);
+    const previousReviveCredit = String(previousPet?.reviveItemCredit || "").trim();
+    const incomingReviveCredit = String(incomingPet?.reviveItemCredit || "").trim();
+    const reviveItemWasConsumed = Boolean(
+      isRevive
+      && previousReviveCredit
+      && incomingReviveCredit === previousReviveCredit
+      && toNumber(inventory.revivirPet) === incomingReviveItems
+    );
+    if (isRevive && incomingReviveCredit && !reviveItemWasConsumed) {
+      return { ok: false, error: "invalid_perripet_revive_credit" };
+    }
+    if (reviveItemWasConsumed) {
+      delete incomingPet.reviveItemCredit;
+    }
+    const reviveGemSpend = isRevive && !reviveItemWasConsumed ? 5000 : 0;
     const totalGemSpend = requiredGemSpend + reviveGemSpend;
     if (unverifiedHarvest || unverifiedLoot || totalGemSpend > toNumber(inventory.polvoGema)) {
       return { ok: false, error: "invalid_perripet_economy" };
@@ -4118,6 +4163,7 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       polvoGema: safeSnapshot.pet.coins,
       perriCoins: safeSnapshot.pet.perriCoins,
       scrap: safeSnapshot.pet.scrap,
+      reviveItemCredit: String(safeSnapshot.pet.reviveItemCredit || ""),
       revision: serverRevision,
       perriPetInventory: syncedPerriPetInventory,
       rpgInventory: syncedRpgInventory
@@ -4254,17 +4300,36 @@ async function publicShopConsumeSpecialItem(sessionToken, itemKey) {
     if (currentQuantity <= 0) {
       return { ok: false, error: "item_not_owned", inventory };
     }
+    let reviveItemCredit = "";
+    let storedPerriPetState = null;
+    if (normalizedItemKey === "revivirPet") {
+      storedPerriPetState = await getPerriPetStoredState(sessionResult.nick);
+      const storedPet = storedPerriPetState?.snapshot?.pet;
+      if (!storedPet || storedPet.hasActiveCreature === false || Number(storedPet.hp) > 0) {
+        return { ok: false, error: "pet_is_not_dead", inventory };
+      }
+      reviveItemCredit = crypto.randomUUID();
+    }
     const fields = {
       [normalizedItemKey]: currentQuantity - 1
     };
     const savedInventory = await patchInventoryFields(sessionResult.nick, fields);
+    if (reviveItemCredit && storedPerriPetState?.snapshot) {
+      await savePerriPetStateRow(sessionResult.nick, {
+        ...storedPerriPetState.snapshot,
+        pet: {
+          ...(storedPerriPetState.snapshot.pet || {}),
+          reviveItemCredit
+        }
+      });
+    }
     await appendActivity(
       sessionResult.nick,
       "Objeto especial",
       `${normalizedItemKey} usado`,
       "Consumo: 1"
     );
-    return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory };
+    return { ok: true, itemKey: normalizedItemKey, inventory: savedInventory, reviveItemCredit };
   });
 }
 
@@ -5781,12 +5846,14 @@ async function publicShopClaimDailyPass(sessionToken, claimId) {
 
     const inventory = await getInventory(sessionResult.nick);
     const profile = await getProfile(sessionResult.nick);
-    const nextInventory = applyInventoryDelta(inventory, buildDailyPassInventoryDelta(rewardDefinition.items));
-    const nextProfile = applyDailyPassProfileRewards(profile, rewardDefinition.items);
+    const resolvedReward = resolveDailyPassProfileRewards(profile, rewardDefinition.items);
+    const nextInventory = applyInventoryDelta(inventory, buildDailyPassInventoryDelta(resolvedReward.items));
+    const nextProfile = resolvedReward.profile;
     const savedInventory = await saveInventory(sessionResult.nick, nextInventory);
     const savedProfile = await saveProfile(sessionResult.nick, nextProfile);
     await touchPublicUser(sessionResult.nick, savedInventory, savedProfile);
     await updateRows("shop_access", {
+      daily_pass_season_id: DAILY_PASS_SEASON_ID,
       daily_pass_claimed_days: currentState.claimedDays + 1,
       daily_pass_last_claim_day: currentState.todayKey,
       updated_at: nowIso()
@@ -5797,7 +5864,7 @@ async function publicShopClaimDailyPass(sessionToken, claimId) {
       sessionResult.nick,
       "Pase diario",
       `Dia ${rewardDefinition.day}`,
-      formatDailyPassRewardSummary(rewardDefinition.items)
+      formatDailyPassRewardSummary(resolvedReward.items)
     );
 
     return {
@@ -5808,7 +5875,7 @@ async function publicShopClaimDailyPass(sessionToken, claimId) {
       dailyPass: await getDailyPassState(sessionResult.nick),
       claimedReward: {
         day: rewardDefinition.day,
-        items: rewardDefinition.items.map(mapDailyPassRewardItemForClient)
+        items: resolvedReward.items.map(mapDailyPassRewardItemForClient)
       }
     };
   }));
