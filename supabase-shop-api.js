@@ -10,9 +10,9 @@ const REQUEST_PANEL_OWNER_NICK = "Perrisushi";
 const DEFAULT_LOGO_ID = "logo-pelusa-1";
 const DEFAULT_LOGO_ASSET_PATH = "./assets/logos-usuario/logo-pelusa-1.png";
 const APP_TIMEZONE = "Europe/Madrid";
-const DAILY_PASS_SEASON_ID = "2026-09-revivir-pet";
-const DAILY_PASS_START_DAY = "2026-09-13";
-const DAILY_PASS_END_DAY = "2026-10-24";
+const DAILY_PASS_SEASON_ID = "2026-09-29-revivir-pet";
+const DAILY_PASS_START_DAY = "2026-09-29";
+const DAILY_PASS_END_DAY = "2026-11-09";
 const ACCESS_REQUEST_STATUS = {
   pending: "pending",
   approved: "approved",
