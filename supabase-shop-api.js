@@ -46,7 +46,7 @@ const INVENTORY_KEYS = [
   "pecheraSushi",
   "pantalonesSushi",
   "botasSushi",
-  "boletoSorteo2",
+  "boletoSorteo3",
   "miniSorteo",
   "pinzaReal",
   "aguaDivina",
@@ -108,7 +108,7 @@ const SHOP_ITEMS = {
   pecheraSushi: { label: "Pechera de Sushi", price: 2000, currencyKey: "pc", currencyLabel: "PC" },
   pantalonesSushi: { label: "Pantalones de Sushi", price: 2000, currencyKey: "pc", currencyLabel: "PC" },
   botasSushi: { label: "Botas de Sushi", price: 2000, currencyKey: "pc", currencyLabel: "PC" },
-  boletoSorteo2: { label: "Boleto de Sorteo 2", price: 3500, currencyKey: "pc", currencyLabel: "PC", maxPerUser: 3 }
+  boletoSorteo3: { label: "Boleto de Sorteo 3", price: 3500, currencyKey: "pc", currencyLabel: "PC", maxPerUser: 3 }
 };
 
 const PUBLIC_SHOP_ITEMS = [
@@ -119,7 +119,7 @@ const PUBLIC_SHOP_ITEMS = [
   { key: "pecheraSushi", label: "Pechera de Sushi", price: 2000, category: "equipment", currencyKey: "pc", currencyLabel: "PC", effect: "+2% proteccion contra ataque" },
   { key: "pantalonesSushi", label: "Pantalones de Sushi", price: 2000, category: "equipment", currencyKey: "pc", currencyLabel: "PC", effect: "+2% proteccion contra ataque" },
   { key: "botasSushi", label: "Botas de Sushi", price: 2000, category: "equipment", currencyKey: "pc", currencyLabel: "PC", effect: "+2% proteccion contra ataque" },
-  { key: "boletoSorteo2", label: "Boleto de Sorteo 2", price: 3500, category: "special", currencyKey: "pc", currencyLabel: "PC", effect: "Boleto de sorteo acumulable. Maximo 3 por usuario.", maxPerUser: 3 }
+  { key: "boletoSorteo3", label: "Boleto de Sorteo 3", price: 3500, category: "special", currencyKey: "pc", currencyLabel: "PC", effect: "Boleto acumulable para el Sorteo 3. Maximo 3 por usuario.", maxPerUser: 3 }
 ];
 
 const UPGRADE_PATHS = {
@@ -304,7 +304,7 @@ const PERRIPET_ITEM_IDS = [
   "loot-gold-chest"
 ];
 const PERRI_CASILLAS_REWARDS = [
-  { count: 1, label: "Boleto de sorteo", kind: "boletoSorteo2", amount: 1, image: "./assets/icono-boleto.png", inventoryDelta: { boletoSorteo2: 1 } },
+  { count: 1, label: "Boleto de Sorteo 3", kind: "boletoSorteo3", amount: 1, image: "./assets/icono-boleto.png", inventoryDelta: { boletoSorteo3: 1 } },
   { count: 6, label: "1 Perricofre de minijuego", kind: "perriCofresMinijuego", amount: 1, image: "./assets/perricofres-minijuego-cerrado.png", inventoryDelta: { perriCofresMinijuego: 1 } },
   { count: 3, label: "1 Bolsa de Gemas", kind: "bolsaGemas", amount: 1, image: "./assets/objetos-especiales/bolsa-gemas.png", inventoryDelta: { bolsaGemas: 1 } },
   { count: 5, label: "1 Bolsa de Chatarra", kind: "bolsaChatarra", amount: 1, image: "./assets/objetos-especiales/saco-chatarra.png", inventoryDelta: { bolsaChatarra: 1 } },
@@ -496,7 +496,8 @@ function inventoryToRow(nick, inventory) {
   };
 
   INVENTORY_KEYS.forEach((key) => {
-    row[toSnakeCase(key)] = toNumber(inventory[key]);
+    const column = key === "boletoSorteo3" ? "boleto_sorteo2" : toSnakeCase(key);
+    row[column] = toNumber(inventory[key]);
   });
 
   return row;
@@ -516,7 +517,8 @@ function rowToInventory(row) {
   }
 
   INVENTORY_KEYS.forEach((key) => {
-    inventory[key] = toNumber(row[toSnakeCase(key)]);
+    const column = key === "boletoSorteo3" ? "boleto_sorteo2" : toSnakeCase(key);
+    inventory[key] = toNumber(row[column]);
   });
 
   return inventory;
@@ -903,7 +905,8 @@ async function patchInventoryFields(nick, fields) {
 
   Object.entries(fields || {}).forEach(([key, value]) => {
     if (INVENTORY_KEYS.includes(key)) {
-      patch[toSnakeCase(key)] = toNumber(value);
+      const column = key === "boletoSorteo3" ? "boleto_sorteo2" : toSnakeCase(key);
+      patch[column] = toNumber(value);
     }
   });
 

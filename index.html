@@ -7264,7 +7264,7 @@
       { key: "pecheraSushi", image: "./assets/pechera-sushi.png", name: "Pechera de Sushi", price: 2000, effect: "+2% proteccion contra ataque" },
       { key: "pantalonesSushi", image: "./assets/pantalones-sushi.png", name: "Pantalones de Sushi", price: 2000, effect: "+2% proteccion contra ataque" },
       { key: "botasSushi", image: "./assets/botas-sushi.png", name: "Botas de Sushi", price: 2000, effect: "+2% proteccion contra ataque" },
-      { key: "boletoSorteo2", image: "./assets/icono-boleto.png", name: "Boleto de Sorteo 2", price: 3500, effect: "Boleto acumulable para sorteos. Maximo 3 por usuario.", maxPerUser: 3 }
+      { key: "boletoSorteo3", image: "./assets/icono-boleto.png", name: "Boleto de Sorteo 3", price: 3500, effect: "Boleto acumulable para el Sorteo 3. Maximo 3 por usuario.", maxPerUser: 3 }
     ];
     const fallbackUserLogos = [
       { id: "logo-pelusa-1", name: "Pelusa", src: "./assets/logos-usuario/logo-pelusa-1.png", sortOrder: 10, isDefault: true },
@@ -7556,7 +7556,7 @@
       { key: "perricita", image: "./assets/perricita.png", name: "Perricita", effect: "Mejora el porcentaje de exito al intentar mejorar equipo." },
       { key: "monedas", image: "./assets/moneda.png", name: "Monedas", effect: "Se usa para jugar a PerriCasillas." },
       { key: "duelo", image: "./assets/duelo.png", name: "Duelo", effect: "Se consume al lanzar un ataque en el minijuego de Ataque." },
-      { key: "boletoSorteo2", image: "./assets/icono-boleto.png", name: "Boleto de Sorteo 2", effect: "Boleto acumulable para sorteos especiales. Maximo 3 por usuario." },
+      { key: "boletoSorteo3", image: "./assets/icono-boleto.png", name: "Boleto de Sorteo 3", effect: "Participacion acumulable para el Sorteo 3. Maximo 3 por usuario." },
       { key: "miniSorteo", image: "./assets/icono-boleto.png", name: "MiniSorteo", effect: "Participacion obtenida en PerriCasillas." },
       { key: "randomKey", image: "./assets/random-key.png", name: "Random Key", effect: "Se canjea en la tienda web por una key de Steam aleatoria." },
       { key: "pinzaReal", image: "./assets/item-Pinza-Real.png", name: "Pinza Real", effect: "Trofeo conseguido al derrotar al Rey Cangrosio IV en PerriRPG." },
@@ -11356,7 +11356,7 @@
             if (data.error === "not_enough_pc") {
               message.textContent = "No hay suficiente PC para esa compra.";
             } else if (data.error === "max_owned_reached") {
-              message.textContent = "Ya tienes el maximo de Boleto de Sorteo 2.";
+              message.textContent = "Ya tienes el maximo de Boleto de Sorteo 3.";
             } else if (data.error === "already_owned") {
               message.textContent = "Ese objeto ya esta comprado y es permanente.";
             } else if (data.error === "invalid_item") {
