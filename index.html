@@ -8832,6 +8832,9 @@
       if (kind === "perricita") {
         return { icon: "./assets/perricita.png", note: "Perricita" };
       }
+      if (kind === "duelo") {
+        return { icon: reward?.image || "./assets/duelo.png", note: "Ticket para lanzar un ataque" };
+      }
       if (kind === "monedas") {
         return { icon: "./assets/moneda.png", note: "Monedas para PerriCasillas" };
       }
@@ -8900,6 +8903,9 @@
       }
       if (kind === "perricita") {
         return `${quantity || 1} Perricita${quantity === 1 ? "" : "s"}`;
+      }
+      if (kind === "duelo") {
+        return `${quantity || 1} Ticket${quantity === 1 ? "" : "s"} de Duelo`;
       }
       return String(reward.label || "Premio");
     }

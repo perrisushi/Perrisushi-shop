@@ -375,6 +375,7 @@ const NOTIFICATION_KINDS = {
 };
 
 const PERRI_CHEST_LOGO_CHANCE = 30;
+const MINIGAME_CHEST_DUEL_TICKET_CHANCE = 0.15;
 const CHAT_MESSAGE_MAX_LENGTH = 220;
 const CHAT_MESSAGE_COOLDOWN_MS = 5000;
 const CHAT_MESSAGE_LIST_LIMIT = 40;
@@ -2364,6 +2365,16 @@ function buildInventoryReward(kind, quantity) {
     };
   }
 
+  if (kind === "duelo") {
+    return {
+      kind,
+      label: formatRewardLabel(normalizedQuantity, "Ticket de Duelo", "Tickets de Duelo"),
+      quantity: normalizedQuantity,
+      image: "./assets/duelo.png",
+      inventoryDelta: { duelo: normalizedQuantity }
+    };
+  }
+
   const containerItem = REWARD_CONTAINER_ITEMS[kind];
   if (containerItem) {
     return {
@@ -2460,15 +2471,19 @@ function buildMinigameChestRewards() {
   const mainReward = mainRoll?.kind === "specialRandom"
     ? buildRandomSpecialItemReward()
     : buildInventoryReward(mainRoll?.kind || "bolsaGemas", 1);
-  const rewards = [
+  const guaranteedRewards = [
     buildInventoryReward("perricita", 1),
     buildInventoryReward("cajitaArmas", 1),
     mainReward
   ].filter(Boolean);
+  const extraReward = Math.random() < MINIGAME_CHEST_DUEL_TICKET_CHANCE
+    ? buildInventoryReward("duelo", 1)
+    : null;
+  const rewards = extraReward ? guaranteedRewards.concat(extraReward) : guaranteedRewards.slice();
 
   return {
-    guaranteedRewards: rewards.slice(),
-    extraReward: null,
+    guaranteedRewards,
+    extraReward,
     rewards
   };
 }
