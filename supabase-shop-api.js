@@ -4110,6 +4110,9 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       + (positiveDelta("food-prime") * 100);
     const isRevive = previousPet
       && previousPet.hasActiveCreature !== false
+      && previousPet.stage !== "egg"
+      && previousPet.hp !== null
+      && previousPet.hp !== undefined
       && Number(previousPet.hp) <= 0
       && Number(incomingPet.hp) > 0;
     const incomingReviveItems = toNumber(incomingPet?.specialInventory?.revivirPet);
