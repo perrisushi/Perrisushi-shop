@@ -4080,8 +4080,24 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       ? syncBase.perriPetInventory
       : perriPetInventoryFromSnapshot(previousSnapshot);
     const incomingPerriPetInventory = perriPetInventoryFromSnapshot(safeSnapshot);
-    const positiveDelta = (itemId) => Math.max(0, toNumber(incomingPerriPetInventory[itemId]) - toNumber(previousPerriPetInventory[itemId]));
-    const spentDelta = (itemId) => Math.max(0, toNumber(previousPerriPetInventory[itemId]) - toNumber(incomingPerriPetInventory[itemId]));
+    // El inventario compartido puede cambiar desde PerriRPG, otra pestaña o una
+    // recompensa sin que cambie la revision del estado visual de PerriPet. En ese
+    // caso no debemos volver a aplicar (ni rechazar) la parte del cambio que ya
+    // existe en Supabase. Solo procesamos la diferencia que sigue pendiente.
+    const pendingInventoryDelta = (itemId) => {
+      const baseAmount = toNumber(previousPerriPetInventory[itemId]);
+      const incomingDelta = toNumber(incomingPerriPetInventory[itemId]) - baseAmount;
+      const authoritativeDelta = toNumber(currentPerriPetInventory[itemId]) - baseAmount;
+      if (incomingDelta > 0 && authoritativeDelta > 0) {
+        return Math.max(0, incomingDelta - authoritativeDelta);
+      }
+      if (incomingDelta < 0 && authoritativeDelta < 0) {
+        return Math.min(0, incomingDelta - authoritativeDelta);
+      }
+      return incomingDelta;
+    };
+    const positiveDelta = (itemId) => Math.max(0, pendingInventoryDelta(itemId));
+    const spentDelta = (itemId) => Math.max(0, -pendingInventoryDelta(itemId));
     const verifiedHarvests = getVerifiedPerriPetHarvests(previousSnapshot, safeSnapshot);
     const verifiedLoot = getVerifiedPerriPetLoot(previousSnapshot, safeSnapshot);
     const unverifiedHarvest = ["fruit-purple", "fruit-yellow"]
@@ -4114,7 +4130,15 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
     const reviveGemSpend = isRevive && !reviveItemWasConsumed ? 5000 : 0;
     const totalGemSpend = requiredGemSpend + reviveGemSpend;
     if (unverifiedHarvest || unverifiedLoot || totalGemSpend > toNumber(inventory.polvoGema)) {
-      return { ok: false, error: "invalid_perripet_economy" };
+      return {
+        ok: false,
+        error: "invalid_perripet_economy",
+        reason: unverifiedHarvest
+          ? "unverified_harvest"
+          : unverifiedLoot
+            ? "unverified_loot"
+            : "insufficient_gems"
+      };
     }
     inventory.polvoGema = toNumber(inventory.polvoGema) - totalGemSpend;
     inventory.pc = Math.max(
@@ -4127,7 +4151,7 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
       + (positiveDelta("plot-unlock") * 1000)
       + (positiveDelta("watering-can-gold") * 100);
     for (const itemId of PERRIPET_ITEM_IDS) {
-      const delta = Math.trunc(toNumber(incomingPerriPetInventory[itemId]) - toNumber(previousPerriPetInventory[itemId]));
+      const delta = Math.trunc(pendingInventoryDelta(itemId));
       currentPerriPetInventory[itemId] = Math.max(0, toNumber(currentPerriPetInventory[itemId]) + delta);
     }
 
@@ -4144,7 +4168,7 @@ async function publicShopPerriPetSave(sessionToken, snapshot) {
     }
     const availableScrap = toNumber(inventory.chatarra) + lootSaleRevenue;
     if (farmPurchaseCost + rpgPurchaseCost > availableScrap) {
-      return { ok: false, error: "invalid_perripet_economy" };
+      return { ok: false, error: "invalid_perripet_economy", reason: "insufficient_scrap" };
     }
     for (const [perriPetId, catalogId] of Object.entries(PERRIPET_RPG_ITEM_IDS)) {
       const increase = Math.max(0, Math.trunc(toNumber(incomingRpg[perriPetId]) - toNumber(previousRpg[perriPetId])));
