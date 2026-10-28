@@ -1,0 +1,18 @@
+{
+  "mode": "LEGACY FUNCTIONS WITH IN_MEMORY STUBS ONLY",
+  "supabaseRequests": 0,
+  "repeatedPurchase": {
+    "requests": 2,
+    "charges": 2
+  },
+  "concurrentSameOperation": {
+    "requests": 2,
+    "workers": 2
+  },
+  "retryAfterOperationStorageFailure": {
+    "requests": 2,
+    "rewards": 2
+  },
+  "operationScopeValidated": false,
+  "economySafeToEnable": false
+}

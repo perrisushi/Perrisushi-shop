@@ -1,0 +1,11 @@
+/perricasillas /games/original/index-production.html 200
+/perricasillas/ /games/original/index-production.html 200
+/perriduelos-app/* /games/original/perriduelos-app/:splat 200
+/perripet-app/* /games/original/perripet-app/:splat 200
+/assets/* /games/original/assets/:splat 200
+/perrirpg.html /games/original/perrirpg.html 200
+/perrirpg.js /games/original/perrirpg.js 200
+/perrirpg.css /games/original/perrirpg.css 200
+/musica-web.mp3 /public/assets/musica-web.mp3 200
+/home-layout.css /games/original/home-layout.css 200
+/ui-layout-editor.css /games/original/ui-layout-editor.css 200

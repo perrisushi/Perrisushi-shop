@@ -1,0 +1,790 @@
+{
+  "mode": "OFFLINE FIXTURE ONLY",
+  "viewports": 6,
+  "errors": [],
+  "metrics": [
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/inventory",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/random-key",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/raffles",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/history",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile/avatar",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications/read",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/inventory",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/random-key",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/raffles",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/history",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile/avatar",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications/read",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/inventory",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/random-key",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/raffles",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/history",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile/avatar",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications/read",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/inventory",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/random-key",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/raffles",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/history",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile/avatar",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications/read",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/inventory",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/random-key",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/raffles",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/history",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile/avatar",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications/read",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 1,
+      "queries": 0
+    },
+    {
+      "route": "/api/users",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/inventory",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/random-key",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/shop/raffles",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/history",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile/avatar",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications",
+      "method": "GET",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/notifications/read",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "durationMs": 0,
+      "queries": 0
+    },
+    {
+      "route": "/api/session",
+      "method": "GET",
+      "status": 503,
+      "durationMs": 0,
+      "queries": 0
+    }
+  ],
+  "calls": [
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "tickets",
+      "limit": 20
+    },
+    {
+      "kind": "claims",
+      "limit": 20
+    },
+    {
+      "kind": "history",
+      "limit": 20
+    },
+    {
+      "kind": "notifications",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "tickets",
+      "limit": 20
+    },
+    {
+      "kind": "claims",
+      "limit": 20
+    },
+    {
+      "kind": "history",
+      "limit": 20
+    },
+    {
+      "kind": "notifications",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "tickets",
+      "limit": 20
+    },
+    {
+      "kind": "claims",
+      "limit": 20
+    },
+    {
+      "kind": "history",
+      "limit": 20
+    },
+    {
+      "kind": "notifications",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "tickets",
+      "limit": 20
+    },
+    {
+      "kind": "claims",
+      "limit": 20
+    },
+    {
+      "kind": "history",
+      "limit": 20
+    },
+    {
+      "kind": "notifications",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "tickets",
+      "limit": 20
+    },
+    {
+      "kind": "claims",
+      "limit": 20
+    },
+    {
+      "kind": "history",
+      "limit": 20
+    },
+    {
+      "kind": "notifications",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "users",
+      "limit": 20
+    },
+    {
+      "kind": "tickets",
+      "limit": 20
+    },
+    {
+      "kind": "claims",
+      "limit": 20
+    },
+    {
+      "kind": "history",
+      "limit": 20
+    },
+    {
+      "kind": "notifications",
+      "limit": 20
+    }
+  ]
+}
