@@ -3,10 +3,11 @@ import {isIP} from 'node:net';
 import {metricsContext} from './metrics.mjs';
 import {logoAsset} from './logo-assets.mjs';
 import {BackendError} from './repository.mjs';
+import {publicOrigin as validatePublicOrigin} from './request-security.mjs';
 import {digest,sessionKey,newToken,matchesPassword,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
 export function createBackend({repository,economy,games,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{}}={}){
  if(proxySecret&&proxySecret.length<32)throw Error('Proxy secret too short');
- const origin=new URL(publicOrigin).origin;
+ const origin=validatePublicOrigin(publicOrigin);
  if(production&&(new URL(origin).protocol!=='https:'||sessionStore!=='supabase'||!allowSessionWrites))throw Error('Production requires HTTPS and approved persistent sessions');
  if(production&&(!csrfSecret||csrfSecret.length<32))throw Error('Production requires CSRF_SECRET');
  csrfSecret??=randomBytes(32).toString('hex');
@@ -39,7 +40,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
   const send=(code,data,headers={})=>{status=code;res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",...headers});res.end(JSON.stringify(data))};
   try{
    const url=new URL(req.url,'http://local');route=url.pathname;
-   if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'forbidden');
+   if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
    const known=['/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
@@ -47,8 +48,9 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    if(!reads.take(clientIP))fail(429,'too_many_requests');
    if(req.method==='POST'){
     if(Number(req.headers['content-length']??0)>(route==='/api/games/action'?1048576:4096)){req.resume();fail(413,'body_too_large')}
-    if(req.headers.origin!==origin||!String(req.headers['content-type']??'').startsWith('application/json'))fail(403,'forbidden');
-    if(req.headers['sec-fetch-site']&& !['same-origin','none'].includes(req.headers['sec-fetch-site']))fail(403,'forbidden');
+    if(req.headers.origin!==origin)fail(403,'origin_mismatch');
+    if(!/^application\/json(?:\s*;|$)/i.test(String(req.headers['content-type']??'')))fail(415,'unsupported_media_type');
+    if(req.headers['sec-fetch-site']&& !['same-origin','none'].includes(req.headers['sec-fetch-site']))fail(403,'cross_site_request');
    }
    if(req.method==='POST'&&['/api/shop/random-key/redeem','/api/shop/raffles/buy'].includes(route)&&!economy)fail(403,'operation_disabled');
    if(req.method==='POST'&&route==='/api/auth/login'){
@@ -75,7 +77,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    // La identidad siempre deriva de la cookie; los parámetros privados ajenos se rechazan.
    for(const field of url.searchParams.keys())if(!(route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:['limit','cursor']).includes(field))fail(400,'invalid_request');
    if(req.method==='POST'){
-    if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'forbidden');
+    if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
     const body=await jsonBody(req,route==='/api/games/action'?1048576:4096);
     if(route==='/api/games/action'){if(!games)fail(503,'games_not_configured');send(200,await games.execute(user,body));return}
     if(route==='/api/shop/random-key/redeem'||route==='/api/shop/raffles/buy'){send(200,await economy.execute(user.nick,route.endsWith('/buy')?'raffle-buy':'random-redeem',body));return}

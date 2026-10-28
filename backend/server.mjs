@@ -6,6 +6,7 @@ import {createEconomy} from './economy.mjs';
 import {createGames} from './games.mjs';
 import pg from 'pg';
 import legacyGames from './games-original.cjs';
+import {publicOrigin,canonicalSiteRedirect} from './request-security.mjs';
 const allowSessionWrites=process.env.ALLOW_SUPABASE_SESSION_WRITES==='true';
 const production=process.env.NODE_ENV==='production';
 const repository=createRepository({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,allowSessionWrites});
@@ -15,11 +16,14 @@ if(process.env.PW2_GAMES_ENABLED==='true'&&!process.env.DATABASE_URL)throw Error
 if(process.env.DATABASE_URL){let database;try{database=new URL(process.env.DATABASE_URL);if(!['postgres:','postgresql:'].includes(database.protocol)||!database.hostname||database.hash)throw Error()}catch{throw Error('DATABASE_URL no válida; no se muestra su contenido')};database.searchParams.delete('sslmode');gamePool=new pg.Pool({connectionString:database.href,ssl:{rejectUnauthorized:true},max:4,connectionTimeoutMillis:8000});gamePool.on('error',()=>console.error('La conexión de juegos no está disponible'))}
 const games=createGames({pool:gamePool,legacy:legacyGames,enabled:process.env.PW2_GAMES_ENABLED==='true'});
 if(production&&!process.env.PUBLIC_ORIGIN)throw Error('PUBLIC_ORIGIN obligatorio en producción');
-const handler=createBackend({repository,economy,games,publicOrigin:process.env.PUBLIC_ORIGIN??'http://127.0.0.1:4173',sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(process.env.CSRF_SECRET?{csrfSecret:process.env.CSRF_SECRET}:{}),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
+const configuredOrigin=publicOrigin(process.env.PUBLIC_ORIGIN??'http://127.0.0.1:4173');
+const handler=createBackend({repository,economy,games,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(process.env.CSRF_SECRET?{csrfSecret:process.env.CSRF_SECRET}:{}),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
 const site=serveSite({authenticate:handler.authenticate});
 const server=http.createServer((req,res)=>{
  if(req.url==='/healthz'){res.writeHead(repository.configured?200:503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ready:repository.configured}));return}
  if(req.url?.startsWith('/api/'))return handler(req,res);
+ const canonical=canonicalSiteRedirect(req,configuredOrigin);
+ if(canonical){res.writeHead(307,{'Location':canonical,'Cache-Control':'no-store'});res.end();return}
  return site(req,res);
 });
 server.requestTimeout=15000;server.headersTimeout=10000;server.maxHeadersCount=32;
