@@ -1,3 +1,0 @@
-# Conservar los bytes originales también al publicar desde Windows a Linux.
-/games/original/** -text
-*.sql text eol=lf

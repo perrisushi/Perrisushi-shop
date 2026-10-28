@@ -1,7 +1,0 @@
-/*
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: no-referrer
-  Cache-Control: no-cache
-/games/original/*
-  X-Frame-Options: SAMEORIGIN
-  Content-Security-Policy: default-src 'self' data: blob:; connect-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'
