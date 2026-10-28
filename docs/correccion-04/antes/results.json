@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "width": 1649,
+      "height": 928,
+      "approvedScreensUnchanged": false,
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "approvedScreensUnchanged": false,
+      "passed": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "approvedScreensUnchanged": false,
+      "passed": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "approvedScreensUnchanged": false,
+      "passed": true
+    }
+  ],
+  "errors": []
+}

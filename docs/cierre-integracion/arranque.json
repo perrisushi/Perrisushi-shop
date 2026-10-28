@@ -1,0 +1,43 @@
+{
+  "production": false,
+  "configured": false,
+  "supabaseRequests": 0,
+  "results": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/src/desktop-layout-fix.css",
+      "status": 200
+    },
+    {
+      "path": "/src/services/api-client.js",
+      "status": 200
+    },
+    {
+      "path": "/api/session",
+      "status": 503
+    },
+    {
+      "path": "/healthz",
+      "status": 503
+    },
+    {
+      "path": "/backend/server.mjs",
+      "status": 404
+    },
+    {
+      "path": "/backend/.env",
+      "status": 404
+    },
+    {
+      "path": "/.cierre-integracion/perriweb_release_candidate/backend/legacy-shop.cjs",
+      "status": 404
+    },
+    {
+      "path": "/shop-api",
+      "status": 404
+    }
+  ]
+}

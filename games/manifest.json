@@ -1,0 +1,1561 @@
+{
+  "source": "Copias locales de los minijuegos originales",
+  "files": [
+    {
+      "path": "games/original/home-layout.css",
+      "sha256": "e5407ec1ed4672007cff5bd11d03aec7a93800b4b7ab2beabfb51ff1d892b2a0"
+    },
+    {
+      "path": "games/original/index-production.html",
+      "sha256": "7850884bdcaa0ba046366c31bd1d01f91ac58ec4d94a86b84dd76a8073db7d74"
+    },
+    {
+      "path": "games/original/perrirpg.css",
+      "sha256": "c093cbf0d7a5946799012ad0d509e1555bddc05f0eca513d80c8137b86b081de"
+    },
+    {
+      "path": "games/original/perrirpg.html",
+      "sha256": "844f91914c1ccdd194db5a07dcbce8bdee382c015def1a683cfde93cfee67fa3"
+    },
+    {
+      "path": "games/original/perrirpg.js",
+      "sha256": "8c39ca0eed8dc934fdbd14018830b324bf2b905d38b616a6e676386c16900d20"
+    },
+    {
+      "path": "games/original/ui-layout-editor.css",
+      "sha256": "c2bb8f3635c0196238be63a49d316bad1db5b66e211badfc744740704a08139b"
+    },
+    {
+      "path": "games/original/ui-layout-editor.js",
+      "sha256": "54fbe1c559d52e7424aae24c9e9de875ae89a774e569e2195c2a0b73e9782e8e"
+    },
+    {
+      "path": "games/original/perripet-app/favicon.svg",
+      "sha256": "e6d2e59b7b5bbb0342e0fb496dfc262decbfe4426bbb7b047aec8d467d1dc6f7"
+    },
+    {
+      "path": "games/original/perripet-app/index.html",
+      "sha256": "37c609329a6a5e84feee99115a0c0c8deb8292b38c9f7dad8e3784fa604f0cc7"
+    },
+    {
+      "path": "games/original/perripet-app/perri-mascota.png",
+      "sha256": "dd9d120ae47b55c5a52e6820c43e52025447f44cf9f9cab868fc2654493a89c4"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/anillo-mago.png",
+      "sha256": "fffb5f926ca87b897c6ae892cd5538962b98a583c3a6dd78cc6ea23fc4b2d0d1"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/baston-arcano.png",
+      "sha256": "361ad769b794298c369ac325921deddae3236b0ade0f96efa6e3b3ae20cc9db6"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/escudo-metal.png",
+      "sha256": "2391b13861006f55b51feab68c59a9bc680fe1b3753bb5c0ae0731905d04343f"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/escudo-roble.png",
+      "sha256": "32da6f4a62f9cf6addacdc5b2580ac1980c7a66efd03ad8413412b64ec2a825e"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/espada-real.png",
+      "sha256": "aa10cb2e987fd614c8a901d8edee1ca7e43ff866fe6da636373a1b8a5ffa0518"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/espada-reluciente.png",
+      "sha256": "565478c513421426c42ee22c47eb19206e3c79a2bc5617d5b83f2779d476866c"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/lanza-dorada.png",
+      "sha256": "df3eda2a51c42c567f46a5968c3ddff6c24895742f5c87d61607688dc85bdc64"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/mandoble-quebramundos.png",
+      "sha256": "41827b7525b3c9b479b7469e0577c67d94ba3df2baee2d27ffef53778bf53cb2"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/mandoble-verdugo.png",
+      "sha256": "8185982946cec158fb12fa0f3865d491c7c3eeec58f4ed1173afa107b2f029a2"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/pocion-armadura.png",
+      "sha256": "042f88ececc33c7118cb1db7295af28243128354f423b8b16893d96425f31ba9"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/pocion-chica.png",
+      "sha256": "b6597105b44849896c69585101d8d9fbc254b8d5de9717f190bc15d4dba070c5"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/pocion-critico.png",
+      "sha256": "2d7ff88254cb9303414ffe4f908119bbefa6b18de6ff8a3a35cfc8bec06a5208"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/pocion-grande.png",
+      "sha256": "a38bdc0d589d5b5f05a3c98d5706d94bd4709ae2b7afaeda6ae2d374e90bd4b7"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/pocion-maestria.png",
+      "sha256": "e8c38008dac05ca3bb9b51b03295b3965cee0b68c5e4c37792936d93dd39946a"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/pocion-mediana.png",
+      "sha256": "be75ba0acd1b5a352169717965fc778b34c9ceb160f5fcee5f91533439dc4f66"
+    },
+    {
+      "path": "games/original/perripet-app/rpg/shuriken.png",
+      "sha256": "8c1b36daa8553597343a8405fb614c6be3f2d9fdaa2770dbacc0908f3b84c2a0"
+    },
+    {
+      "path": "games/original/perripet-app/items/agua-divina.png",
+      "sha256": "0e79d6fb29829d2b860a75b5b3ed45fa24fc919290206f59cdca0ef397e864e5"
+    },
+    {
+      "path": "games/original/perripet-app/items/bellota.png",
+      "sha256": "522b161d0849c68b2ba7eb93c7914334d7e6f005f034836d4d6e8eaeea6b8e27"
+    },
+    {
+      "path": "games/original/perripet-app/items/capsula-g.png",
+      "sha256": "e03cf298cda1a30a37b5075ca555a5c7b5746df7339d352887696d672134e081"
+    },
+    {
+      "path": "games/original/perripet-app/items/cofre-normal.png",
+      "sha256": "c7a15133762778a8ec954c27d9babe065e7d266ed053f2a0279e080bb7c6018b"
+    },
+    {
+      "path": "games/original/perripet-app/items/cofre-oro.png",
+      "sha256": "e28bb1e75b91f4bc89a6fb5fe53e2304c44ed612eefe33f0e7906c0d5da644bd"
+    },
+    {
+      "path": "games/original/perripet-app/items/cuerno-dragon.png",
+      "sha256": "cb83a162e26557631ddd6e0574b35460fcbbe95c9b3680e621c0d29652fee5a9"
+    },
+    {
+      "path": "games/original/perripet-app/items/espada-rota.png",
+      "sha256": "52cf525b7a2d9bb23ce4ca4189afda0fd889bd774d205c40ce4ae9393948b685"
+    },
+    {
+      "path": "games/original/perripet-app/items/frutos-amarillos.png",
+      "sha256": "254d948ed6e4f8264e95d8be7e27fcfe753813b72431253871cee73714fa5ab8"
+    },
+    {
+      "path": "games/original/perripet-app/items/frutos-morados.png",
+      "sha256": "d4a305e421fa0823c498b192e2ab7b40b8c31a5e6205509da58d680dae6242f4"
+    },
+    {
+      "path": "games/original/perripet-app/items/garra-oso.png",
+      "sha256": "aa38cc472cb044c8e5fd94f92fb94ebd0c17eb32addee745cab121e0dc02a44b"
+    },
+    {
+      "path": "games/original/perripet-app/items/gema-experiencia.png",
+      "sha256": "55ae9f592ffd3593d2a13b045d013202b18b3c5b63c1fbeb88e0a3f44c7d60e4"
+    },
+    {
+      "path": "games/original/perripet-app/items/huevo-verde.png",
+      "sha256": "26b2119acc69c58482eb669dfef4bca5fad06cd022a468f1dfdd0a3d3e0db925"
+    },
+    {
+      "path": "games/original/perripet-app/items/icono-chatarra.png",
+      "sha256": "94b6e40af503cbdc80f57d864eae0b0167ad4c800e8524d608ed964bd259c46c"
+    },
+    {
+      "path": "games/original/perripet-app/items/incubadora-mejorada.png",
+      "sha256": "7a80109ae740c016c0290095e0b79ea6a1955cb513def73ab23a45259f70d020"
+    },
+    {
+      "path": "games/original/perripet-app/items/pc.png",
+      "sha256": "901bc8ba52815e9cb2419bff60606ec2a686934cd74ad69d3cc7e6a58ca59658"
+    },
+    {
+      "path": "games/original/perripet-app/items/piel-oso.png",
+      "sha256": "8db2055cf3f401de05e83148330babb25aec74b6f314af8cb647924cc30c2b08"
+    },
+    {
+      "path": "games/original/perripet-app/items/reloj-cronotiempo.png",
+      "sha256": "d885d6a4dfd76e290a6fdb67daa7d1402df48babfb88c8b981b6017faa8f60b1"
+    },
+    {
+      "path": "games/original/perripet-app/items/saco-chatarra.png",
+      "sha256": "f7d9861014c2f6cf137bbce5e3051b455d2276619d48ebbb00b4bfb14f5a50de"
+    },
+    {
+      "path": "games/original/perripet-app/icons/boton-capsulas-g.png",
+      "sha256": "eeebf526175ba4a3d9b6b900cb48c580ea4a5a516aa4a4f320a197d9f065c186"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-alimentar.png",
+      "sha256": "81e1cd38f84cb1e7701da15b1b7ce04d68df02b0bd3542c1710d373765a9c121"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-boton-curar.png",
+      "sha256": "d17a069a60d17ce4f9c6ab258d850878b9e999cb9c361a3824b33b447b4ac69d"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-carnalia.png",
+      "sha256": "e4aa1e23e65834a9c78968df21bb613af29f7ba3dbe88f522ddd51834d9c4134"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-combate.png",
+      "sha256": "86bd924ef60d71c40e83f27db60dc1b149a76abc51866798d4535a526c6441ae"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-comida-prime.png",
+      "sha256": "fbff470686532635001d6f06ab466c2e26e04d5676520b9c3850ec0761f63eea"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-comida.png",
+      "sha256": "f72a8fd33d345eafe01ccf93083cf0f5d2bcd1f4dfe0b678689be548f166d2ae"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-entrenar-v1.png",
+      "sha256": "662491f4fe387c61b0b2696f574a78f73cdd32e9ef39e42c292751e542426812"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-evolucionar.png",
+      "sha256": "2531f07b5508f8a49b397ef8b6984e57391b27b80218f7c78a41731b8d7684f4"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-floralia.png",
+      "sha256": "69eda3675186f42677755ab160b85ceeda7509c1cf1cf4fe4a9e55f3d41c2f8e"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-granja.png",
+      "sha256": "9b81065913d2bac23f2f337e5a321ea03a5cb601df0ddf9ddeec65feea3c80a3"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-incubar.png",
+      "sha256": "680424a627544db586a93d42e6e2ea06175f5bc1fa1f662516788a8f4e330bb8"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-stats.png",
+      "sha256": "aa4ee520839d163c8145495675d9447a0ee6ddc9ae6f0e5aafaa9be200d4e764"
+    },
+    {
+      "path": "games/original/perripet-app/icons/icono-tienda.png",
+      "sha256": "081c8dcade10f24e8fef6a2b28315c3ca42288f45236e65b42f5551c8d4b6bc0"
+    },
+    {
+      "path": "games/original/perripet-app/farm/back-arrow.png",
+      "sha256": "91e031e858c1f59adb98ff720e64c2457e8337bed9938c36ce1be80423a25b6e"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-mature-full.png",
+      "sha256": "9cc494139ae968f657b7853f80263b0317d4c4a3cc1e790cb46c4d896f0fa096"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-mature-v2.png",
+      "sha256": "29c19c28d97102498d802e4d7f2cb5144162311d00e610c8899711c78f0121e0"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-mature-v3.png",
+      "sha256": "29c19c28d97102498d802e4d7f2cb5144162311d00e610c8899711c78f0121e0"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-mature.png",
+      "sha256": "6db977aef0781191647cd2a0a16cd45919b85da8e32683e1fcf8ab554ec94ac8"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-young-full.png",
+      "sha256": "a02276f93d11f1bdfb8e12e1205c01d996dd0158eb2df58592d496df75f9873e"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-young-v2.png",
+      "sha256": "e4e6eb83c9d584aefb52acd6c0a00bc485393ece564ca6a7e27cff3d5da5689d"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-young-v3.png",
+      "sha256": "e4e6eb83c9d584aefb52acd6c0a00bc485393ece564ca6a7e27cff3d5da5689d"
+    },
+    {
+      "path": "games/original/perripet-app/farm/bush-young.png",
+      "sha256": "735a01ee680b71fdc0a5f3d66bc685e4bb2645f94fda3aae7a39a32e7e8e105d"
+    },
+    {
+      "path": "games/original/perripet-app/farm/granja-v2.png",
+      "sha256": "8cc8d6ef7c93b181c77263c37e12c6e8bde411598626bf092916a5e804bc6700"
+    },
+    {
+      "path": "games/original/perripet-app/farm/granja.png",
+      "sha256": "6ee64a9561a1c3c1d89d3d5d2574b7632eeb891cd57529ae5a245b588fa2a80a"
+    },
+    {
+      "path": "games/original/perripet-app/farm/locked-plot.png",
+      "sha256": "d2ccb63eea46f30e6b7b85ec45aabb72bb1167e33e88bb62b263a488cff7aa4e"
+    },
+    {
+      "path": "games/original/perripet-app/farm/sprout-1-v2.png",
+      "sha256": "76185e8a132821b9593e2d39235c6007e2c1779ddede14f750873e4b848d21ac"
+    },
+    {
+      "path": "games/original/perripet-app/farm/sprout-1-v3.png",
+      "sha256": "76185e8a132821b9593e2d39235c6007e2c1779ddede14f750873e4b848d21ac"
+    },
+    {
+      "path": "games/original/perripet-app/farm/sprout-1.png",
+      "sha256": "6f159eb91b5182dda4a1cd74b52ce44ed1132e11df04feb08c43d7bc111b02e9"
+    },
+    {
+      "path": "games/original/perripet-app/farm/sprout-2-v2.png",
+      "sha256": "c777eea6d2da23b7451719486a4e37482eb60e86b7aa29cda3ab595b00744540"
+    },
+    {
+      "path": "games/original/perripet-app/farm/sprout-2-v3.png",
+      "sha256": "c777eea6d2da23b7451719486a4e37482eb60e86b7aa29cda3ab595b00744540"
+    },
+    {
+      "path": "games/original/perripet-app/farm/sprout-2.png",
+      "sha256": "c0fe3220373f8d5098602453b0d8858ec4d547f087a0974f1743f75ae5b5a9df"
+    },
+    {
+      "path": "games/original/perripet-app/farm/water-action.png",
+      "sha256": "a6cb3346bbf189a675cccebe308efcbc2ff7ab3efe9f779371225c010f18816e"
+    },
+    {
+      "path": "games/original/perripet-app/farm/watering-can-gold-v2.png",
+      "sha256": "80b97dff63b29abf600856ed1aff027f97322cd4129a368734e5ea76ce09aa5d"
+    },
+    {
+      "path": "games/original/perripet-app/farm/watering-can-gold.png",
+      "sha256": "1b3a7ea83f9569d5c821bcaa3946140262fa2dfbabf342240bef850d9e60ea1e"
+    },
+    {
+      "path": "games/original/perripet-app/farm/watering-can-v2.png",
+      "sha256": "9304adbdb9d18d6bf20915ec8bd01668229d8b26deba28e7df5aa9f23530af6f"
+    },
+    {
+      "path": "games/original/perripet-app/farm/watering-can.png",
+      "sha256": "a2300e234e3ad01361e1849e1b0b0cb3714df0a1b34aaaa83bc924a1d8838ef0"
+    },
+    {
+      "path": "games/original/perripet-app/farm/shop/background.png",
+      "sha256": "d5958da905516e9d501c0c96851ce0a0702b0caf30641e90f0c404d90a0cba94"
+    },
+    {
+      "path": "games/original/perripet-app/farm/shop/counter-front.png",
+      "sha256": "6418bb8698939fd5372d0c0c5456c55a024bdc3912aaa4e2b795658e82a9f864"
+    },
+    {
+      "path": "games/original/perripet-app/farm/shop/farmer-1.png",
+      "sha256": "ae344a404a773b225923face2a6ad9708ccf08c98964b6ba959daf19ecad44d0"
+    },
+    {
+      "path": "games/original/perripet-app/farm/shop/farmer-2.png",
+      "sha256": "eed06e3cafeac945774bc06c8b822b140146f21d5ab42aa6494e2a51ff61969f"
+    },
+    {
+      "path": "games/original/perripet-app/farm/shop/farmer-3.png",
+      "sha256": "42f2ec728eb01b56f8fc39fa8c9f114923f745af901730cd8384c19b72aab653"
+    },
+    {
+      "path": "games/original/perripet-app/farm/shop/farmer-happy.png",
+      "sha256": "8b94a3a785b7d6b46cc781195e342b6d5615b5db05b7afa14c8fe48d31cff4d2"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/green-mature.png",
+      "sha256": "29c19c28d97102498d802e4d7f2cb5144162311d00e610c8899711c78f0121e0"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/green-sprout-1.png",
+      "sha256": "76185e8a132821b9593e2d39235c6007e2c1779ddede14f750873e4b848d21ac"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/green-sprout-2.png",
+      "sha256": "c777eea6d2da23b7451719486a4e37482eb60e86b7aa29cda3ab595b00744540"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/green-young.png",
+      "sha256": "e4e6eb83c9d584aefb52acd6c0a00bc485393ece564ca6a7e27cff3d5da5689d"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/red-mature.png",
+      "sha256": "6df983f1a6bbc67d632ce83467e70364a2c304fc4972cc4f5b92d3ac647b737b"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/red-sprout-1.png",
+      "sha256": "109cc06109a279bfab13db36dae20d713769797cc5c6bec4363698ad1ff8223f"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/red-sprout-2.png",
+      "sha256": "adb0158fbe000ba7c30ac783870828fb2af3df5044b20a4f2fde2bd8e4a693c9"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/red-young.png",
+      "sha256": "cc8265831779ab42552992b4e51af5f6300d78ccebe4f34f6c99c20eefc9c700"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/seed-green.png",
+      "sha256": "a32de5a1d641ebd7cb3ff377f8b51c67d2a27531e25b3cb2bffc593474272a95"
+    },
+    {
+      "path": "games/original/perripet-app/farm/crops/seed-red.png",
+      "sha256": "1c7a0ffdefdca0dbcd418a470e6f63b15324ab2967b56604b0add357f5e4190d"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-comer-1.png",
+      "sha256": "28290641e8be7d8ea4624261a35a6b0b5a1196beeabfd87bc5b332015b2cf316"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-comer-2.png",
+      "sha256": "fb50ba5bb3445b0c691a136d8e2078db735401b38c95af9d685820d893a48676"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-critico.png",
+      "sha256": "37e8a9485391153ac7d598f27214da38c4f52a6bd271d4a8ec4407c412291382"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-dormido.png",
+      "sha256": "c72c8ce31346e1bb49f93cd604fe08763f9bf2969eae9e6ab5ea2fb922272805"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-enfadado.png",
+      "sha256": "c29630eab40219bb40ff3c728f8ce393f4cc18fb6d68857048594512b25e3df3"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-feliz.png",
+      "sha256": "9227ec85a11ff22aa02ccbad92983f6f2e2cafaad300298277335e744e7c6d6e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-muerto.png",
+      "sha256": "ac00235c9c8790165863b23c06e3ab00b257d128ee380c8eeb6b00048c437141"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-tranquilo-1.png",
+      "sha256": "52f9572e83da2af29052f4d0463c296802154171e120cdfd7010dbc56cc5da5e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-tranquilo-2.png",
+      "sha256": "e38e23c122a552d766c1ff8f862e76dc7ec0bd3d444b9439c123ba7a529d575b"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-tranquilo-3.png",
+      "sha256": "6a3809082b76e79a0471a71a725c52d65912075e41d57ee1c352586c7e5be647"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-tranquilo-4-1.png",
+      "sha256": "9e6ef79638f0dce42c9470cef2b47aad446c40604ba2a8a81d998f5075e8812e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-tranquilo-4-2.png",
+      "sha256": "e7825e79007505d0c30b5db0f4199e79b20b170b753c34a30526c6b192e99607"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-tranquilo-5-1.png",
+      "sha256": "2f51a04b2f10aa6d6d832d5a04d2d91b2f8d5e5f7ba2afa79771ba5e939e3072"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-tranquilo-5-2.png",
+      "sha256": "0ab424be6ac17136c5391283f33fcf9bd0752260d4c2bea650b1aa765638d1a6"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven2/planta-joven2-triste.png",
+      "sha256": "8a491af096c330cbb22714ce851e77b9e056370143f31350c2d43175d66aee81"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/andar-1.png",
+      "sha256": "3fc70f272751ab3f178f23b99c087437e6ecb9ce1cfcee7c3d8e140130778261"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/andar-2.png",
+      "sha256": "b8aaf996ba857d24b093d72a1422c1a49f4437efd22032bc801bc7e73a05c0b9"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/comer.png",
+      "sha256": "3f7d0c4a08a2aa42843f87c778cdb5c0981ffdec531a7d9c64b3c848543f719b"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/critico.png",
+      "sha256": "83c1f68ce5f58f5818e8b602f782f454ceacfb8f598e3e6c989f4e2090f03658"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/dormido.png",
+      "sha256": "2a46d5e4995f9942ddfeda0ec46ce9b2eb9f32b4756f81ed96353a0073bfd795"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/enfadado.png",
+      "sha256": "26ed58c074495f67837845db314706f52d6710afe8459f8af5b407f264154d45"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/feliz.png",
+      "sha256": "393ded9b4892560f9d61a6f2309971cdff20d6bb3cde6332cfc72acd7ee9b04e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/florian-tranquilo-1-v2.png",
+      "sha256": "af6c2b99354100fd023771c95ff6e6eedda458933925047ea646ae56c94012f4"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/muerto.png",
+      "sha256": "7de60e286cc91eba4ec7d8eee4e9c7d7b75bfaf1e7adf289b9a607733c3c2f5e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/salto-1.png",
+      "sha256": "82de6796567b5a5dc8e610f74b7f8ad5d63551e50a5764f86bf42569fbd75591"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/salto-2.png",
+      "sha256": "ccd7e4af01376e8466ac05280f58f86d554cf4929c61e6957335698cac92b329"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/salto-3.png",
+      "sha256": "516e2d7564c7038b3dcb30a60916e549626250fd72c765b5dd5fc0efb545ef72"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/tranquilo.png",
+      "sha256": "20032f9036a79235c3d38ba1a424b6d003cc771e82c06579bcacdc94b9d88be7"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-joven1/triste.png",
+      "sha256": "81250aa9049d8636e1ac75698d3dbc2092b9f03f89fbf8a157af665f059bd8f6"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/andar-derecha-1.png",
+      "sha256": "cbc80c6fda816223907aff97e57028d8eecbfb13fd2bc1a466de88c429912603"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/andar-derecha-2.png",
+      "sha256": "e1c8b2dfee603f9f773023a4ebedf4f179e6bf76e36ba470d526158ab42e3276"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/andar-izquierda-1.png",
+      "sha256": "d59ba942ee2a6789103d7770d50b07e8ef6ab3dfce25221af91c716a5c2850b1"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/andar-izquierda-2.png",
+      "sha256": "089e251f2b73e1cbd7b907c88cb56a36ea665c9ab7941a0024e9e46e2bfebc4d"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/comiendo-1.png",
+      "sha256": "18bc1f1525b6a1ed9039307e9423ef10b032aca6e1cf5b3fc8c808d8cef65966"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/comiendo-2.png",
+      "sha256": "d66247b70da08f2b4b92141b99977f8b136419e16dab8128ecbfc63e3c36a084"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/critico.png",
+      "sha256": "0a26b424d7078f13a98704fb459f5d3ecfd6010934dd1b3ff21ee1e3e82ebe62"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/dormido.png",
+      "sha256": "c75af0197f5444685eed13ea57122bb05e3037c11228f3485ff97ef393a37529"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/feliz.png",
+      "sha256": "ea05b7985c4ae8423bdb2f66cd2d05f4761e0af8bea45f7f0ddb18a7558007e6"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/huevo-abierto.png",
+      "sha256": "e649a1c4f6c8ac4871d80e7910d0d55c6d487b6b3e5003d30aa88f6382a4e93b"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/huevo-normal.png",
+      "sha256": "a10965907c2cbf028e8428e677ca5a03a3ebfdfc14929100bfcf7225c8de7387"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/muerto.png",
+      "sha256": "753c5f5eda53bdd8f56687945223d571984d37f7fbc9d8c914da14d33c88f678"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/tranquilo-1.png",
+      "sha256": "05a1298e63b47848d413912c7028144e571a52fa749c26d301710f017ac1acb4"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/tranquilo-2.png",
+      "sha256": "0f0501406a800b482e861f8db439591a94ad083650bdc766ff62eeb277fb443b"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/tranquilo-3.png",
+      "sha256": "30d87a984730bf2824d2d2665de93b761c03392e717da65d10c2ad976150f3b4"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-bebe/triste.png",
+      "sha256": "5f1a7015cd6847f69f79033d1758561efb7aed2f0a74ffaa430f4163d332734c"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-agachada.png",
+      "sha256": "5a83a05ed68fbd88f3560d5e67d8d94ed76ab7e9e9c57ceacd8a180d536997aa"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-comer-1.png",
+      "sha256": "dd848bf630356132a754576f83d4ee947ac6b250cd989150ecfdd22bc9c65521"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-comer-2.png",
+      "sha256": "f9e47d5b698eadacbca6000d4fdcd5d403b970a87654998601504b1324e19ead"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-critica.png",
+      "sha256": "7630f6d29b34643a99e41f69c8a10ad2e39a1d265e32e458711e3a1d0f1c9cf8"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-dormida.png",
+      "sha256": "109a879735c32b594a2723ab112f79f75c74606f75ef2c62e895506ef2809057"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-enfadada.png",
+      "sha256": "4f0614db20ce1aa223501c59f5e35453613005cbf199a67a2b7a5b64fff7dba3"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-espalda-1.png",
+      "sha256": "e5485af00022adc04f7da5d8af06234ff4078979b1d602df394e619e7faf292e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-espalda-2.png",
+      "sha256": "9214b58f479e6260169f3f3adf6f4d8166753569e73a54bfd14d4b0fd87c5760"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-espalda-3.png",
+      "sha256": "ac5550a2496e7da5883d4826234c076d4df18041856ecedd9056eb908f8db6ad"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-espalda-4.png",
+      "sha256": "308ed3c393cec63f36ee682b454e06ed4bb64e3cf72d53ad606d845f4c6a6883"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-espalda-5.png",
+      "sha256": "dddc19533e46da49f68fee04b514ce0d9c3f813a64591812279c3dba6f3be88c"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-feliz.png",
+      "sha256": "927fdb02276a7cf9d907b6d9b14ee854ba71953120559ea4e47f373a3a22dd25"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-lanzas-1.png",
+      "sha256": "99becdf738340ee24932d5973b7bfc3275efdef9066e018a974008c66152e0e9"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-lanzas-2.png",
+      "sha256": "9ecbfda8ffc1a7b491de0db4111d71b8ad7ae2fab86d36b2aee0a102bec26dae"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-lanzas-3.png",
+      "sha256": "f3c1c5bafe031c395c8a15ecd1c419cf39537a0404809c8d55edcb021000d5de"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-mirar-abajo-1.png",
+      "sha256": "feb12b1d5ab796ca8df80fe23dbb1a50007526e6a3a2ff252157fba650086f8a"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-mirar-abajo-2.png",
+      "sha256": "426ce0371839016c8170eae53d81738a280fe09d5a6de0a28ccd1161d6e6eac6"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-muerta.png",
+      "sha256": "fcd46ba84f39361c4d158343780ef8ccb2542749f79a363017dbe358f5d7a11d"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-normal-1.png",
+      "sha256": "5dde80df59f1a07942f88de170e71dca132299e286e1d2b1fc395a0de820dc12"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-normal-2.png",
+      "sha256": "d2c41be74b53c0f7229f71e351177891db48ecfb08dff1cca414e14180fdc8a1"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/floralia-triste.png",
+      "sha256": "a935ba7702c8b73400972974aa49055040af1490db7fa5a588fbbcb9c98bb1d6"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-comer-1.png",
+      "sha256": "c8bb8de3ff31b3b57eef2035e26bb42106ee0dd5b8139783c62354ed3a0db1d0"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-critico.png",
+      "sha256": "3336834e024fda4110b9c16c24e66c76760c5fee3a93931bd293299b671573cb"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-dormir.png",
+      "sha256": "01426549d0300ff7a13df48e5baecf17c5daae6aff04b46748ec780e23943b96"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-enfadado.png",
+      "sha256": "b8a90ee581024075dd0ef6c674b9387c2ab0b585b84fc6544f32a6a6b8f860dd"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-feliz.png",
+      "sha256": "587ea754fcbe76c1cbe743c8290e532bc8b27ae6ea2bb3c15fcc3079535c1ad5"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-muerto.png",
+      "sha256": "86188b484a2f0dfb2331affcf3aa0830386f3ba0e0ade7b33026a3b266d44e80"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-1.png",
+      "sha256": "c420a420af4010bbfcc74aab7618e0b1cfe6509d26d4de00befa9b70e22f82b3"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-2.png",
+      "sha256": "8c4365c7454c873ba66f06ce411b5d88afb5466854ecfeb4c178ef49c37de719"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-3-1.png",
+      "sha256": "3989073346168c789d9a7beb4325e13218689ca82835d8bc6775313d6b669e0d"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-3-2.png",
+      "sha256": "2180c193f2c5e9ce0f415cb5c7e01e1fa6e81295ac31684be9d60ca43c4a6682"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-4-1.png",
+      "sha256": "631b772790778b9f282da65c2c94ca92f2c6fa69b0c7555232d6cbf221f4790c"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-4-2.png",
+      "sha256": "fc0bf6585dda05bf8e95d1e6d14002d44ef2b8957a04e935caa9e090d85308d1"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-5-1.png",
+      "sha256": "102428eaf79099d3e56639184ad9c6b75457a17c131a772091b4b8f824a3351d"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-5-2.png",
+      "sha256": "2e9d334deb81ac3c3ab354e05725db278848f3605ba81f682dac9787a763040e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-5-3.png",
+      "sha256": "bfbff5376597bd6335d0b4b5c6be808dc535e3d90f826f120d88ce94e75caed3"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-5-4.png",
+      "sha256": "73d2032cef077763f662f8dc7f72e02f22c04ba12a59ca5c1fb331ba384e9291"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-tranquilo-5-5.png",
+      "sha256": "96a034150d284924cf996d612e4bb9db61217bd65d65546c76a563a550a11bba"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto2/planta-adulto2-triste.png",
+      "sha256": "56a22ee6a870dcd7c2eb5fd4ea3ed21fcdf5ac8f896620a160b95fa68f9c946a"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/comer-1.png",
+      "sha256": "33e0d70c45823b9a6b6685e969c248122d4ec2e8705f3807e26d444c27d69e65"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/comer-2.png",
+      "sha256": "d3bd9e257e5426de57b1e157aa8ae31e89c238bc3682f45707912cd44b5e9858"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/comer-3.png",
+      "sha256": "a7d76ad3f8480c25a28b00863fbc9fae4c930d647306f67735d5f0d44975b675"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/critico.png",
+      "sha256": "cddba179d43d5d68785e545fbda65b6fbfba9e067eaf6fa3e1828f6ed4b77e36"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/dormido.png",
+      "sha256": "c64f8bb87d9b9d3277bcd4e6936ace6a9c76b456f4eecde3ba161fe0868ce800"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/enfadado.png",
+      "sha256": "aab152fc26aec37dfa8385b1f6d28e6aab2bac22b095f7bd3fcf2199ced3911f"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/feliz.png",
+      "sha256": "cc260e6846ede80af3bd4f48813d62ab06e823e5fb0be5b69c9a4eb3487ba175"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/muerto.png",
+      "sha256": "cfeb9c57923898b007bf7367d0c828af80a4d49e9c8060db0c2397b6498f097e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-1-1.png",
+      "sha256": "d07d591dc33b657f75aad806112c19abcd21f39776ea8268840499d4a7797282"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-1-2.png",
+      "sha256": "1c8a3455199e91cc174b5375e0a90157e954ada1bf9cd2c8dbe3665fdf11f68d"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-1-3.png",
+      "sha256": "c9be5e5e8ac5d4939f5f6b6751cd2d859d792a60bcfc6ad50a7acd4156b1a466"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-1.png",
+      "sha256": "7da657498c508abd327bec245adb843d4a2477ed6be414c878c2ec1a247b033a"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-2-1.png",
+      "sha256": "82a761cff8832bfc12c06612d8a21be9c55dd9d18173b111748ad751c27860ba"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-2-2.png",
+      "sha256": "42f82db397f6c50ef35bc783ad7037d44802a6693ab7f347b84f6c5679f0518e"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-2.png",
+      "sha256": "82a761cff8832bfc12c06612d8a21be9c55dd9d18173b111748ad751c27860ba"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-3-1.png",
+      "sha256": "a01c6ec1daf00e9b84cee0e034c69fc1519abdeaa4b69808f5ea94492274184f"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-3-2.png",
+      "sha256": "60ccbc2a55575163752a02a644c4d5b5ead2a9c131f1a1e11c0d365ca9f35a8c"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-3.png",
+      "sha256": "3ab05ce8a743dab120c88f28bbe665c6b9b5189ccebdee122bbfbcc243905e96"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/tranquilo-4.png",
+      "sha256": "02da090c285ab179ceda142500057d5e284805a60a41e6dfc68762870c22001d"
+    },
+    {
+      "path": "games/original/perripet-app/creatures/planta-adulto1/triste.png",
+      "sha256": "06f0fa23bff8141720ff728a9bc077a90fe38b52134db2d6b97de37f08a5ce87"
+    },
+    {
+      "path": "games/original/perripet-app/combat/background.png",
+      "sha256": "3c9863590412a300492d9e5f061f64e3818957d9e1232b81d230264aa1c60954"
+    },
+    {
+      "path": "games/original/perripet-app/combat/bear.png",
+      "sha256": "6d990c38d1ca5bcc44f7f5b5d2e1bcb4a907d2da150204f0bf0d86c6836b525a"
+    },
+    {
+      "path": "games/original/perripet-app/combat/dragon.png",
+      "sha256": "aba3d3b62689b60611739f1528a8899f252beee2799eecd6912c4b79055764fa"
+    },
+    {
+      "path": "games/original/perripet-app/combat/goblin.png",
+      "sha256": "0b7bf556dc5c3f02831fa63c9a90ff6e0e120cb77b231c7616b64ad35a0cfe5c"
+    },
+    {
+      "path": "games/original/perripet-app/assets/perripet.css",
+      "sha256": "07913d5324bd213a60d36d7cc64dadfaeca0aa2065f5d3f876f6c57dfcd82d69"
+    },
+    {
+      "path": "games/original/perripet-app/assets/perripet.js",
+      "sha256": "96adb01a861ca649afb6c3b15d923e2712d3256d1807e013c444558462b2b22b"
+    },
+    {
+      "path": "games/original/perriduelos-app/app.js",
+      "sha256": "1691752928b5417a889fc944381ee164a8e0aa50f957bc0e49aaa78be3889ea0"
+    },
+    {
+      "path": "games/original/perriduelos-app/fondo-perriduelo-tienda.png",
+      "sha256": "d40ca61508c394dc1c8dcfb3f0cede17745c886f2cd35c8779062792ec50f812"
+    },
+    {
+      "path": "games/original/perriduelos-app/fondo-perriduelos.png",
+      "sha256": "d6ef999f5fcffd21cfe80855413e1d6b995badb4ce8c955340ce01588de8734e"
+    },
+    {
+      "path": "games/original/perriduelos-app/index.html",
+      "sha256": "f435bb9979b01de632ad65d6f16d13daf5dbf78172d5af09c53caece0469ef69"
+    },
+    {
+      "path": "games/original/perriduelos-app/styles.css",
+      "sha256": "a114e4071dd864ce5a8e90a39327eb224f4c6c443ea35af28cc8e836413b7ea4"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/botas-sushi.png",
+      "sha256": "ebc2f0795a5e633b3b5eead40d5045d14d88a446058a2491993d620fe2ac9a68"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/casco-sushi.png",
+      "sha256": "79634e27824b8f4253ac9cd1c934ee26c468f6be4d98a5b71ded6ebe80f3b722"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/escudo-legendario.png",
+      "sha256": "fa6696550a7ddb7171f331beb9d39042d88b623576529406709569201bd55d60"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/escudo-madera.png",
+      "sha256": "172423f261be843aae6d1de38f4f0145b9e8d8077946debcdb9614b209d0323a"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/escudo-metal.png",
+      "sha256": "5be9ad104d734b7448ab9e456033698bffa573f9f4f21c2108a1002f964c9f38"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/espada-legendaria.png",
+      "sha256": "3fb391fa54588505b8357a57b1ece1489664e6c80dc9513c7dba097896c61296"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/espada.png",
+      "sha256": "4903803b0c8fe972ea39a797ca1fe8acd43ffd74b735e895d30f58e7f37ce1ef"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/gemas-moneda.png",
+      "sha256": "5f8c7a9d6c1fa1742840785dd46a9407acbc740de659a59b8a3209fc69dc6b61"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/guantes-sushi.png",
+      "sha256": "166842f1701d21579088d3d4d2f8f742be1ae692eb36aa850afe9fa5a3975365"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/pantalones-sushi.png",
+      "sha256": "1f967148362925330be8efa3db44878be64557d1dd668b1c2a3726fa94461a25"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/pechera-sushi.png",
+      "sha256": "6de2ab52640b80d576ea33bd9688ef6dcf2fc4a29cee7bb208465a62693fa2c8"
+    },
+    {
+      "path": "games/original/perriduelos-app/assets/perricita.png",
+      "sha256": "1f3f4a627259e59d62a4c248a312f1bacc8e6e192df1b22b09dadcece91bf0f2"
+    },
+    {
+      "path": "games/original/assets/album.png",
+      "sha256": "cda6212b73647427e9b19dbc01d31fa5535a2bf4332e07e9c7ca377e7740fd14"
+    },
+    {
+      "path": "games/original/assets/botas-sushi.png",
+      "sha256": "ebc2f0795a5e633b3b5eead40d5045d14d88a446058a2491993d620fe2ac9a68"
+    },
+    {
+      "path": "games/original/assets/boton-atras.png",
+      "sha256": "149bdd4b56833c123d46cef1490e48c356931594cf179382600e628ce6503dc8"
+    },
+    {
+      "path": "games/original/assets/boton-cartas.png",
+      "sha256": "f7aee71543584e2d7726e6a6dea1429b75129a7c83f6eb40f82751d1486f4ae2"
+    },
+    {
+      "path": "games/original/assets/boton-cofres.png",
+      "sha256": "2026dbb075427bf50b037decac7d2b52376025b8aa98f4ab30726b54604f82e0"
+    },
+    {
+      "path": "games/original/assets/boton-dorado.png",
+      "sha256": "ce8eea8c74ab929e14de52e1cbfc01edede7d8896239e1c6c04115e5c05f7942"
+    },
+    {
+      "path": "games/original/assets/boton-equipamiento.png",
+      "sha256": "ccb9f7d3a05dccd9cb668d824b7066e4e05eedcdb3105ec201bb6927b6643e5d"
+    },
+    {
+      "path": "games/original/assets/boton-inventario.png",
+      "sha256": "64f461bf146a96b4afdabc7627d149bcdf4f1c7f51fd0870bb07829febad020b"
+    },
+    {
+      "path": "games/original/assets/boton-minijuegos.png",
+      "sha256": "4aab8a40e5f26897d6565008a270634542d1fed54bdaedf228b75e4d107a1d78"
+    },
+    {
+      "path": "games/original/assets/boton-miperfil.png",
+      "sha256": "0e24956b889cdbda3ef8cc010dc21d1656bf935942708c1580272015ec7d2f7a"
+    },
+    {
+      "path": "games/original/assets/boton-perricasilla.png",
+      "sha256": "9764e18587204eab3fb971144c070ef9b13e66b1a3bf333c6464d1bbf7cd81f3"
+    },
+    {
+      "path": "games/original/assets/boton-perripet.png",
+      "sha256": "1b364bfbc2061344ff64555d03563f715be7ab0ddd5025b3b713577526af00aa"
+    },
+    {
+      "path": "games/original/assets/boton-perrirpg.png",
+      "sha256": "9fc690ee9ad291f8a1d0ec93e870c769c4f18dceed2f4407973fd0b347904e1b"
+    },
+    {
+      "path": "games/original/assets/boton-tienda.png",
+      "sha256": "4c35112afd8d34333eb1155a76b46bdfd2fbc1ed784ca8a547848377835840c1"
+    },
+    {
+      "path": "games/original/assets/boton-twitch-l.png",
+      "sha256": "db0c9267048322a4c6369ab9803e1bd5969aa546251f8155bd300950fce2fd72"
+    },
+    {
+      "path": "games/original/assets/boton-usuarios.png",
+      "sha256": "620a0554017dd891e2a2745c815dabb53307675fbb34d9f54afca477e8336d4a"
+    },
+    {
+      "path": "games/original/assets/boton-youtube-l.png",
+      "sha256": "171664468e9ff6f30bca1b917aadd76a59606750c8df8eec5776711bb627bc21"
+    },
+    {
+      "path": "games/original/assets/Cara-perricasilla.png",
+      "sha256": "baace24ac27f54a7df41daf52b45154199ab3285e0305db4e04e06ff8d8cab9b"
+    },
+    {
+      "path": "games/original/assets/casco-sushi.png",
+      "sha256": "79634e27824b8f4253ac9cd1c934ee26c468f6be4d98a5b71ded6ebe80f3b722"
+    },
+    {
+      "path": "games/original/assets/cofre-abierto-monedas.png",
+      "sha256": "2c6d7228b64ad5beecc9b971fa7107569ee726108a6d84516b63d91a2bc673c4"
+    },
+    {
+      "path": "games/original/assets/cofre-abierto-morado.png",
+      "sha256": "a55a09e6d6743b4689e55d88598acbe7f149b306c29c4a82e06872f0cfd8d51f"
+    },
+    {
+      "path": "games/original/assets/cofre-abierto-rojo.png",
+      "sha256": "e8a28bfce77d3b7a0ed4690afc6d8218198d23be8c3be31694b4329861f305a8"
+    },
+    {
+      "path": "games/original/assets/cofre-cerrado.png",
+      "sha256": "9b1879a193218245dc3166ae99cf2c7b2fd46a03ff6c48b9c665f85c14b37b43"
+    },
+    {
+      "path": "games/original/assets/dorso-perricasilla.png",
+      "sha256": "392539d921883c99bf7fd4ee2fcc77a29d97b3f18188f56ff14a328a9133867d"
+    },
+    {
+      "path": "games/original/assets/dorso.png",
+      "sha256": "49e4b63c58c5c71a5a5e600500f70e142054c476832a82d81b95a2398d4e1cc0"
+    },
+    {
+      "path": "games/original/assets/duelo.png",
+      "sha256": "1890021844912d8aa9b6e52b6ee2122c2837720922c1cae27f566f8fcca4fb8f"
+    },
+    {
+      "path": "games/original/assets/escudo-legendario.png",
+      "sha256": "fa6696550a7ddb7171f331beb9d39042d88b623576529406709569201bd55d60"
+    },
+    {
+      "path": "games/original/assets/escudo-madera.png",
+      "sha256": "172423f261be843aae6d1de38f4f0145b9e8d8077946debcdb9614b209d0323a"
+    },
+    {
+      "path": "games/original/assets/escudo-metal.png",
+      "sha256": "5be9ad104d734b7448ab9e456033698bffa573f9f4f21c2108a1002f964c9f38"
+    },
+    {
+      "path": "games/original/assets/espada-legendaria.png",
+      "sha256": "3fb391fa54588505b8357a57b1ece1489664e6c80dc9513c7dba097896c61296"
+    },
+    {
+      "path": "games/original/assets/espada.png",
+      "sha256": "4903803b0c8fe972ea39a797ca1fe8acd43ffd74b735e895d30f58e7f37ce1ef"
+    },
+    {
+      "path": "games/original/assets/esquina2.png",
+      "sha256": "241c61e0637accea70ef758b4429885d617a494c1432099d25a3bdd6c5530e26"
+    },
+    {
+      "path": "games/original/assets/fondo ataque.png",
+      "sha256": "0ec759b93b945a50cf16473ea42f011b61cec5c202fcd3174b866fd4428b6bb8"
+    },
+    {
+      "path": "games/original/assets/fondo-menu-web-movil.png",
+      "sha256": "becff6d357faec5c2f800802e6f2fa953285aee7b6e90f24fbc65d2c257b4c57"
+    },
+    {
+      "path": "games/original/assets/fondo-menu-web-pc.png",
+      "sha256": "75ec9daf1e547e80920742f47e5ac9230a3d0a428bb8c72366d6371da60018bc"
+    },
+    {
+      "path": "games/original/assets/fondo.png",
+      "sha256": "4bf1fad9dbbdf8a9a1b3d4376f4db2a812bff08178f8b9137faa76d082903f3d"
+    },
+    {
+      "path": "games/original/assets/gemas-moneda.png",
+      "sha256": "5f8c7a9d6c1fa1742840785dd46a9407acbc740de659a59b8a3209fc69dc6b61"
+    },
+    {
+      "path": "games/original/assets/guantes-sushi.png",
+      "sha256": "166842f1701d21579088d3d4d2f8f742be1ae692eb36aa850afe9fa5a3975365"
+    },
+    {
+      "path": "games/original/assets/icono-boleto.png",
+      "sha256": "42bf22986943bb218b7940911c1176c66ee34d8de38f37b78b6c75743cf041a5"
+    },
+    {
+      "path": "games/original/assets/icono-chatarra.png",
+      "sha256": "94b6e40af503cbdc80f57d864eae0b0167ad4c800e8524d608ed964bd259c46c"
+    },
+    {
+      "path": "games/original/assets/icono-historial.png",
+      "sha256": "9a0fcd1ed9d968a2b12200569ba75f399dfca9efae00d40c10b1070c3c380a0b"
+    },
+    {
+      "path": "games/original/assets/icono-menu-desplegable.png",
+      "sha256": "81391316508602150fa9d4d5e727a6a5bc2ab68b507411cf11146500016a5ea4"
+    },
+    {
+      "path": "games/original/assets/icono-notificacion-comunicado.png",
+      "sha256": "8050ea72629f4ca38d5e5c989300dbebbe0202b32cb27a9dbcd30ef1929eed24"
+    },
+    {
+      "path": "games/original/assets/icono-notificacion-objetos.png",
+      "sha256": "b8f554fb891a3d03d7c7c264b2c2fb768f26f00ada42a0c384ab9b40969542b2"
+    },
+    {
+      "path": "games/original/assets/icono-notificacion-social.png",
+      "sha256": "f8c8d460ddb4a1c178dc6fa550a905cb050d73d85b9476f04a1f9195d0729391"
+    },
+    {
+      "path": "games/original/assets/icono-perricasillas.png",
+      "sha256": "6efc587edecd90c1343200fa047d4d967d59158d641301f038462000d45f2030"
+    },
+    {
+      "path": "games/original/assets/item-Pinza-Real.png",
+      "sha256": "698f49a4ea0082aa6e764e3d7f3dcb64377d9bae695fb9b3fc76331bf91ad977"
+    },
+    {
+      "path": "games/original/assets/llave.png",
+      "sha256": "4bdc67c29f6ac91e8fc12d271a44aff3c43055f3a3f52afe4066f3c18f38bb75"
+    },
+    {
+      "path": "games/original/assets/logo-chat.png",
+      "sha256": "c1f343b7687d69f00d949efa402674a5540f32646b81a1a76a421c31851b4c28"
+    },
+    {
+      "path": "games/original/assets/logo-perrisushi.png",
+      "sha256": "58f67648d212ea6e60f083853abf41f3f1248481feaf4c4ee31de62e7b601a91"
+    },
+    {
+      "path": "games/original/assets/marco-logo-2026.png",
+      "sha256": "5915a6e2332990bdaf8d073e97470b06c3bdd31e4ededf5bff99df65958bcac8"
+    },
+    {
+      "path": "games/original/assets/marco-logo.png",
+      "sha256": "6b389fc8506a9026ce8045243f21816469536afbcd4c8e94b60601c58723e183"
+    },
+    {
+      "path": "games/original/assets/marco-menu-movil.png",
+      "sha256": "0589693e5cf68d658b987b9f0493283d7fb256b5ca1ed3f77b0fa5aa53a9f9d1"
+    },
+    {
+      "path": "games/original/assets/marco-menu-movil2.png",
+      "sha256": "b097e5bca3a2f1f555c1c103e06d92ef4c0aa736d4c52ef5b84f0fd2a6dcc314"
+    },
+    {
+      "path": "games/original/assets/marco-menu-movilG.png",
+      "sha256": "43b048b14917f057e91f4ff7361aec98002ace3fb1963f40cc20e30167981d19"
+    },
+    {
+      "path": "games/original/assets/marco-menu-pc.png",
+      "sha256": "fa784859db83926f14f5dc71cd684e16e2e63d4a5e2d5d794f9ed871c7a5b101"
+    },
+    {
+      "path": "games/original/assets/marco-menu-pc2.png",
+      "sha256": "7130a07fa10a92344388b5a8c7d132c5a7589ea899b0917816daff7f81f88179"
+    },
+    {
+      "path": "games/original/assets/marco-menu-vpc.png",
+      "sha256": "739c574f58bfe07b1bebd95e30868efd467aa504ad719f11031efa322bd7bb78"
+    },
+    {
+      "path": "games/original/assets/marco-menu.png",
+      "sha256": "fd77cc3c151034b6fcc246276143015f5bfc77459e7f09b32d0423de06f85e0f"
+    },
+    {
+      "path": "games/original/assets/marco-recuadro-movil.png",
+      "sha256": "e29ce4ce5e35916f8af9572930efb7cb4172303aee58da22c5c051bcd532f04d"
+    },
+    {
+      "path": "games/original/assets/marco-recuadro-pc.png",
+      "sha256": "af708846732282208fb581b0fd7b1e20218121ba447acf66eedf86acffaf8111"
+    },
+    {
+      "path": "games/original/assets/marco-ventana1.png",
+      "sha256": "62ea582a6597e9f9456467b547d950261dfea9deb5f7b6e6bab1af47ea6efe75"
+    },
+    {
+      "path": "games/original/assets/marco-ventana2.png",
+      "sha256": "50c40cf6760e65c250635630ecd4a8d5276b03aa1e1844653f9191eb3c6af5c3"
+    },
+    {
+      "path": "games/original/assets/marco-ventana3.png",
+      "sha256": "362b892a322b7764861d63cd4c2a320dc159f25685c192ddf0397d403e2a66e0"
+    },
+    {
+      "path": "games/original/assets/marco-ventana5.png",
+      "sha256": "47e8e793572dce837d6b6d3b2d66624f3d77f7333a3ae594efd52418e71b5bb4"
+    },
+    {
+      "path": "games/original/assets/menu-cartas.png",
+      "sha256": "33f3bc2ad1312138af62fb02aa6c6022791340a367931852ccc5a62407e85be7"
+    },
+    {
+      "path": "games/original/assets/menu-duelos.png",
+      "sha256": "d1ce6f340f3b15eff49f485daf5d3973a47ce61351addc1ac692c495cf2b7b07"
+    },
+    {
+      "path": "games/original/assets/menu-equipamiento.png",
+      "sha256": "af92553221319151067c016f5b82f622a165e91bbadf6d0263c807447a32c857"
+    },
+    {
+      "path": "games/original/assets/moneda.png",
+      "sha256": "81dc57523cfbd81f7ed91784fa3a6c950088e9ef3f58f678cff2605d51422838"
+    },
+    {
+      "path": "games/original/assets/nombre-inventario.png",
+      "sha256": "6b02dda5278acf9051a5db979a317376e3d35c105c936ae5b36164c0132ab869"
+    },
+    {
+      "path": "games/original/assets/pantalones-sushi.png",
+      "sha256": "1f967148362925330be8efa3db44878be64557d1dd668b1c2a3726fa94461a25"
+    },
+    {
+      "path": "games/original/assets/pechera-sushi.png",
+      "sha256": "6de2ab52640b80d576ea33bd9688ef6dcf2fc4a29cee7bb208465a62693fa2c8"
+    },
+    {
+      "path": "games/original/assets/perricita.png",
+      "sha256": "1f3f4a627259e59d62a4c248a312f1bacc8e6e192df1b22b09dadcece91bf0f2"
+    },
+    {
+      "path": "games/original/assets/perricofre1-abierto.png",
+      "sha256": "6756930159ce4e3106fd3c90f787ce952ded9ae89cc9674ff529866beb9ed83c"
+    },
+    {
+      "path": "games/original/assets/perricofre1-cerrado.png",
+      "sha256": "50184cfe51b88f7a460a32285be6dd4130bb77c27c048ff3d9b242f1b61f5e85"
+    },
+    {
+      "path": "games/original/assets/perricofres-minijuego-abierto.png",
+      "sha256": "886fa7838deb8368392ca9e13f66551819840559f24bc8c83ba5b62660ebd82c"
+    },
+    {
+      "path": "games/original/assets/perricofres-minijuego-cerrado.png",
+      "sha256": "37664dc7a1dc0ebceec9eda7c868362676813bba53d2d4f5a169d5bcb0eb8e5f"
+    },
+    {
+      "path": "games/original/assets/perricofres-minijuego.png",
+      "sha256": "886fa7838deb8368392ca9e13f66551819840559f24bc8c83ba5b62660ebd82c"
+    },
+    {
+      "path": "games/original/assets/perrisushi-logo.png",
+      "sha256": "58ddab58317ad647d3f4011ebf8afa35af4e38768536fcae1475d80d8567b7bd"
+    },
+    {
+      "path": "games/original/assets/perrisushi-world.png",
+      "sha256": "99c5260521ff1db1de2babdc456b839c184e0e8ce5133ea6b7ed356b33c6db8e"
+    },
+    {
+      "path": "games/original/assets/random-key.png",
+      "sha256": "5a1b4af7a7611f0f32bb618b512b757079a716c990d1ca002518fcc26b9f2000"
+    },
+    {
+      "path": "games/original/assets/sala-usuarios.png",
+      "sha256": "5e4d7708b6d4a0a350359375c736efc7419af563df2f8f583b7bfb781b1ce2ce"
+    },
+    {
+      "path": "games/original/assets/slime-cofre-abierto.png",
+      "sha256": "fddf6d2c18e9a4455bdbb184189ef4e7a2a2882c46b66aef9d22d8acd1c528c0"
+    },
+    {
+      "path": "games/original/assets/slime-cofre-cerrado.png",
+      "sha256": "c1c3f367c754c01c1327e4f1bc49033d4c261b229fb65260356b71b6f24f1082"
+    },
+    {
+      "path": "games/original/assets/usuarios-registrados.png",
+      "sha256": "4d84583e9542645d77df2925537cd8ead46eb7a3c1947675e501928ac28bb453"
+    },
+    {
+      "path": "games/original/assets/perrirpg/anillo-mago.png",
+      "sha256": "fffb5f926ca87b897c6ae892cd5538962b98a583c3a6dd78cc6ea23fc4b2d0d1"
+    },
+    {
+      "path": "games/original/assets/perrirpg/attack.png",
+      "sha256": "7e524c8aacb7a3925ad304cf57c0dbf750ff6055e2c59ee39f0e28ce67adb95c"
+    },
+    {
+      "path": "games/original/assets/perrirpg/baston-arcano.png",
+      "sha256": "361ad769b794298c369ac325921deddae3236b0ade0f96efa6e3b3ae20cc9db6"
+    },
+    {
+      "path": "games/original/assets/perrirpg/defeat.png",
+      "sha256": "2c2f2f1b440c38bf8d151d40772af31e4b037ff41749a98d3fad462603d693f0"
+    },
+    {
+      "path": "games/original/assets/perrirpg/escudo-metal.png",
+      "sha256": "2391b13861006f55b51feab68c59a9bc680fe1b3753bb5c0ae0731905d04343f"
+    },
+    {
+      "path": "games/original/assets/perrirpg/escudo-roble.png",
+      "sha256": "32da6f4a62f9cf6addacdc5b2580ac1980c7a66efd03ad8413412b64ec2a825e"
+    },
+    {
+      "path": "games/original/assets/perrirpg/escudo-roto.png",
+      "sha256": "b2385bf670b49630560344011f6b7c175c19a78ed218a5ae785cfb807e8a15e9"
+    },
+    {
+      "path": "games/original/assets/perrirpg/espada-desgastada.png",
+      "sha256": "b12a49768d819339033029bb6f228e1dc383ae06b38ce05eb08f278b55f3d568"
+    },
+    {
+      "path": "games/original/assets/perrirpg/espada-real.png",
+      "sha256": "aa10cb2e987fd614c8a901d8edee1ca7e43ff866fe6da636373a1b8a5ffa0518"
+    },
+    {
+      "path": "games/original/assets/perrirpg/espada-reluciente.png",
+      "sha256": "565478c513421426c42ee22c47eb19206e3c79a2bc5617d5b83f2779d476866c"
+    },
+    {
+      "path": "games/original/assets/perrirpg/espada-sagrada.png",
+      "sha256": "2c59cef83c68a4c78010e3c32c75567973ddab22a85519ff41eec285fbaa9a00"
+    },
+    {
+      "path": "games/original/assets/perrirpg/flecha-madera.png",
+      "sha256": "be03b5ebcba2f8cc97dace14013d12b6ee12d1e69cc716a1eaac838606af6035"
+    },
+    {
+      "path": "games/original/assets/perrirpg/hurt-1.png",
+      "sha256": "39b46270b87865a24089b818faebdbbef48ee5ddf18425e23512c1d3b210781b"
+    },
+    {
+      "path": "games/original/assets/perrirpg/hurt-2.png",
+      "sha256": "67909d88dc853f9c364063f000ec326551990be83ff72df650f4953348cfba71"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-amuleto.png",
+      "sha256": "7f6ef6eed15054a9447412d4c23f64b57a2a0c5a71cbd13bca7fddc7d148cf42"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-artilugio.png",
+      "sha256": "da52cc122bb6c5f7060ebfffcf788b6657b0d1f569d6451c565392fe437a54a5"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-botas.png",
+      "sha256": "6da1ee79f1f5a49ae6ad010c1e5165750b84a521c4b92e3a4b24fb2867c9bcaf"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-casco.png",
+      "sha256": "042d500f1c6dd944c4ca3c98d040c99cc6d8d3c2ed8fc3bfe2575e60a7cf170a"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-coraza.png",
+      "sha256": "086f33ff51c962ef1c4f58d78194d0382c3f56e8ac9f6a1e0341eb04530dca2c"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-escudo.png",
+      "sha256": "2209ced42358a0fddd5e26698f7fb5fa058806328ec4218b858f0f9eda5d604d"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-espada.png",
+      "sha256": "a42d8374badbbff1b84d342031cd0b99ea4c0d40912dc8dd260507be2222dde1"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-guantes.png",
+      "sha256": "ad1004e3fa160b8b34d06ff9e5a127db5d15ebb13e11e4a4cf0707b1af6efac9"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-mandoble.png",
+      "sha256": "4f9200d8500c37ceb3b60fa478b9d6923358cce23da69829b4cadfec8df24d4e"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-pantalones.png",
+      "sha256": "6c8b95b4345428b8d6e0d2ef6257cd94442376353b5bd4bf30f6d07dc0902db2"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-pociones.png",
+      "sha256": "8c73684908d96483282de512cc9d54dcdd2b5daf41f2b9b38f8d2a21bae6155f"
+    },
+    {
+      "path": "games/original/assets/perrirpg/icono-proyectiles.png",
+      "sha256": "709a4f54cd922e4bc4a38d0d7e6ae68ef0227c32d24a60311b413c3b79e3987c"
+    },
+    {
+      "path": "games/original/assets/perrirpg/idle-1.png",
+      "sha256": "303d5eb3f04f11c4f2eaa0cc893611028da1b5cd80da198d6d7ca2675b3942ec"
+    },
+    {
+      "path": "games/original/assets/perrirpg/idle-2.png",
+      "sha256": "5933edc4df15ad3e50cdeaeb82caa31b669d6d42be2ab920e89ba7203331da1d"
+    },
+    {
+      "path": "games/original/assets/perrirpg/idle-3.png",
+      "sha256": "9911a128641c279d1919e8b28d79d59320652925faa72f20d04f3862cd0e3ed4"
+    },
+    {
+      "path": "games/original/assets/perrirpg/idle-4.png",
+      "sha256": "2fe3c30ba50cb7674785fd0e0e0636a83c0dbfc4421bafacc8c3d8a6ecfc2805"
+    },
+    {
+      "path": "games/original/assets/perrirpg/lanza-dorada.png",
+      "sha256": "df3eda2a51c42c567f46a5968c3ddff6c24895742f5c87d61607688dc85bdc64"
+    },
+    {
+      "path": "games/original/assets/perrirpg/mandoble-oxidado.png",
+      "sha256": "585b63a854ec710d6949920506dd9d671b0d8f247ee196fa23173852440093de"
+    },
+    {
+      "path": "games/original/assets/perrirpg/mandoble-quebramundos.png",
+      "sha256": "41827b7525b3c9b479b7469e0577c67d94ba3df2baee2d27ffef53778bf53cb2"
+    },
+    {
+      "path": "games/original/assets/perrirpg/mandoble-verdugo.png",
+      "sha256": "8185982946cec158fb12fa0f3865d491c7c3eeec58f4ed1173afa107b2f029a2"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-armadura.png",
+      "sha256": "042f88ececc33c7118cb1db7295af28243128354f423b8b16893d96425f31ba9"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-chica.png",
+      "sha256": "b6597105b44849896c69585101d8d9fbc254b8d5de9717f190bc15d4dba070c5"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-critico.png",
+      "sha256": "2d7ff88254cb9303414ffe4f908119bbefa6b18de6ff8a3a35cfc8bec06a5208"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-divina.png",
+      "sha256": "1c6d504c0f6cefe3f8be95a3b1572f3c5641d9879cf91115f8e921130d1dc2c7"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-grande.png",
+      "sha256": "a38bdc0d589d5b5f05a3c98d5706d94bd4709ae2b7afaeda6ae2d374e90bd4b7"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-maestria.png",
+      "sha256": "e8c38008dac05ca3bb9b51b03295b3965cee0b68c5e4c37792936d93dd39946a"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-mediana.png",
+      "sha256": "be75ba0acd1b5a352169717965fc778b34c9ceb160f5fcee5f91533439dc4f66"
+    },
+    {
+      "path": "games/original/assets/perrirpg/pocion-pequeña.png",
+      "sha256": "b6597105b44849896c69585101d8d9fbc254b8d5de9717f190bc15d4dba070c5"
+    },
+    {
+      "path": "games/original/assets/perrirpg/shield-1.png",
+      "sha256": "af6374ee315e8c853029a4fc5a8f7f5ae017e02f9888789ea5c808cc7f2aebf5"
+    },
+    {
+      "path": "games/original/assets/perrirpg/shield-2.png",
+      "sha256": "64259e0d8c07ec9decd4077bbc6da9ffc98badc39e90325db3cbe20d3469f4db"
+    },
+    {
+      "path": "games/original/assets/perrirpg/shield-3.png",
+      "sha256": "d66c55cb92becd717bcf2d4220a8a8eac63762c2e3ebd5986071dc0d48e93b93"
+    },
+    {
+      "path": "games/original/assets/perrirpg/shuriken.png",
+      "sha256": "8c1b36daa8553597343a8405fb614c6be3f2d9fdaa2770dbacc0908f3b84c2a0"
+    },
+    {
+      "path": "games/original/assets/perrirpg/varita-quebrada.png",
+      "sha256": "4d068a87b58d29cc67625c556f23b26a982fe5f30897f39f2a8156050df0760e"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/agua-divina.png",
+      "sha256": "0e79d6fb29829d2b860a75b5b3ed45fa24fc919290206f59cdca0ef397e864e5"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/bolsa-especial.png",
+      "sha256": "d95a2d15e559d8d3435468606972e52c1a46a0b8299be6781322a864a2bfd5a3"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/bolsa-gemas.png",
+      "sha256": "ed1cd175d0230904ac473574c5ef16801756c3138375a1374d30a1697925e396"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/cajita-armas.png",
+      "sha256": "eee740b767417d882acc3b1937d65eebb12246a802be470ddc6d56dc12b8eb21"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/espada-sagrada.png",
+      "sha256": "2c59cef83c68a4c78010e3c32c75567973ddab22a85519ff41eec285fbaa9a00"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/gema-experiencia.png",
+      "sha256": "55ae9f592ffd3593d2a13b045d013202b18b3c5b63c1fbeb88e0a3f44c7d60e4"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/incubadora-mejorada.png",
+      "sha256": "7a80109ae740c016c0290095e0b79ea6a1955cb513def73ab23a45259f70d020"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/pocion-divina.png",
+      "sha256": "1c6d504c0f6cefe3f8be95a3b1572f3c5641d9879cf91115f8e921130d1dc2c7"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/reloj-cronotiempo.png",
+      "sha256": "d885d6a4dfd76e290a6fdb67daa7d1402df48babfb88c8b981b6017faa8f60b1"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/revivir-pet.png",
+      "sha256": "e449436a336de13c62246306bf986cad21420883026b397ea6c9a9052ac8edf6"
+    },
+    {
+      "path": "games/original/assets/objetos-especiales/saco-chatarra.png",
+      "sha256": "f7d9861014c2f6cf137bbce5e3051b455d2276619d48ebbb00b4bfb14f5a50de"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-abeja-1.png",
+      "sha256": "a2f5a9ba27f4b4e332d49650e8b4410a1a0cdda8bd174a8b2718cee754f12c61"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-abuela-1.png",
+      "sha256": "0d7bc2069bf9010476f1038527b8da368d495e053b897ad1462669640e79d216"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-amparo-1.png",
+      "sha256": "8cae58fc55f908bc024cca8fe18ff4d7695bfd2b64a6e5e2f2117cf4d0a9d118"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-buho-1.png",
+      "sha256": "f531085252de3bca36af10d881d723cc78d51dbc6fcb67de9f6b8c1224ee6edd"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-cabra-1.png",
+      "sha256": "b9aa939384c2f21ee6a588a68595c945e3d4847abe0e0e219d2aeb08f10058d2"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-cami-1.png",
+      "sha256": "040b2a3d74309463d2470fc9f1c42805b383f1fdff4c59d1d34f49d845cc0a93"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-croqueta-1.png",
+      "sha256": "81902026a07539e34f9444616de136d39d76e1fa6d81e5d8bdd4c1a2bfe4c115"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-esq-1.png",
+      "sha256": "9e66fa26696556c81594bd864d202dad81f434b6a5737d4a5d3870bb1f361bb2"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-estresario-1.png",
+      "sha256": "39bc8558d1eba456f3119122ec68d98068d5d3b423ab10fb37be9c7ca22f6edc"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-gato-1.png",
+      "sha256": "7717b6cbc5edb6bdcbcccdbc21816b95888cc6a0dde29a5736448a82ff0ecd06"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-panda-1.png",
+      "sha256": "3ada34ed2a13fc2d78bc2fc7a00ca82412cc0c8ba83cc378a81cd24f512e240b"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-pelusa-1.png",
+      "sha256": "aca94d14f3185ec60f56bd887afbd7bfd4d8b5a45e3f02210bfe1a9058a68fc1"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-perriweb1.png",
+      "sha256": "f491bd06138adbc74caf25a664c40b6a28aad2840747b805da8459b27363e68a"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-slime-1.png",
+      "sha256": "ca46b1beea11c1637f458130a35e1500a9fa13ac27e5c2180340fcf40b65fc33"
+    },
+    {
+      "path": "games/original/assets/logos-usuario/logo-slime-2.png",
+      "sha256": "6bde4f0123fb3b5aa9922d743a2352db5bec3643f8f13fcff3f24ffa37cdce56"
+    },
+    {
+      "path": "games/original/assets/logo-chat/corazon.png",
+      "sha256": "2435bf8f4c242f52218991fe025cf0d7ce7681bda1fc1dbb4c01bbf6d4f7d5d4"
+    },
+    {
+      "path": "games/original/assets/logo-chat/khe.png",
+      "sha256": "90bb4a1ffed6631839a24cf8a367de785fbb711c562c42c7cea3491c25de7906"
+    },
+    {
+      "path": "games/original/assets/logo-chat/like.png",
+      "sha256": "7e18f3360f79004fec2ce87b5b0586fc6a247b6900d93103458520d60219514b"
+    },
+    {
+      "path": "games/original/assets/logo-chat/llorar.png",
+      "sha256": "4c7999bbe992ed5d84d592ba659abc2365c4e5105f1743e19bdc5a32d6f13007"
+    },
+    {
+      "path": "games/original/assets/logo-chat/nolike.png",
+      "sha256": "9aede95c9a1870fb94b67fae275c92c0ec352d6f7100710c7a118228244d04b8"
+    },
+    {
+      "path": "games/original/assets/logo-chat/risa.png",
+      "sha256": "bf81bd2a214881297b25645b6d59739619ca88a44dbd2a9671ecfa087ceeb1e2"
+    },
+    {
+      "path": "games/original/assets/logo-chat/saludo.png",
+      "sha256": "05e702503e107f48321e11033f5eff9011802d7f500e9662ab3d92cdd4e58a91"
+    }
+  ]
+}

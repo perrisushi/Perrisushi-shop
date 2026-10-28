@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const main=fs.readFileSync('src/main.js','utf8'),live=fs.readFileSync('src/services/live-ui.js','utf8'),ui=live;
+for(const term of ['renderLiveUsers()','renderLiveInventory()','renderLiveShop()','bindPageEvents();'])assert.ok(main.includes(term));
+assert.match(fs.readFileSync('index.html','utf8'),/preview-pages\.css/);
+assert.match(fs.readFileSync('dev-server.mjs','utf8'),/serveSite/);
+assert.doesNotMatch(ui+live,/DEMO_USERS|DEMO_ITEMS|CaballeroTrufa|Comprar equipamiento|supabase\.(from|rpc|auth)|localStorage|sessionStorage|[✦✧★☆✩✨]/);
+assert.match(live,/Math\.max\(24,fields.length\)/);
+assert.doesNotMatch(live,/\(pendiente\)|pw04-demo-badge/);
+assert.equal((live.match(/class="textured-button pw04-shop-cta" data-economy=/g)||[]).length,2);
+assert.match(live,/data-pw04-shop-tab="random"/);assert.match(live,/data-pw04-shop-tab="sorteos"/);
+assert.match(ui,/ArrowLeft/);assert.match(ui,/ArrowRight/);
+console.log('OK: vistas conectadas sin demos; 24 casillas mínimas; dos pestañas; economía desactivada.');

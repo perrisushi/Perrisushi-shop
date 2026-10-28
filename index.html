@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#160f0c" />
+  <meta name="description" content="PerriWeb 2.0: el mundo de Perrisushi." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; upgrade-insecure-requests" />
+  <title>PerriWeb 2.0 | Perrisushi World</title>
+  <link rel="icon" href="./public/assets/logo-perrisushi.webp" type="image/webp" />
+  <link rel="preload" href="./public/assets/fondo-menu-web-pc.webp" as="image" media="(min-width: 701px)" />
+  <link rel="preload" href="./public/assets/fondo-menu-web-movil.webp" as="image" media="(max-width: 700px)" />
+  <link rel="stylesheet" href="./src/styles.css" />
+  <link rel="stylesheet" href="./src/desktop-layout-fix.css" />
+  <link rel="stylesheet" href="./src/preview-pages.css" />
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body data-access="checking">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <div class="app-frame">
+    <div class="scene" id="app">
+      <header class="topbar">
+        <div class="topbar-start">
+          <button class="icon-button nav-toggle" type="button" data-action="menu" aria-label="Abrir opciones de sesión" aria-expanded="false" aria-controls="session-options"><img src="./public/assets/icono-menu-desplegable.webp" alt="" /></button>
+          <div class="identity-chip"><span class="status-dot" aria-hidden="true"></span><span><small>PERRIWEB 2.0</small><strong>Cargando…</strong></span></div>
+        </div>
+        <div class="topbar-end">
+          <button class="icon-button notification-trigger" type="button" data-action="notifications" aria-label="Notificaciones"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></button>
+          <button class="profile-badge" type="button" data-route="profile" aria-label="Mi perfil"><img class="avatar-image" src="./public/assets/logo-perriweb1.webp" alt="" /><img class="avatar-frame" src="./public/assets/marco-logo.webp" alt="" /><span class="profile-label">Mi perfil</span></button>
+        </div>
+      </header>
+      <nav id="session-options" class="session-options" aria-label="Opciones de sesión" hidden>
+        <button type="button" data-action="music" aria-pressed="false">Encender música</button>
+        <button type="button" data-action="assistance">Asistencia</button>
+        <button type="button" data-action="logout">Cerrar sesión</button>
+      </nav>
+      <main id="contenido" class="stage-content" tabindex="-1" aria-live="polite"></main>
+      <footer class="scene-footer">
+        <div class="footer-social" aria-label="Redes sociales">
+          <a class="social-preview" href="https://www.twitch.tv/perrisushi" target="_blank" rel="noopener noreferrer" aria-label="Twitch de Perrisushi"><img src="./public/assets/boton-twitch-l.webp" alt="" /></a>
+          <a class="social-preview" href="https://www.youtube.com/@perrisushi" target="_blank" rel="noopener noreferrer" aria-label="YouTube de Perrisushi"><img src="./public/assets/boton-youtube-l.webp" alt="" /></a>
+        </div>
+        <span class="stage-indicator">PERRISUSHI WORLD</span>
+      </footer>
+      <div class="overlay-layer" id="overlay-layer" hidden></div>
+      <audio id="background-music" src="./public/assets/musica-web.mp3" preload="none" loop></audio>
+    </div>
+  </div>
+</body>
+</html>

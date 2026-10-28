@@ -1,0 +1,73 @@
+/* PerriWeb 2.0 · Corrección 04: solo Usuarios / Inventario / Tienda.
+   No modifica portada, Mi Perfil, Historial, Perrilogos ni minijuegos. */
+.pw04-panel{min-width:0;color:#54331e;font-family:Georgia,'Times New Roman',serif}
+.pw04-inventory-slot>span:not(.pw04-quantity){font:11px/1.2 system-ui,sans-serif;overflow-wrap:anywhere;max-width:100%;padding:4px}
+.pw04-shop-section code{overflow-wrap:anywhere}
+.content-board:has(.pw04-panel) .content-scroll{padding:16px}
+.pw04-panel h2{margin:2px 0 3px!important;color:#59321b;font-size:clamp(22px,2.3vw,29px)!important}
+.pw04-panel h3{font-size:clamp(17px,2vw,23px);margin:0 0 6px;color:#55301b}
+.pw04-panel p{font-size:13px!important;line-height:1.4!important;margin:6px 0 10px!important}
+.pw04-kicker{font:800 9px/1.3 system-ui,sans-serif;letter-spacing:.12em;color:#945c2f}
+.pw04-intro,.pw04-inventory-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pw04-explainer{color:#76533b;max-width:100%!important}
+/* Usuarios: tabla compacta con paginación del backend y desplazamiento interior. */
+.pw04-user-table{margin-top:10px;min-width:0;border:2px solid #ab814f;border-radius:9px;background:#fff4df50;overflow:hidden}
+.pw04-user-head,.pw04-user-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(75px,.62fr) minmax(0,1.7fr);gap:12px;align-items:center;padding:8px 12px}
+.pw04-user-head{background:linear-gradient(180deg,#a87845,#86542f);color:#ffedc9;font:800 10px/1.3 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.pw04-user-rows{max-height:clamp(185px,42dvh,400px);overflow:auto;overscroll-behavior:contain;scrollbar-color:#9e6430 #efcb92}
+.pw04-user-row{border-bottom:1px solid #b98f653b;min-height:48px;font-size:12px;background:#fff4e52b}
+.pw04-user-row:nth-child(even){background:#b3793e16}
+.pw04-user-row:last-child{border-bottom:0}
+.pw04-user-name{display:flex;align-items:center;gap:8px;min-width:0}
+.pw04-user-name img{width:35px;height:35px;object-fit:contain;border-radius:50%;flex:none;filter:drop-shadow(0 1px 2px #0004)}
+.pw04-user-name strong{overflow-wrap:anywhere;line-height:1.3}
+.pw04-user-points{white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums}
+.pw04-user-points small{font-size:10px}
+.pw04-user-achievements{font-size:11px;line-height:1.35;color:#72563e;overflow-wrap:anywhere}
+/* Inventario: información al mínimo, cuadrícula protagonista */
+.pw04-inventory-balances{display:flex;gap:9px;margin:10px 0 13px;flex-wrap:wrap}
+.pw04-inventory-balances>div{display:flex;align-items:center;gap:6px;min-width:130px;padding:5px 11px;background:#e7b77c6e;border:1px solid #a97942;border-radius:8px;color:#58371d;font:700 12px system-ui,sans-serif}
+.pw04-inventory-balances img{width:25px;height:25px;object-fit:contain}
+.pw04-inventory-balances strong{margin-left:auto;font-size:15px}
+.pw04-inventory-main{min-width:0}
+.pw04-inventory-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;min-width:0;padding:12px;border:5px ridge #80532f;border-radius:12px;background:linear-gradient(#64402b,#382217);box-shadow:inset 0 0 15px #130804a8;max-height:min(52dvh,350px);overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#bb8347 #543322}
+.pw04-inventory-slot{position:relative;display:grid;place-items:center;aspect-ratio:1/1;border:2px inset #996d48;border-radius:7px;background:radial-gradient(ellipse at center,#563a29,#241611);min-width:0;min-height:0;box-shadow:inset 0 2px 6px #0008}
+button.pw04-inventory-slot{cursor:pointer;padding:8%;color:#ffe4a9}
+button.pw04-inventory-slot:hover{filter:brightness(1.25)}
+.pw04-inventory-slot img{width:90%;height:90%;object-fit:contain}
+.pw04-quantity{position:absolute;bottom:2px;right:3px;font:800 11px/1 system-ui,sans-serif;text-shadow:1px 1px 2px #000,0 0 5px #000;color:#fff0c5}
+.pw04-grid-note{color:#f3d3a8!important;font:600 11px/1.4 system-ui,sans-serif!important;padding:8px 12px 0;margin:0!important;background:linear-gradient(#55331e,#55331e);border-radius:0 0 6px 6px;text-align:center}
+.pw04-item-info{min-height:26px;padding-top:9px;font:600 11px/1.4 system-ui,sans-serif;color:#6d4a30}
+/* Tienda: solo Random Key y Sorteos, operaciones bloqueadas */
+.pw04-shop-tabs{margin-top:14px;display:flex;gap:8px;border-bottom:2px solid #aa7849;padding-bottom:9px}
+.pw04-shop-tabs button{padding:11px 17px;border:2px solid #926238;background:linear-gradient(#d5ac77,#a87649);border-radius:9px;color:#4c2b1d;font:700 15px Georgia,serif;flex:1;min-height:44px;box-shadow:0 2px 3px #673d1a4a}
+.pw04-shop-tabs button[aria-selected=true]{background:linear-gradient(#805031,#4a2919);color:#ffe7b8;border-color:#d0a160}
+.pw04-shop-section{padding:12px 0 5px}
+.pw04-shop-feature{display:flex;align-items:center;gap:16px}
+.pw04-shop-feature>img{width:65px;height:65px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px #0005)}
+.pw04-shop-feature p{margin-bottom:0!important}
+.pw04-shop-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:13px}
+.pw04-shop-stats>div{padding:11px;border:1px solid #af804e;border-radius:9px;background:#fff1cf7e;display:grid;gap:7px}
+.pw04-shop-stats small{font:700 11px system-ui,sans-serif;color:#845737}
+.pw04-shop-stats strong{font-size:22px}
+.pw04-shop-cta{margin-top:14px;padding:11px 15px;max-width:100%;font-size:14px}
+.pw04-shop-disclaimer{color:#84634a!important;font-size:11px!important}
+/* El CSS para móvil de esta corrección afecta SOLO estas tres pantallas */
+@media(max-width:700px){
+  .pw04-user-head,.pw04-user-row{grid-template-columns:minmax(0,1fr) 80px;gap:6px 10px;padding:8px}
+  .pw04-user-head>span:last-child{display:none}
+  .pw04-user-achievements{grid-column:1/-1;padding-left:44px}
+  .pw04-user-rows{max-height:min(60dvh,440px)}
+  .pw04-inventory-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px;max-height:430px}
+  .pw04-inventory-slot{min-width:0}
+  .pw04-shop-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pw04-shop-feature>img{width:50px;height:50px}
+  .pw04-shop-tabs button{font-size:13px;padding:10px}
+}
+@media(max-width:380px){
+  .pw04-inventory-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pw04-user-name img{width:30px;height:30px}
+  .pw04-user-achievements{padding-left:39px}
+}
+.pw04-inventory-slot.pw04-filled img { max-width: 100%; max-height: 70%; width: auto; height: auto; object-fit: contain; }
+.pw04-inventory-slot.pw04-filled:has(img) > span:not(.pw04-quantity) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
