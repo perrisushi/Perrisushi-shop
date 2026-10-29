@@ -30,12 +30,27 @@ Mantener `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` que ya tiene el servicio. 
 | ALLOW_SUPABASE_SESSION_WRITES | `true` |
 | CSRF_SECRET | Un secreto aleatorio estable de al menos 32 caracteres. |
 | DATABASE_URL | Cadena PostgreSQL privada de la misma base, con TLS, obtenida manualmente por el propietario. Puede ser el pooler compatible con transacciones. Solo se utiliza en el backend. |
+| DATABASE_SSL_CA | Certificado CA PEM descargado desde Database Settings → SSL Configuration del proyecto Supabase. Necesario si aparece SELF_SIGNED_CERT_IN_CHAIN. Acepta el PEM completo multilínea o con saltos escritos como `\n`. No es la contraseña ni la URL de conexión. |
 | PW2_GAMES_ENABLED | Ausente o `auto`: utiliza DATABASE_URL existente. `true`: solicita habilitación explícita. `false`: desactiva los juegos; si todavía tiene ese valor, cambiarlo manualmente a `auto` o `true`. |
 | PW2_ECONOMY_ENABLED | `false` inicialmente; `true` después de instalar el SQL y completar la comprobación real del propietario. |
 | PW2_RAFFLE_PRICE | Precio vigente confirmado por el propietario; el código antiguo indicaba 3500 PC, no se presupone que siga vigente. |
 | PW2_RAFFLE_MAX | Máximo vigente confirmado; el código antiguo indicaba 3. |
 
 La nueva variable DATABASE_URL es necesaria para mantener una única transacción durante las acciones originales de los juegos. Una secuencia de peticiones REST independientes no ofrece esa garantía. No usar una URL de otra base ni desactivar la comprobación TLS para hacer que conecte. La URL puede contener contraseña: debe existir únicamente en las variables privadas del backend.
+
+### Corrección del error TLS confirmado en producción
+
+El registro aportado por el propietario contiene SELF_SIGNED_CERT_IN_CHAIN. Indica que Node rechaza la cadena de certificados presentada por la conexión PostgreSQL, antes de poder comprobar las tablas o abrir los juegos. No demuestra un fallo de contraseña, de sesión ni de esquema. El login usa la API HTTPS y puede funcionar aunque esta conexión PostgreSQL falle.
+
+1. En el proyecto Supabase correcto, abrir **Database Settings → SSL Configuration → Download Certificate** y descargar su certificado CA. Solo descargarlo; no cambiar la configuración SSL ni las tablas.
+2. Abrir el certificado con un editor de texto. Copiar el contenido completo desde `-----BEGIN CERTIFICATE-----` hasta `-----END CERTIFICATE-----`, incluidas ambas líneas. No copiar una clave privada ni la contraseña de la base.
+3. En las variables del servicio Railway existente, añadir **DATABASE_SSL_CA** y pegar ese PEM completo, con sus saltos de línea (también se aceptan `\n` literales). Mantener DATABASE_URL, las credenciales y el resto de variables. No subir el certificado/configuración privada al repositorio.
+4. Publicar el conjunto de cambios de esta corrección mediante **Commit y Push origin** en GitHub Desktop, y aplicar los cambios de variables que Railway tenga pendientes para el mismo despliegue. Se conserva el servicio y el comando de arranque existentes.
+5. Después de terminar el despliegue, comprobar `/api/games/context` en el navegador que ya tiene sesión. El diagnóstico anterior debe desaparecer; si aparece otra razón, copiar únicamente `available`, `reason` y `games`. No compartir inventarios ni tokens. `npm run check:games`, ejecutado manualmente con las mismas variables privadas del servicio, usa la misma política TLS y hace solo lectura.
+
+El código mantiene rejectUnauthorized=true y la verificación normal del nombre del servidor. No usar NODE_TLS_REJECT_UNAUTHORIZED=0, rejectUnauthorized=false ni sslmode=no-verify como solución. Los parámetros TLS de DATABASE_URL se integran de forma explícita para impedir que pg reemplace el objeto SSL y pierda la CA; los archivos sslrootcert/sslcert/sslkey existentes se conservan si están configurados. Sin DATABASE_SSL_CA ni sslrootcert, se usan las autoridades predeterminadas de Node. No hay cambios SQL ni migraciones para esta corrección.
+
+Referencias: [SSL de node-postgres](https://node-postgres.com/features/ssl), [certificados y conexión de Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
 Conservar la configuración de login que ya funciona. No reemplazar sus secretos ni importar todo el archivo de ejemplo sobre las variables actuales. El modo automático de juegos no activa las compras de la tienda ni crea tablas o cuentas.
 

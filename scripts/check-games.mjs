@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 import pg from 'pg';
 import {inspectGameStorage,gameFailure,gamesEnabled} from '../backend/game-readiness.mjs';
 import {connectionDiagnostics} from '../backend/connection-diagnostics.mjs';
+import {databasePoolOptions} from '../backend/database-config.mjs';
 
 export async function checkGames({pool,connections={projectMatch:'unknown'}}={}){
  if(!pool)return {ok:false,reason:'database_not_configured',connections};
@@ -21,7 +22,7 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  try{
   const connections=connectionDiagnostics({supabaseUrl:process.env.SUPABASE_URL,databaseUrl:process.env.DATABASE_URL,serviceKey:process.env.SUPABASE_SERVICE_ROLE_KEY});
   const enabled=gamesEnabled(process.env.PW2_GAMES_ENABLED,Boolean(process.env.DATABASE_URL));
-  if(process.env.DATABASE_URL){const url=new URL(process.env.DATABASE_URL);if(!['postgres:','postgresql:'].includes(url.protocol)||!url.hostname||url.hash)throw Error();url.searchParams.delete('sslmode');pool=new pg.Pool({connectionString:url.href,ssl:{rejectUnauthorized:true},max:1,connectionTimeoutMillis:8000});pool.on('error',()=>{})}
+  if(process.env.DATABASE_URL){pool=new pg.Pool(databasePoolOptions(process.env,{max:1}));pool.on('error',()=>{})}
   const result=await checkGames({pool,connections});console.log(JSON.stringify({enabled,...result},null,2));if(!enabled||!result.ok)process.exitCode=1;
  }catch{console.error('No se pudo comprobar la configuración de juegos. No se muestran variables privadas.');process.exitCode=1}
  finally{await pool?.end()}

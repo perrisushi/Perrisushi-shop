@@ -9,6 +9,7 @@ import legacyGames from './games-original.cjs';
 import {publicOrigin,canonicalSiteRedirect} from './request-security.mjs';
 import {connectionDiagnostics} from './connection-diagnostics.mjs';
 import {gamesEnabled} from './game-readiness.mjs';
+import {databasePoolOptions} from './database-config.mjs';
 const allowSessionWrites=process.env.ALLOW_SUPABASE_SESSION_WRITES==='true';
 const production=process.env.NODE_ENV==='production';
 const repository=createRepository({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,allowSessionWrites});
@@ -16,7 +17,7 @@ const economy=createEconomy({url:process.env.SUPABASE_URL,key:process.env.SUPABA
 let gamePool;
 const enableGames=gamesEnabled(process.env.PW2_GAMES_ENABLED,Boolean(process.env.DATABASE_URL));
 const sources=connectionDiagnostics({supabaseUrl:process.env.SUPABASE_URL,databaseUrl:process.env.DATABASE_URL,serviceKey:process.env.SUPABASE_SERVICE_ROLE_KEY});
-if(process.env.DATABASE_URL){let database;try{database=new URL(process.env.DATABASE_URL);if(!['postgres:','postgresql:'].includes(database.protocol)||!database.hostname||database.hash)throw Error()}catch{throw Error('DATABASE_URL no válida; no se muestra su contenido')};database.searchParams.delete('sslmode');gamePool=new pg.Pool({connectionString:database.href,ssl:{rejectUnauthorized:true},max:4,connectionTimeoutMillis:8000});gamePool.on('error',()=>console.error('La conexión de juegos no está disponible'))}
+if(process.env.DATABASE_URL){gamePool=new pg.Pool(databasePoolOptions(process.env));gamePool.on('error',()=>console.error('La conexión de juegos no está disponible'))}
 const games=createGames({pool:gamePool,legacy:legacyGames,enabled:enableGames,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
 if(production&&!process.env.PUBLIC_ORIGIN)throw Error('PUBLIC_ORIGIN obligatorio en producción');
 const configuredOrigin=publicOrigin(process.env.PUBLIC_ORIGIN??'http://127.0.0.1:4173');

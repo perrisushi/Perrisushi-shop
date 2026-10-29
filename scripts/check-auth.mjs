@@ -6,6 +6,7 @@ import {createRepository} from '../backend/repository.mjs';
 import {matchesPassword} from '../backend/security.mjs';
 import {authDiagnostic} from '../backend/traditional-auth.mjs';
 import {connectionDiagnostics} from '../backend/connection-diagnostics.mjs';
+import {databasePoolOptions} from '../backend/database-config.mjs';
 
 export async function checkAuthSources({repository,pool,nick,password}){
  if(!repository?.configured||typeof nick!=='string'||!nick.trim()||typeof password!=='string'||!password.trim())throw Error('Faltan configuración o credenciales privadas de comprobación');
@@ -43,7 +44,7 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const nick=process.env.PW2_VERIFY_NICK,password=process.env.PW2_VERIFY_PASSWORD;
   const repository=createRepository({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY});
   if(!repository.configured||!nick||!password)throw Error('missing_config');
-  if(process.env.DATABASE_URL){const url=new URL(process.env.DATABASE_URL);if(!['postgres:','postgresql:'].includes(url.protocol))throw Error('invalid_database_url');url.searchParams.delete('sslmode');pool=new pg.Pool({connectionString:url.href,ssl:{rejectUnauthorized:true},max:1,connectionTimeoutMillis:8000});pool.on('error',()=>{})}
+  if(process.env.DATABASE_URL){pool=new pg.Pool(databasePoolOptions(process.env,{max:1}));pool.on('error',()=>{})}
   const connections=connectionDiagnostics({supabaseUrl:process.env.SUPABASE_URL,databaseUrl:process.env.DATABASE_URL,serviceKey:process.env.SUPABASE_SERVICE_ROLE_KEY});
   const result=await checkAuthSources({repository,pool,nick,password});result.connections=connections;
   if(connections.projectMatch==='different'||connections.keyProjectMatch==='different')result.finding='different_projects';
