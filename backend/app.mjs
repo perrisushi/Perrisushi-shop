@@ -71,7 +71,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    if(user&&!accountReads.take(user.nick))fail(429,'too_many_requests');
    if(route==='/api/session'&&req.method==='GET'){send(200,{authenticated:Boolean(user),...(user?{nick:user.nick,sessionPersistence:sessionStore}:{})},user?{'X-CSRF-Token':csrfFor(user.token,csrfSecret)}:{});return}
    if(!user)fail(401,'session_expired');
-   if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const inventory=await repository.inventory(user.nick);send(200,{available:inventory!==null&&await games?.availableFor?.(user)===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))});return}
+   if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const inventory=await repository.inventory(user.nick),readiness=games?.availability?await games.availability(user):{available:await games?.availableFor?.(user)===true};send(200,{...readiness,available:inventory!==null&&readiness.available===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))});return}
    // La identidad siempre deriva de la cookie; los parámetros privados ajenos se rechazan.
    for(const field of url.searchParams.keys())if(!(route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:['limit','cursor']).includes(field))fail(400,'invalid_request');
    if(req.method==='POST'){

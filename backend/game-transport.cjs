@@ -24,6 +24,18 @@ exports.fetch=async(input,opts={})=>{
   }
   const where=filters.length?' WHERE '+filters.join(' AND '):'';
   const method=opts.method??'GET';
+  // ensurePlayer del servidor antiguo hacía upsert incluso para cuentas existentes.
+  // En juegos solo se permiten cuentas ya verificadas; nunca reactivar ni crearlas.
+  if(table==='shop_players'&&method!=='GET'){
+   if(method!=='POST')throw Error('game_account_write_not_allowed');
+   const rows=Array.isArray(body)?body:[body],existing=[];
+   for(const row of rows){
+    if(!row||typeof row.nick!=='string')throw Error('invalid_existing_player');
+    const found=(await client.query('SELECT nick,active FROM public.shop_players WHERE nick=$1 FOR SHARE',[row.nick])).rows[0];
+    if(!found||found.active===false)throw Error('existing_player_required');existing.push(found);
+   }
+   return {ok:true,status:200,text:async()=>JSON.stringify(existing)};
+  }
   if(method==='GET'){
    const columns=(u.searchParams.get('select')??'*').split(',').map(c=>c==='*'?'*':ident(c)).join(',');
    sql='SELECT '+columns+' FROM public.'+ident(table)+where;
@@ -36,7 +48,7 @@ exports.fetch=async(input,opts={})=>{
    sql+=' RETURNING *';
   }else if(method==='PATCH'||method==='DELETE'){
    if(!where)throw Error('unbounded_game_write');
-   sql=method==='PATCH'?'UPDATE public.'+ident(table)+' SET '+Object.entries(body??{}).map(([key,value])=>ident(key)+'='+param(value)).join(',')+where+' RETURNING *':'DELETE FROM public.'+ident(table)+where+' RETURNING *';
+   sql=method==='PATCH'?'UPDATE public.'+ident(table)+' SET '+Object.entries(body??{}).map(([key,value])=>ident(key)+'='+(table==='shop_sessions'&&key==='expires_at'?'LEAST(expires_at,'+param(value)+'::timestamptz)':param(value))).join(',')+where+' RETURNING *':'DELETE FROM public.'+ident(table)+where+' RETURNING *';
   }else throw Error('method_not_allowed');
  }
  // Errores SQL se propagan: no se captura una excepción para continuar una transacción abortada.

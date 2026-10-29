@@ -1,6 +1,6 @@
 # PerriWeb 2.0: configuración y publicación manual
 
-El código está integrado en `F:\Perriweb 2.0`. No se ha accedido a GitHub, Railway ni Supabase ni se ha cambiado ningún dato remoto. Este documento sustituye los estados de preparación de las entregas anteriores.
+El código está integrado directamente en `C:\Users\borja\Documents\GitHub\Perrisushi-shop`. No se ha accedido a GitHub, Railway ni Supabase ni se ha cambiado ningún dato remoto. Este documento reúne la configuración y publicación manual vigentes. El informe de la integración de juegos está en `MINIJUEGOS_INTEGRACION_COMPLETA.md`.
 
 ## Qué contiene ahora
 
@@ -10,9 +10,9 @@ El código está integrado en `F:\Perriweb 2.0`. No se ha accedido a GitHub, Rai
 - Cuatro juegos originales recuperados: `/perriduelos-app/index.html`, `/perripet-app/index.html`, `/perricasillas` y `/perrirpg.html`. Se abren desde el menú aprobado. Se conservan los scripts y gráficos originales; `games/manifest.json` permite comprobar sus hashes. El montaje, transporte y servidor están adaptados a las cookies nuevas; no se rediseñan las mecánicas.
 - Los juegos usan la misma cuenta y el mismo inventario dentro de una transacción PostgreSQL. El dispatcher administrativo antiguo no está publicado. Los mensajes del iframe no se usan como autoridad para conceder premios.
 
-## 1. SQL mínimo: ejecutarlo tú, una sola vez
+## 1. SQL existente de tienda; los juegos no añaden migraciones
 
-En el editor SQL de Supabase, ejecutar **solo** `sql/001-economia-atomica.sql`.
+Esta integración de juegos no requiere ejecutar SQL nuevo. Si ya instalaste `sql/001-economia-atomica.sql`, no hace falta repetirlo por este cambio. Ese archivo corresponde a la economía de la tienda y solo debe instalarlo manualmente el propietario si aún falta y quiere habilitar compras o canjes.
 
 El archivo crea/reemplaza dos funciones privadas: estado de compatibilidad y operación económica. No borra, reinicia ni altera tablas y no migra contraseñas. Reutiliza `shop_operations`, inventarios, tickets, pool, claims, actividad y snapshot público existentes. El SQL se ejecuta dentro de BEGIN/COMMIT y solicita recarga del esquema PostgREST. No conceder permisos a anon/authenticated ni desactivar RLS.
 
@@ -30,12 +30,18 @@ Mantener `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` que ya tiene el servicio. 
 | ALLOW_SUPABASE_SESSION_WRITES | `true` |
 | CSRF_SECRET | Un secreto aleatorio estable de al menos 32 caracteres. |
 | DATABASE_URL | Cadena PostgreSQL privada de la misma base, con TLS, obtenida manualmente por el propietario. Puede ser el pooler compatible con transacciones. Solo se utiliza en el backend. |
-| PW2_GAMES_ENABLED | `true` para conectar los cuatro juegos por PostgreSQL. |
+| PW2_GAMES_ENABLED | Ausente o `auto`: utiliza DATABASE_URL existente. `true`: solicita habilitación explícita. `false`: desactiva los juegos; si todavía tiene ese valor, cambiarlo manualmente a `auto` o `true`. |
 | PW2_ECONOMY_ENABLED | `false` inicialmente; `true` después de instalar el SQL y completar la comprobación real del propietario. |
 | PW2_RAFFLE_PRICE | Precio vigente confirmado por el propietario; el código antiguo indicaba 3500 PC, no se presupone que siga vigente. |
 | PW2_RAFFLE_MAX | Máximo vigente confirmado; el código antiguo indicaba 3. |
 
 La nueva variable DATABASE_URL es necesaria para mantener una única transacción durante las acciones originales de los juegos. Una secuencia de peticiones REST independientes no ofrece esa garantía. No usar una URL de otra base ni desactivar la comprobación TLS para hacer que conecte. La URL puede contener contraseña: debe existir únicamente en las variables privadas del backend.
+
+Conservar la configuración de login que ya funciona. No reemplazar sus secretos ni importar todo el archivo de ejemplo sobre las variables actuales. El modo automático de juegos no activa las compras de la tienda ni crea tablas o cuentas.
+
+Antes de abrir partidas reales, ejecutar manualmente `npm run check:games` en un proceso privado que tenga las variables existentes. Para una configuración local privada opcional puede ejecutarse `node --env-file=backend/.env scripts/check-games.mjs`; nunca guardar ese archivo en Git. La comprobación usa BEGIN READ ONLY y ROLLBACK: no inicia juegos ni consume recursos. Comprueba tablas, permisos SELECT y funciones RPG/EXECUTE; no garantiza permisos de escritura, columnas, RLS, catálogos ni triggers remotos. Una coincidencia de proyecto `unknown` tampoco certifica el proyecto: la apertura exige además encontrar la misma sesión autenticada en PostgreSQL.
+
+Si falla, el resultado distingue `database_not_configured`, `database_project_mismatch`, `database_unavailable` o `schema_incomplete`, sin mostrar contraseñas. Los registros `games_runtime` distinguen además `games_disabled` y `session_not_shared`. Los códigos PostgreSQL 28P01 y 42501 indican autenticación y permisos respectivamente; los códigos TLS deben resolverse con la conexión/cadena de confianza correcta, sin desactivar la validación de certificados. Si faltan tablas o funciones, no ejecutar los fixtures de pruebas: comprobar primero el esquema original y preparar únicamente el cambio compatible que se haya demostrado necesario. No se ha inspeccionado la base real ni identificado una migración necesaria.
 
 No usar `PW2_ENABLE_LEGACY_ECONOMY`: esa variable antigua no activa compras. El código nuevo comprueba además que la función SQL instalada anuncia la versión compatible. Random Key puede habilitarse sin configurar precio de sorteos; los boletos siguen desactivados hasta definir su política válida.
 
@@ -44,7 +50,7 @@ Las sesiones nuevas se guardan con prefijo `v2:` y token resumido, sin reemplaza
 ## 3. GitHub Desktop: Commit y Push al repositorio que ya usa Railway
 
 1. Abrir **el repositorio existente conectado a Railway**. No crear otro repositorio ni otro proyecto.
-2. Integrar el contenido de `F:\Perriweb 2.0` en la carpeta que Railway usa como raíz de la aplicación. Si el servicio tiene un Root Directory, integrar allí. Conservar los archivos ajenos que no deban cambiar y la revisión anterior para poder volver atrás. No copiar carpetas `.git` entre proyectos.
+2. Seleccionar la carpeta `C:\Users\borja\Documents\GitHub\Perrisushi-shop`. Los cambios ya están guardados allí: no copiar otra entrega ni sustituir el repositorio. Conservar el Root Directory y la configuración de despliegue existentes.
 3. En Changes comprobar que se incluyen backend, src, scripts, games, public, sql, package.json, package-lock.json y railway.json. No incluir `.env`, credenciales, node_modules, ZIP/RAR ni las carpetas ocultas de paquetes y backups; `.gitignore` ya los excluye.
 4. Escribir, por ejemplo, `Integrar PerriWeb 2.0 y juegos originales`, pulsar **Commit to la rama conectada** y después **Push origin**. Si Railway tiene auto-deploy, este Push inicia la sustitución de la web actual.
 

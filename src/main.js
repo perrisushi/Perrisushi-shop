@@ -341,6 +341,6 @@ async function launchOriginalGame(name){
  if(!session){openModal('auth');return}if(openingGame)return;openingGame=true;const generation=sessionEpoch;
  try{const context=await api.getGameContext();if(generation!==sessionEpoch)return;
   if(context.nick!==session.nick){await bootstrapSession();return}
-  openModal(context.available?'game:'+name:'game-unavailable');
+  openModal(context.available&&context.games?.[name]!==false?'game:'+name:'game-unavailable');
  }catch(error){if(generation===sessionEpoch){errorState(error);openModal('game-unavailable')}}finally{openingGame=false}
 }

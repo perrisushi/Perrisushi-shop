@@ -7,6 +7,7 @@ Interfaz aprobada PC/móvil, backend de cuentas existentes, economía transaccio
 - Instrucciones únicas vigentes: [docs/PUBLICAR_PRODUCCION.md](docs/PUBLICAR_PRODUCCION.md).
 - SQL mínimo para ejecutar manualmente: [sql/001-economia-atomica.sql](sql/001-economia-atomica.sql).
 - Capturas y E2E con PostgreSQL local: [docs/produccion-local](docs/produccion-local).
+- Informe actualizado de los cuatro juegos y pruebas: [docs/MINIJUEGOS_INTEGRACION_COMPLETA.md](docs/MINIJUEGOS_INTEGRACION_COMPLETA.md).
 - Los informes anteriores dentro de docs describen estados históricos.
 
 ## Instalar y probar
@@ -20,7 +21,9 @@ npm start
 
 Sin variables privadas se muestra un error de conexión, sin cuentas demo. Para desarrollo visual: `npm run dev`; el proxy local conecta al backend de `npm start`. Configuración local opcional: copiar backend/.env.example a backend/.env y arrancar `node --env-file=backend/.env backend/server.mjs`. No subir ese archivo.
 
-La economía requiere instalar el SQL y activarla explícitamente. Los juegos requieren DATABASE_URL privada y PW2_GAMES_ENABLED=true. Mantener ambas opciones desactivadas hasta la validación del propietario. Los scripts y gráficos originales se comprueban con games/manifest.json; solo se adapta el transporte y el montaje.
+La economía requiere instalar el SQL y activarla explícitamente. Los juegos utilizan DATABASE_URL privada de la misma base y el modo automático (PW2_GAMES_ENABLED ausente o auto); false los desactiva expresamente. La apertura exige sesión compartida válida y disponibilidad del juego. Los scripts y gráficos originales se comprueban con games/manifest.json; solo se adapta el transporte y el montaje.
+
+Comprobación manual de almacenamiento de juegos, exclusivamente de lectura: `npm run check:games`. Revisa conexión, coincidencia de proyecto identificable, tablas y permisos SELECT, y presencia/permiso EXECUTE de las funciones RPG; no abre partidas ni certifica escrituras o recompensas reales. Las instrucciones de variables y publicación están reunidas en el documento de publicación.
 
 Comprobación real de solo lectura, con variables privadas y una cuenta propia autorizada: `npm run check:live`. No introduce datos, no migra cuentas, no cobra ni entrega premios. Las pruebas que sí cambian estado utilizan únicamente PostgreSQL local en memoria.
 

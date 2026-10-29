@@ -6,6 +6,8 @@ import {createGames} from '../backend/games.mjs';
 import {sessionKey} from '../backend/security.mjs';
 import {createHash,randomUUID} from 'node:crypto';
 import transport from '../backend/game-transport.cjs';
+import {gamesEnabled,inspectGameStorage} from '../backend/game-readiness.mjs';
+import {checkGames} from '../scripts/check-games.mjs';
 process.env.SUPABASE_URL='https://only-local.invalid';process.env.SUPABASE_SERVICE_ROLE_KEY='LOCAL-TEST-NOT-A-CREDENTIAL';
 const {default:legacy}=await import('../backend/games-original.cjs');
 async function fixture(){
@@ -20,8 +22,94 @@ async function fixture(){
  await db.query("insert into shop_profiles(nick,selected_logo_id,owned_logo_ids) values('LocalA','logo-buho-1','[\"logo-buho-1\"]')");
  await db.query('insert into shop_sessions(token,nick,expires_at) values($1,$2,now()+interval \'1 day\')',[sessionKey(user.token),user.nick]);
  const pool={connect:async()=>({query:(...args)=>db.query(...args),release:()=>{}})};
- return {db,user,games:createGames({pool,legacy,enabled:true})};
+ return {db,user,pool,games:createGames({pool,legacy,enabled:true})};
 }
+
+test('arranque de juegos automático con conexión existente; apagado explícito conservado',()=>{
+ assert.equal(gamesEnabled(undefined,true),true);assert.equal(gamesEnabled(undefined,false),false);assert.equal(gamesEnabled('false',true),false);assert.equal(gamesEnabled('true',false),true);assert.throws(()=>gamesEnabled('yes',true));
+});
+
+test('disponibilidad distingue desactivación, conexión ausente, proyecto distinto, sesión y errores sin revelar secretos',async()=>{
+ assert.equal((await createGames().availability({})).reason,'games_disabled');
+ assert.equal((await createGames({enabled:true,legacy}).availability({})).reason,'database_not_configured');
+ assert.equal((await createGames({enabled:true,pool:{},legacy,sourceCompatible:false}).availability({})).reason,'database_project_mismatch');
+ const events=[];const games=createGames({enabled:true,legacy,pool:{connect:async()=>{throw Object.assign(Error('postgres://user:SECRET@PRIVATE'),{code:'28P01'})}},onDiagnostic:e=>events.push(e)});
+ assert.equal((await games.availability({nick:'PRIVATE',token:'x'.repeat(43)})).reason,'database_unavailable');
+ assert.equal(events[0].failure,'28P01');assert.ok(!JSON.stringify(events).includes('PRIVATE'));assert.ok(!JSON.stringify(events).includes('SECRET'));
+});
+
+test('esquema original habilita los cuatro juegos; sesión ajena y permisos ausentes no se disimulan',async()=>{
+ const f=await fixture();try{
+  const status=await f.games.availability(f.user);assert.equal(status.available,true);assert.ok(Object.values(status.games).every(Boolean),JSON.stringify(status));
+  assert.equal((await f.games.availability({...f.user,nick:'LocalB'})).reason,'session_not_shared');
+  await f.db.exec('revoke execute on function shop_rpg_consume_item(text,text,integer) from public; create role limited_game; grant usage on schema public to limited_game; grant select on all tables in schema public to limited_game;set role limited_game;');
+  const checked=await inspectGameStorage(f.db);assert.equal(checked.games.PerriRPG,false);assert.ok(checked.deniedFunctions.length>0);
+  await f.db.exec('reset role');
+ }finally{await f.db.close()}
+});
+
+test('comprobador de despliegue solo lectura no abre partidas ni crea datos',async()=>{
+ const f=await fixture();try{
+  const before=await f.db.query('select (select count(*) from shop_perripet_states)::int pet,(select count(*) from perri_casillas_games)::int casillas,(select count(*) from shop_operations)::int operations');
+  const result=await checkGames({pool:f.pool,connections:{projectMatch:'same'}});assert.equal(result.ok,true,JSON.stringify(result));
+  assert.deepEqual((await f.db.query('select (select count(*) from shop_perripet_states)::int pet,(select count(*) from perri_casillas_games)::int casillas,(select count(*) from shop_operations)::int operations')).rows,before.rows);
+ }finally{await f.db.close()}
+});
+
+test('datos antiguos de Pet se recuperan sin crear cuentas ni perder el progreso al renovar la sesión',async()=>{
+ const f=await fixture();try{
+  const snapshot={version:1,pet:{name:'PROGRESO-ANTIGUO-A',stage:'adult1',hp:67,xp:345,normalFood:3,scrap:12},farm:{plots:[]},encounters:[]};
+  const id='perripet-state-'+createHash('sha256').update('locala').digest('hex').slice(0,32);
+  await f.db.query("insert into shop_operations(operation_id,action,nick,response) values($1,'perripet_state','LocalA',$2)",[id,JSON.stringify({snapshot})]);
+  const before=(await f.db.query('select * from shop_players order by nick')).rows;
+  const loaded=await f.games.execute(f.user,{action:'publicShopPerriPetState',idempotencyKey:randomUUID()});assert.equal(loaded.ok,true);assert.equal(loaded.snapshot.pet.name,'PROGRESO-ANTIGUO-A');assert.equal(loaded.snapshot.pet.hp,67);assert.equal(loaded.snapshot.pet.xp,345);
+  await f.db.query('delete from shop_sessions where token=$1',[sessionKey(f.user.token)]);const renewed={nick:'LocalA',token:'z'.repeat(43)};
+  await f.db.query("insert into shop_sessions(token,nick,expires_at) values($1,$2,now()+interval '1 day')",[sessionKey(renewed.token),renewed.nick]);
+  const restarted=createGames({pool:f.pool,legacy,enabled:true});
+  const restored=await restarted.execute(renewed,{action:'publicShopPerriPetState',idempotencyKey:randomUUID()});assert.equal(restored.snapshot.pet.name,'PROGRESO-ANTIGUO-A');assert.equal(restored.snapshot.pet.hp,67);
+  const other={nick:'LocalB',token:'b'.repeat(43)};await f.db.query("insert into shop_sessions(token,nick,expires_at) values($1,$2,now()+interval '1 day')",[sessionKey(other.token),other.nick]);
+  const isolated=await restarted.execute(other,{action:'publicShopPerriPetState',idempotencyKey:randomUUID()});assert.ok(!JSON.stringify(isolated).includes('PROGRESO-ANTIGUO-A'));
+  assert.deepEqual((await f.db.query('select * from shop_players order by nick')).rows,before);
+ }finally{await f.db.close()}
+});
+
+test('Pet y RPG comparten gemas e inventario; un guardado antiguo no restaura saldos ya gastados',async()=>{
+ const f=await fixture();try{
+  const state=await f.games.execute(f.user,{action:'publicShopPerriPetState',idempotencyKey:randomUUID()});
+  const snapshot=structuredClone(state.snapshot);snapshot.syncBase={revision:state.shared.revision,coins:state.shared.gems,perriCoins:state.shared.perriCoins,scrap:state.shared.scrap,perriPetInventory:state.shared.perriPetInventory,rpgInventory:state.shared.rpgInventory};snapshot.pet.normalFood=(snapshot.pet.normalFood??0)+1;
+  const saved=await f.games.execute(f.user,{action:'publicShopPerriPetSave',snapshot,idempotencyKey:randomUUID()});assert.equal(saved.ok,true,JSON.stringify(saved));
+  assert.equal((await f.db.query("select polvo_gema from shop_inventories where nick='LocalA'")).rows[0].polvo_gema,4990);
+  await f.games.execute(f.user,{action:'publicShopRpgState',idempotencyKey:randomUUID()});
+  const item=(await f.db.query("select item_id,price_pg from shop_rpg_catalog where item_id='potion-weak'")).rows[0];assert.ok(item);
+  assert.equal((await f.games.execute(f.user,{action:'publicShopRpgPurchase',itemId:item.item_id,quantity:1,idempotencyKey:randomUUID()})).ok,true);
+  const stale=await f.games.execute(f.user,{action:'publicShopPerriPetSave',snapshot,idempotencyKey:randomUUID()});assert.equal(stale.error,'perripet_state_conflict');
+  const fresh=await f.games.execute(f.user,{action:'publicShopPerriPetState',idempotencyKey:randomUUID()});assert.equal(fresh.shared.gems,4990-item.price_pg);assert.equal(fresh.shared.rpgInventory.smallRedPotion,1);
+  const used=await f.games.execute(f.user,{action:'publicShopRpgConsume',itemId:item.item_id,idempotencyKey:randomUUID()});assert.equal(used.ok,true);
+  const updated=await f.games.execute(f.user,{action:'publicShopPerriPetState',idempotencyKey:randomUUID()});assert.equal(updated.shared.rpgInventory.smallRedPotion,0);
+ }finally{await f.db.close()}
+});
+
+test('sesión expirada no puede repetir una operación guardada ni consumir premios de otra cuenta',async()=>{
+ const f=await fixture();try{
+  const payload={action:'publicShopOpenPerriCasilla',cellIndex:0,openId:randomUUID(),idempotencyKey:randomUUID()};
+  const first=await f.games.execute(f.user,payload);assert.equal(first.ok,true);
+  const before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
+  await f.db.query("update shop_sessions set expires_at=now()-interval '1 second' where token=$1",[sessionKey(f.user.token)]);
+  await assert.rejects(f.games.execute(f.user,payload),e=>e.code==='session_expired');
+  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);
+ }finally{await f.db.close()}
+});
+
+test('los juegos no reactivan cuentas ni prolongan la sesión del login tradicional',async()=>{
+ const f=await fixture();try{
+  const expiry=(await f.db.query('select expires_at from shop_sessions where token=$1',[sessionKey(f.user.token)])).rows;
+  await f.games.execute(f.user,{action:'publicShopGetPerriCasillas',idempotencyKey:randomUUID()});
+  assert.deepEqual((await f.db.query('select expires_at from shop_sessions where token=$1',[sessionKey(f.user.token)])).rows,expiry);
+  await f.db.exec("update shop_players set active=false where nick='LocalA'");
+  await assert.rejects(f.games.execute(f.user,{action:'publicShopGetPerriCasillas',idempotencyKey:randomUUID()}),e=>e.code==='session_expired');
+  assert.equal((await f.db.query("select active from shop_players where nick='LocalA'")).rows[0].active,false);
+ }finally{await f.db.close()}
+});
 test('los recursos originales de los minijuegos conservan sus bytes y mecánicas',async()=>{
  const manifest=JSON.parse(await readFile('games/manifest.json','utf8'));assert.ok(manifest.files.length>300);
  for(const f of manifest.files)assert.equal(createHash('sha256').update(await readFile(f.path)).digest('hex'),f.sha256,f.path);
@@ -52,7 +140,31 @@ test('Casillas conserva coste y premio: repetir operación no cobra dos veces',a
   const after=(await f.db.query("select monedas from shop_inventories where nick='LocalA'")).rows[0];
   assert.deepEqual(await f.games.execute(f.user,payload),first);
   assert.deepEqual((await f.db.query("select monedas from shop_inventories where nick='LocalA'")).rows[0],after);
+  const restored=await createGames({pool:f.pool,legacy,enabled:true}).execute(f.user,{action:'publicShopGetPerriCasillas',idempotencyKey:randomUUID()});
+  assert.equal(restored.game.roundId,first.game.roundId);assert.equal(restored.game.cells[0].opened,true);assert.deepEqual(restored.game.cells[0].reward,first.game.cells[0].reward);
   await assert.rejects(f.games.execute(f.user,{...payload,cellIndex:1}),e=>e.code==='operation_conflict');
+ }finally{await f.db.close()}
+});
+
+test('RPG recupera equipo y recompensa original del jefe una sola vez, con consumo verificado',async()=>{
+ const f=await fixture();try{
+  const initial=await f.games.execute(f.user,{action:'publicShopRpgState',idempotencyKey:randomUUID()});
+  assert.equal(initial.ok,true);assert.ok(Object.keys(initial.equipment).length>0);
+  const restarted=createGames({pool:f.pool,legacy,enabled:true});
+  const restored=await restarted.execute(f.user,{action:'publicShopRpgState',idempotencyKey:randomUUID()});assert.deepEqual(restored.equipment,initial.equipment);
+  const combat={round:1,playerHp:100,playerMaxHp:100,enemyHp:5000,enemyMaxHp:5000};
+  assert.equal((await restarted.execute(f.user,{action:'publicShopRpgSaveCombat',combat,idempotencyKey:randomUUID()})).ok,true);
+  // Estado previo local cercano al final; no altera reglas ni utiliza datos reales.
+  await f.db.exec("update shop_rpg_combat_state set enemy_hp=1,updated_at=now()-interval '1 minute' where nick='LocalA';insert into shop_rpg_inventory(nick,item_id,quantity) values('LocalA','sword-worn',1) on conflict(nick,item_id) do update set quantity=1");
+  const finish={action:'publicShopRpgSaveCombat',combat:{...combat,round:2,enemyHp:0},idempotencyKey:randomUUID()};
+  const forged=await restarted.execute(f.user,finish);assert.equal(forged.error,'unverified_rpg_combat_result');
+  const consumed=await restarted.execute(f.user,{action:'publicShopRpgConsume',itemId:'sword-worn',idempotencyKey:randomUUID()});assert.equal(consumed.ok,true,JSON.stringify(consumed));
+  const won=await restarted.execute(f.user,finish);assert.equal(won.ok,true,JSON.stringify(won));assert.equal(won.bossDefeated,true);
+  assert.deepEqual(await restarted.execute(f.user,finish),won);
+  assert.equal((await restarted.execute(f.user,{...finish,idempotencyKey:randomUUID()})).ok,true);
+  assert.equal((await f.db.query("select pinza_real from shop_inventories where nick='LocalA'")).rows[0].pinza_real,1);
+  assert.equal((await f.db.query("select count(*)::int n from shop_rpg_ledger where nick='LocalA' and action='boss_reward'")).rows[0].n,1);
+  assert.equal((await f.db.query("select quantity from shop_rpg_inventory where nick='LocalA' and item_id='sword-worn'")).rows[0].quantity,0);
  }finally{await f.db.close()}
 });
 test('fallo del juego revierte sus escrituras y no registra una recompensa incompleta',async()=>{
