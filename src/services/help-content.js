@@ -3,7 +3,6 @@
 export const itemCatalog=Object.freeze({
   "perri_cofres": {
     "name": "Perricofres",
-    "description": "Se abren directamente desde el inventario y entregan premios del Perricofre.",
     "image": "./public/assets/objeto-perricofre.webp"
   },
   "perri_cofres_minijuego": {
