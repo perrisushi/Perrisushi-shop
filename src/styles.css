@@ -35,7 +35,7 @@ img {max-width:100%;height:auto;user-select:none}
 .topbar {position:absolute;inset:2.6% 2.3% auto;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;z-index:20;pointer-events:none}
 .topbar-start,.topbar-end {display:flex;align-items:center;gap:10px;pointer-events:auto}
 .identity-chip {display:flex;align-items:center;gap:8px;min-height:35px;padding:5px 11px;background:#0f2017c9;border:1px solid #40694b;border-radius:999px;box-shadow:inset 0 1px 2px #d6fcb51c,0 2px 8px #0008;text-shadow:0 1px #000}
-.identity-chip small {display:block;font:700 8px/1.1 system-ui,sans-serif;letter-spacing:.1em;color:#a8c9a6}
+
 .identity-chip strong {font-size:13px;line-height:1.1;font-weight:700;color:#f4eac8}
 .status-dot {width:9px;height:9px;border-radius:50%;background:#76ce88;box-shadow:0 0 7px #83ffab;flex:none}
 .icon-button {width:38px;height:38px;display:grid;place-items:center;color:#f5d58c;background:linear-gradient(#443127,#231913);border:1px solid #a7763c;border-radius:10px;box-shadow:inset 0 1px #b5814f55,0 3px 7px #0008;font:700 21px/1 system-ui,sans-serif}
@@ -256,3 +256,10 @@ body:not([data-access="ready"]) > .skip-link {display:none}
 body:not([data-access="ready"]) .overlay-layer {position:absolute;inset:0;display:grid;place-items:center;padding:16px;overflow:auto}
 body:not([data-access="ready"]) .modal-card {width:min(100%,480px);position:relative;margin:auto}
 body:not([data-access="ready"]) .modal-backdrop {display:none}
+
+/* Identidad compacta y copyright fuera del bloque de redes. */
+.topbar-start,.identity-chip {min-width:0}
+.topbar-end,.nav-toggle {flex-shrink:0}
+.identity-chip strong {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scene-footer {padding-bottom:9px}
+.stage-indicator {display:block;position:absolute;right:calc(12px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));max-width:calc(100% - 24px);font:400 8px/1.3 system-ui,sans-serif;letter-spacing:.03em;color:#bda88a;opacity:.8;pointer-events:none;z-index:3;text-align:right}
