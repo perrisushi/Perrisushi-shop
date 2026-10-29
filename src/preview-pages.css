@@ -70,3 +70,19 @@ button.pw04-inventory-slot:hover{filter:brightness(1.25)}
 }
 .pw04-inventory-slot.pw04-filled img { max-width: 100%; max-height: 70%; width: auto; height: auto; object-fit: contain; }
 .pw04-inventory-slot.pw04-filled:has(img) > span:not(.pw04-quantity) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Inventario móvil: un único desplazamiento, dentro de la cuadrícula. */
+@media(max-width:700px), (pointer:coarse) and (max-height:500px) {
+ .content-board:has(.pw04-inventory) .content-scroll {
+  display:flex;flex-direction:column;overflow:clip;
+ }
+ .pw04-inventory {
+  display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;
+ }
+ .pw04-inventory-balances {flex:none;margin-top:0}
+ .pw04-inventory-main {display:flex;flex:1;min-height:0;overflow:clip}
+ .pw04-inventory-grid {
+  flex:1;min-height:0;max-height:none;overflow-y:auto;
+  align-content:start;grid-auto-rows:max-content;
+ }
+}
