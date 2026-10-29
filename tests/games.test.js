@@ -220,3 +220,70 @@ test('PerriRPG compra y consume un objeto original con saldo compartido e idempo
   assert.equal((await f.db.query("select quantity from shop_rpg_inventory where nick='LocalA' and item_id=$1",[item.item_id])).rows[0].quantity,0);
  }finally{await f.db.close()}
 });
+
+test('cofres y bolsas originales: consumo, premios persistidos, recibo idempotente y catálogo intacto',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_logo_catalog set name='Nombre conservado' where logo_id='logo-buho-1';update shop_inventories set bolsa_gemas=2,bolsa_chatarra=2,bolsa_especial=2,cajita_armas=2 where nick='LocalA';");
+  const catalog=(await f.db.query('select * from shop_logo_catalog order by logo_id')).rows;
+  for(const itemKey of ['bolsaGemas','bolsaChatarra','bolsaEspecial','cajitaArmas']){
+   const field=itemKey.replace(/[A-Z]/g,c=>'_'+c.toLowerCase()),before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows[0];
+   const payload={action:'publicShopOpenRewardContainer',itemKey,openId:'never-trust-client-id',idempotencyKey:randomUUID()};
+   const result=await f.games.execute(f.user,payload);assert.equal(result.ok,true,JSON.stringify(result));assert.ok(result.reward.label);const after=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows[0];assert.equal(after[field],before[field]-1);
+   if(itemKey==='bolsaGemas')assert.ok([100,200,300].includes(after.polvo_gema-before.polvo_gema));
+   if(itemKey==='bolsaChatarra')assert.ok([35,70,120].includes(after.chatarra-before.chatarra));
+   if(itemKey==='cajitaArmas')assert.equal((await f.db.query("select sum(quantity)::int n from shop_rpg_inventory where nick='LocalA'")).rows[0].n,10);
+   assert.deepEqual(await f.games.execute(f.user,payload),result);assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows[0],after);
+  }
+  for(const chestType of ['perriCofres','perriCofresMinijuego']){
+   const chestId=randomUUID();await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA',$2,now()+interval '1 day')",[chestId,chestType]);
+   const payload={action:'publicShopOpenInventoryChest',chestType,chestOpenId:'untrusted',idempotencyKey:randomUUID()};
+   const result=await f.games.execute(f.user,payload);assert.equal(result.ok,true,JSON.stringify(result));assert.ok(result.rewardBundle.rewards.length>=2);assert.equal((await f.db.query('select status from shop_inventory_chests where chest_id=$1',[chestId])).rows[0].status,'opened');
+   const inventory=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
+   assert.deepEqual(await f.games.execute(f.user,payload),result);assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,inventory);
+  }
+  assert.deepEqual((await f.db.query('select * from shop_logo_catalog order by logo_id')).rows,catalog);
+  assert.equal((await f.db.query("select count(*)::int n from shop_activity where nick='LocalA'")).rows[0].n,6);
+ }finally{await f.db.close()}
+});
+
+test('apertura: sin propiedad, caducado, identidad ajena, manipulación y fallo de registro no conceden premios',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set bolsa_gemas=1 where nick='LocalA';");
+  const before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
+  await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenChest',idempotencyKey:randomUUID()}),e=>e.code==='operation_disabled');
+  await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'free-money',idempotencyKey:randomUUID()}),e=>e.code==='invalid_request');
+  const request={action:'publicShopOpenRewardContainer',itemKey:'bolsaGemas',openId:'x',idempotencyKey:randomUUID()};
+  await assert.rejects(f.games.execute({...f.user,nick:'LocalB'},request),e=>e.code==='session_expired');
+  const absent=await f.games.execute(f.user,{...request,itemKey:'bolsaEspecial',idempotencyKey:randomUUID()});assert.equal(absent.ok,false);assert.equal(absent.error,'item_not_owned');
+  await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()-interval '1 day')",[randomUUID()]);
+  assert.equal((await f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'x',idempotencyKey:randomUUID()})).ok,false);
+  await f.db.exec("create function reject_chest_receipt() returns trigger language plpgsql as $$ begin if NEW.operation_id like 'pw2:game:%' then raise exception 'fail'; end if; return NEW; end $$;create trigger reject_chest_receipt before insert on shop_operations for each row execute function reject_chest_receipt();");
+  await assert.rejects(f.games.execute(f.user,request),e=>e.code==='games_unavailable');
+  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);assert.equal((await f.db.query('select count(*)::int n from shop_activity')).rows[0].n,0);
+ }finally{await f.db.close()}
+});
+test('aperturas concurrentes entre instancias: un único consumo, propiedad del recibo y saldo insuficiente',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set bolsa_gemas=1 where nick='LocalA'");
+  let tail=Promise.resolve();const pool={async connect(){let release;const before=tail;tail=new Promise(r=>release=r);await before;return {query:(...args)=>f.db.query(...args),release}}};
+  const a=createGames({pool,legacy,enabled:true}),b=createGames({pool,legacy,enabled:true});
+  const payload={action:'publicShopOpenRewardContainer',itemKey:'bolsaGemas',openId:'server',idempotencyKey:randomUUID()};
+  const results=await Promise.all([a.execute(f.user,payload),b.execute(f.user,payload)]);assert.equal(results[0].ok,true);assert.deepEqual(results[1],results[0]);
+  const inventory=(await f.db.query("select bolsa_gemas,polvo_gema from shop_inventories where nick='LocalA'")).rows[0];assert.equal(inventory.bolsa_gemas,0);assert.ok([5100,5200,5300].includes(inventory.polvo_gema));
+  assert.equal((await b.execute(f.user,{...payload,idempotencyKey:randomUUID()})).error,'item_not_owned');
+  await assert.rejects(a.execute(f.user,{...payload,itemKey:'bolsaChatarra'}),e=>e.code==='operation_conflict');
+  const user={nick:'LocalB',token:'y'.repeat(43)};await f.db.query("insert into shop_sessions(token,nick,expires_at) values($1,'LocalB',now()+interval '1 day')",[sessionKey(user.token)]);
+  await assert.rejects(b.execute(user,payload),e=>e.code==='operation_conflict');
+  assert.deepEqual((await f.db.query("select bolsa_gemas,polvo_gema from shop_inventories where nick='LocalA'")).rows[0],inventory);
+ }finally{await f.db.close()}
+});
+test('disponibilidad de cofres lee propiedad y caducidad sin modificar registros ni inventarios',async()=>{
+ const f=await fixture();try{
+  await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()+interval '1 day'),($2,'LocalA','perriCofres',now()-interval '1 day'),($3,'LocalB','perriCofresMinijuego',now()+interval '1 day')",[randomUUID(),randomUUID(),randomUUID()]);
+  const before=(await f.db.query('select * from shop_inventory_chests order by chest_id')).rows;
+  const state=await f.games.containerState(f.user);assert.equal(state.available,true);assert.deepEqual(state.counts,{perriCofres:1});
+  assert.equal((await f.games.containerState({...f.user,nick:'LocalB'})).available,false);
+  assert.deepEqual((await f.db.query('select * from shop_inventory_chests order by chest_id')).rows,before);
+  assert.equal((await f.db.query('select count(*)::int n from shop_operations')).rows[0].n,0);
+ }finally{await f.db.close()}
+});

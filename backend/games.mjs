@@ -4,7 +4,7 @@ import {BackendError} from './repository.mjs';
 import transport from './game-transport.cjs';
 import {gameNames,inspectGameStorage,gameFailure} from './game-readiness.mjs';
 import {timed,measuredClient} from './metrics.mjs';
-const actions={publicShopGetNotifications:[],publicShopRefresh:[],publicShopGetProfile:[],publicShopListUsers:[],publicShopPerriPetState:[],publicShopPerriPetSave:['snapshot'],publicShopConsumeSpecialItem:['itemKey'],publicShopRpgState:[],publicShopRpgPurchase:['itemId','quantity'],publicShopRpgEquipArmor:['slot','itemId'],publicShopRpgSetLoadout:['itemId','enabled'],publicShopRpgConsume:['itemId'],publicShopRpgSaveCombat:['combat'],publicShopRpgClearCombat:[],publicShopUpgradeEquipment:['gearType','usePerricita'],publicShopGetDuelTarget:[],publicShopExpireDuelTarget:['targetToken'],publicShopPerformAttack:['targetToken'],publicShopGetPerriCasillas:[],publicShopResetPerriCasillas:[],publicShopOpenPerriCasilla:['openId','operationId','cellIndex']};
+const actions={publicShopOpenInventoryChest:["chestType","chestOpenId"],publicShopOpenRewardContainer:["itemKey","openId"],publicShopGetNotifications:[],publicShopRefresh:[],publicShopGetProfile:[],publicShopListUsers:[],publicShopPerriPetState:[],publicShopPerriPetSave:['snapshot'],publicShopConsumeSpecialItem:['itemKey'],publicShopRpgState:[],publicShopRpgPurchase:['itemId','quantity'],publicShopRpgEquipArmor:['slot','itemId'],publicShopRpgSetLoadout:['itemId','enabled'],publicShopRpgConsume:['itemId'],publicShopRpgSaveCombat:['combat'],publicShopRpgClearCombat:[],publicShopUpgradeEquipment:['gearType','usePerricita'],publicShopGetDuelTarget:[],publicShopExpireDuelTarget:['targetToken'],publicShopPerformAttack:['targetToken'],publicShopGetPerriCasillas:[],publicShopResetPerriCasillas:[],publicShopOpenPerriCasilla:['openId','operationId','cellIndex']};
 // No copiar estados completos por cada consulta/autoguardado. Pet ya valida
 // serverRevision dentro de esta misma transacción: repetir una revisión no gasta dos veces.
 const revisionOrRead=new Set(['publicShopGetNotifications','publicShopRefresh','publicShopGetProfile','publicShopListUsers','publicShopPerriPetState','publicShopPerriPetSave','publicShopRpgState','publicShopGetDuelTarget','publicShopExpireDuelTarget','publicShopGetPerriCasillas']);
@@ -19,7 +19,15 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
   const rows=(await client.query("SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE",[sessionKey(user.token),user.nick])).rows;
   return rows.length===1?rows[0]:null;
  };
- const runtime={configured:Boolean(enabled&&pool&&legacy&&sourceCompatible),async availability(user){
+ const runtime={configured:Boolean(enabled&&pool&&legacy&&sourceCompatible),async containerState(user){
+  if(!runtime.configured)return {available:false};let client;
+  try{
+   client=measuredClient(await timed('poolMs',()=>pool.connect()));if(!await sharedSession(client,user))return {available:false};
+   const catalog=await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1');if(!catalog.rows.length)return {available:false};
+   const counts=await client.query("SELECT chest_type,count(*)::int quantity FROM public.shop_inventory_chests WHERE nick=$1 AND status='available' AND expires_at>=now() GROUP BY chest_type",[user.nick]);
+   return {available:true,counts:Object.fromEntries(counts.rows.map(r=>[r.chest_type,r.quantity]))};
+  }catch(error){emit('container_read_failed',{failure:gameFailure(error)});return {available:false}}finally{client?.release()}
+ },async availability(user){
   const reject=reason=>{emit(reason);return {available:false,games:emptyGames(),reason}};
   if(!enabled)return reject('games_disabled');
   if(!pool)return reject('database_not_configured');
@@ -40,6 +48,8 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
   const allowed=['action','idempotencyKey','sessionToken',...actions[body.action]];
   if(Object.keys(body).some(k=>!allowed.includes(k))||typeof body.idempotencyKey!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(body.idempotencyKey))throw new BackendError(400,'invalid_request');
   if(['publicShopPerformAttack','publicShopExpireDuelTarget'].includes(body.action)&&!legacy.validateDuelTarget?.(body.targetToken,user.nick))throw new BackendError(403,'forbidden');
+  if(body.action==='publicShopOpenInventoryChest'&&!['perriCofres','perriCofresMinijuego'].includes(body.chestType))throw new BackendError(400,'invalid_request');
+  if(body.action==='publicShopOpenRewardContainer'&&!['bolsaGemas','bolsaChatarra','bolsaEspecial','cajitaArmas'].includes(body.itemKey))throw new BackendError(400,'invalid_request');
   const operationId=body.idempotencyKey.toLowerCase(),recordOperation=!revisionOrRead.has(body.action);
   const payload=Object.fromEntries(actions[body.action].filter(k=>Object.hasOwn(body,k)).map(k=>[k,body[k]]));
   const fingerprint=createHash('sha256').update(JSON.stringify(payload)).digest('hex');
@@ -56,8 +66,10 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
    // No crear cuentas ni inventarios al abrir un juego.
    const inventory=(await client.query('SELECT nick FROM public.shop_inventories WHERE nick=$1 FOR UPDATE',[user.nick])).rows[0];
    if(!inventory)throw new BackendError(409,'inventory_missing');
-   const scoped={...payload};for(const field of ['openId','operationId'])if(Object.hasOwn(scoped,field))scoped[field]='pw2:inner:'+user.nick+':'+operationId;
-   const raw=await transport.withClient(client,()=>legacy.handleShopAction({...scoped,action:body.action,sessionToken:sessionKey(user.token)}),{shop_sessions:verified.session,shop_access:verified.access});
+   const openingContainer=['publicShopOpenInventoryChest','publicShopOpenRewardContainer'].includes(body.action);
+   if(openingContainer&&!(await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1')).rows.length)throw new BackendError(503,'operation_disabled');
+   const scoped={...payload};for(const field of ['openId','operationId','chestOpenId'])if(Object.hasOwn(scoped,field))scoped[field]='pw2:inner:'+user.nick+':'+operationId;
+   const raw=await transport.withClient(client,()=>legacy.handleShopAction({...scoped,action:body.action,sessionToken:sessionKey(user.token)}),{shop_sessions:verified.session,shop_access:verified.access,preserveCatalog:openingContainer});
    const gear=new Set(['espada','espadaLv2','espadaLv3','espadaLegendaria','escudo','escudoMadera','escudoMetal','escudoLegendario','cuchillo','collar','cascoSushi','guantesSushi','pecheraSushi','pantalonesSushi','botasSushi','pinzaReal']);
    const result=JSON.parse(JSON.stringify(raw,(key,value)=>['sessionToken','code_hash','password_hash','token'].includes(key)?undefined:key==='defenderInventory'&&value?Object.fromEntries(Object.entries(value).filter(([field])=>gear.has(field))):value));
    if(!result?.ok){await client.query('ROLLBACK');return result??{ok:false,error:'game_failed'}}

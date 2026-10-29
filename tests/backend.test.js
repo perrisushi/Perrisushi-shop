@@ -178,3 +178,17 @@ test('Railway sin proxy autenticado no bloquea a todos los usuarios por comparti
   assert.equal((await request('/auth/login',{method:'POST',origin:'https://site.example',body:{nick:'Limited',password:'wrong'}})).status,429);
  },{repository,production:true,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40),publicOrigin:'https://site.example'});
 });
+
+test('apertura de inventario: identidad de cookie, CSRF, selección cerrada y respuesta solo con premios',()=>{
+ const calls=[];return use(async({login,request})=>{
+  const auth=await login(),idempotencyKey='22345678-1234-4234-8234-123456789abc';
+  const invoke=(body,extra={})=>request('/inventory/open',{method:'POST',cookie:auth.cookie,csrf:auth.csrf,body,...extra});
+  assert.equal((await invoke({itemId:'perri_cofres',idempotencyKey},{csrf:undefined})).status,403);
+  assert.equal((await invoke({itemId:'perri_cofres',idempotencyKey},{origin:'https://other.invalid'})).status,403);
+  assert.equal((await invoke({itemId:'perri_cofres',idempotencyKey},{cookie:undefined})).status,401);
+  for(const body of [{itemId:'pc',idempotencyKey},{itemId:'__proto__',idempotencyKey},{itemId:'perri_cofres',idempotencyKey,nick:'Beta'},{itemId:'perri_cofres',idempotencyKey,reward:100}])assert.equal((await invoke(body)).status,400);
+  assert.equal(calls.length,0);
+  const result=await invoke({itemId:'perri_cofres',idempotencyKey});assert.equal(result.status,200);assert.deepEqual(result.data,{rewards:[{label:'Premio',quantity:1}]});assert.equal(calls[0].user.nick,'Alpha');assert.equal(calls[0].body.chestType,'perriCofres');assert.equal(calls[0].body.action,'publicShopOpenInventoryChest');
+  const bag=await invoke({itemId:'bolsa_gemas',idempotencyKey});assert.equal(bag.status,200);assert.equal(calls[1].body.itemKey,'bolsaGemas');
+ },{games:{configured:true,execute:async(user,body)=>{calls.push({user,body});return {ok:true,inventory:{private:'excluded'},rewardBundle:{rewards:[{label:'Premio',quantity:1}]}}}}});
+});

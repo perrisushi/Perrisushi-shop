@@ -44,7 +44,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
-   const known=['/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
+   const known=['/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
    if(!['GET','POST'].includes(req.method))fail(405,'method_not_allowed');
    if(!reads.take(clientIP))fail(429,'too_many_requests');
@@ -65,7 +65,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
     }});
     detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
-   if(req.method==='POST'&&!['/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
+   if(req.method==='POST'&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
    if(!repository.configured)fail(503,'backend_not_configured');
    const user=await identity(req);
@@ -79,6 +79,14 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    if(req.method==='POST'){
     if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
     const body=await jsonBody(req,route==='/api/games/action'?1048576:4096);
+    if(route==='/api/inventory/open'){
+     const containers={perri_cofres:['publicShopOpenInventoryChest','chestType','perriCofres'],perri_cofres_minijuego:['publicShopOpenInventoryChest','chestType','perriCofresMinijuego'],bolsa_gemas:['publicShopOpenRewardContainer','itemKey','bolsaGemas'],bolsa_chatarra:['publicShopOpenRewardContainer','itemKey','bolsaChatarra'],bolsa_especial:['publicShopOpenRewardContainer','itemKey','bolsaEspecial'],cajita_armas:['publicShopOpenRewardContainer','itemKey','cajitaArmas']};
+     if(Object.keys(body).some(k=>!['itemId','idempotencyKey'].includes(k))||!Object.hasOwn(containers,body.itemId??''))fail(400,'invalid_request');
+     if(!games?.configured)fail(403,'operation_disabled');
+     const [action,field,value]=containers[body.itemId];const result=await games.execute(user,{action,[field]:value,idempotencyKey:body.idempotencyKey,...(field==='chestType'?{chestOpenId:'server'}:{openId:'server'})});
+     if(!result.ok)fail(409,['no_perri_chests','no_minigame_chests','item_not_owned'].includes(result.error)?'item_not_owned':'operation_disabled');
+     send(200,{rewards:result.rewardBundle?.rewards??(result.reward?[result.reward]:[])});return;
+    }
     if(route==='/api/games/action'){if(!games)fail(503,'games_not_configured');send(200,await games.execute(user,body));return}
     if(route==='/api/shop/random-key/redeem'||route==='/api/shop/raffles/buy'){send(200,await economy.execute(user.nick,route.endsWith('/buy')?'raffle-buy':'random-redeem',body));return}
     if(route==='/api/profile/avatar'){
@@ -110,7 +118,10 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
     // No se concede propiedad implícita por is_default ni se confía en rutas de assets de BD.
     send(200,{nick:user.nick,balances:inventory?{pc:inventory.pc,gemas:inventory.polvo_gema,monedas:inventory.monedas}:null,profile:profile?{selectedLogoId:owned.includes(profile.selected_logo_id)?profile.selected_logo_id:null,selectedLogoAssetId:owned.includes(profile.selected_logo_id)?logoAsset(logos.find(l=>l.logo_id===profile.selected_logo_id)):null,ownedLogoIds:owned,karma:profile.karma,achievements:profile.achievements,selectedTitleId:profile.selected_title_id}:null,logos:logos.map(l=>({id:l.logo_id,name:l.name,assetId:logoAsset(l),owned:owned.includes(l.logo_id)})),collectionTruncated:false});return;
    }
-   if(route==='/api/inventory'){const row=await repository.inventory(user.nick);if(row){const {nick,...values}=row;send(200,{inventory:values})}else send(200,{inventory:null});return}
+   if(route==='/api/inventory'){
+    const [row,state]=await Promise.all([repository.inventory(user.nick),games?.containerState?.(user)??Promise.resolve({available:false})]);
+    if(row){const {nick,...values}=row;if(state.available){values.perri_cofres=state.counts.perriCofres??0;values.perri_cofres_minijuego=state.counts.perriCofresMinijuego??0}send(200,{inventory:values,canOpenContainers:state.available===true})}else send(200,{inventory:null});return;
+   }
    if(['/api/history','/api/users','/api/notifications'].includes(route)){
     const kind=route.split('/').pop(),options=pagination(url);const rows=await repository.page(kind,user.nick,options);
     const safe=rows.map(row=>{if(kind!=='users')return row;return {nick:row.nick,pc:row.pc,logoId:row.logo_id,karma:row.karma,achievements:row.achievements,selectedTitleId:row.selected_title_id}});

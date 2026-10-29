@@ -86,3 +86,36 @@ button.pw04-inventory-slot:hover{filter:brightness(1.25)}
   align-content:start;grid-auto-rows:max-content;
  }
 }
+
+/* Fichas de objetos y recompensas confirmadas por el servidor. */
+.container-detail>img {width:156px;height:156px;margin:18px auto;object-fit:contain;filter:drop-shadow(0 5px 5px #56341444)}
+.item-quantity {font-size:16px}
+.container-consumption {font-size:13px!important;color:#704c30}
+.container-open {min-width:180px;max-width:100%;min-height:44px}
+.container-status:empty {display:none}
+.container-status {font-size:14px!important;margin-bottom:0!important}
+.reward-confirmation {font-weight:700;color:#5c371b}
+.container-rewards {list-style:none;display:grid;gap:10px;margin:16px 0 0;padding:0;text-align:left}
+.container-rewards li {display:flex;align-items:center;gap:14px;padding:12px;border:1px solid #ad7a3e;border-radius:9px;background:#ffe7b65c;box-shadow:inset 0 1px #fff0cb80;min-width:0}
+.container-rewards li img {flex:none;width:52px;height:52px;margin:0;object-fit:contain}
+.container-rewards strong {display:block;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.container-rewards small {display:block;margin-top:4px;color:#704c30;line-height:1.4}
+.inventory-recovery {flex:none;display:grid;gap:8px;margin-bottom:12px}
+.inventory-recovery button {font-size:13px;overflow-wrap:anywhere}
+@media(max-width:700px), (pointer:coarse) and (max-height:500px) {
+ .container-detail>img {width:112px;height:112px;margin:12px auto}
+ .container-rewards li {padding:10px;gap:10px}
+ .container-rewards li img {width:44px;height:44px}
+ .info-card .modal-head h2 {font-size:23px;line-height:1.15}
+}
+
+@media(max-width:700px) and (orientation:landscape) and (max-height:500px), (pointer:coarse) and (orientation:landscape) and (max-height:500px) {
+ .container-detail:has(.container-rewards) {display:grid;grid-template-columns:96px minmax(0,1fr);column-gap:16px;align-items:center}
+ .container-detail:has(.container-rewards)>img {grid-column:1;grid-row:1 / span 2;width:96px;height:96px;margin:0}
+ .container-detail .reward-confirmation {grid-column:2;margin:8px 0;font-size:14px}
+ .container-detail .container-rewards {grid-column:2;margin:8px 0;gap:6px}
+ .container-detail .container-rewards li {gap:8px;padding:6px}
+ .container-detail .container-rewards li img {width:32px;height:32px}
+ .container-detail .container-rewards strong {font-size:14px;line-height:1.25}
+ .container-detail .container-status {grid-column:1 / -1}
+}

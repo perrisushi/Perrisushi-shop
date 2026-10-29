@@ -1,6 +1,6 @@
 const {AsyncLocalStorage}=require('node:async_hooks');
 const context=new AsyncLocalStorage();
-exports.withClient=(client,worker,seeds={})=>context.run({client,reads:new Map(),players:new Map(),seeds:{...seeds}},worker);
+exports.withClient=(client,worker,seeds={})=>context.run({client,reads:new Map(),players:new Map(),seeds:{...seeds},preserveCatalog:seeds.preserveCatalog===true},worker);
 const ident=name=>{if(!/^[a-z_][a-z0-9_]*$/.test(name))throw Error('invalid_identifier');return '"'+name+'"'};
 const tables=new Set(['shop_players','shop_access','shop_sessions','shop_profiles','shop_logo_catalog','shop_inventories','shop_public_users','shop_activity','shop_notifications','shop_operations','shop_random_key_tickets','shop_random_key_pool','shop_random_key_claims','shop_perripet_states','shop_perripet_inventory','shop_inventory_chests','shop_perri_chests','shop_rpg_catalog','shop_rpg_inventory','shop_rpg_equipment','shop_rpg_loadout','shop_rpg_combat_state','shop_rpg_ledger','perri_casillas_games']);
 const rpcs=new Set(['shop_rpg_ensure_starter_set','shop_rpg_purchase_items','shop_rpg_equip_armor','shop_rpg_set_loadout','shop_rpg_consume_item','shop_rpg_claim_boss_reward']);
@@ -28,6 +28,11 @@ async function request(input,opts={}){
   // verificar en ESTA transacción; nunca sesiones almacenadas de otra petición.
   const seeded=state.seeds[table],field=table==='shop_sessions'?'token':table==='shop_access'?'nick':null;
   if(method==='GET'&&field&&seeded&&u.searchParams.get('select')==='*'&&u.searchParams.getAll(field).length===1&&u.searchParams.get(field)==='eq.'+seeded[field]&&(!u.searchParams.has('limit')||u.searchParams.get('limit')==='1')&&[...u.searchParams.keys()].every(k=>['select','limit',field].includes(k))){delete state.seeds[table];return {ok:true,status:200,text:async()=>JSON.stringify([seeded])}}
+  // Las aperturas utilizan el catálogo existente; nunca resembrar sus nombres o propiedad.
+  if(table==='shop_logo_catalog'&&method!=='GET'&&state.preserveCatalog){
+   if(method!=='POST')throw Error('catalog_write_not_allowed');
+   return {ok:true,status:200,text:async()=> '[]'};
+  }
   // ensurePlayer del servidor antiguo hacía upsert incluso para cuentas existentes.
   // En juegos solo se permiten cuentas ya verificadas; nunca reactivar ni crearlas.
   if(table==='shop_players'&&method!=='GET'){
