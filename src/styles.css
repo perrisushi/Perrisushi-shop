@@ -283,3 +283,53 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 .identity-chip strong {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scene-footer {padding-bottom:9px}
 .stage-indicator {display:block;position:absolute;right:calc(12px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));max-width:calc(100% - 24px);font:400 8px/1.3 system-ui,sans-serif;letter-spacing:.03em;color:#bda88a;opacity:.8;pointer-events:none;z-index:3;text-align:right}
+
+/* La geometría móvil depende de la ruta y del viewport, nunca de menús flotantes. */
+@media(max-width:700px), (pointer:coarse) and (max-height:500px) {
+ html {height:100%;min-height:0;overflow:hidden;overscroll-behavior:none}
+ body {height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+ .app-frame {height:100dvh;min-height:0;overflow:hidden}
+ .scene,.scene:has(.show-home) {
+  --mobile-top:calc(104px + env(safe-area-inset-top));
+  --mobile-bottom:calc(24px + env(safe-area-inset-bottom));
+  --mobile-social:clamp(60px,11dvh,88px);
+  display:block;width:100%;height:100dvh;min-height:0;overflow:hidden;
+ }
+ .stage-content,.stage-content.show-home,.stage-content:has(.profile-grid) {
+  position:absolute;inset:var(--mobile-top) 0 var(--mobile-bottom);
+  height:auto;min-height:0;padding:0 10px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;
+ }
+ .stage-content.show-home {bottom:calc(var(--mobile-bottom) + var(--mobile-social) + 12px)}
+ .home-menu {
+  position:relative;inset:auto;transform:none;margin:0;
+  width:min(94vw,440px,calc((100dvh - var(--mobile-top) - var(--mobile-bottom) - var(--mobile-social) - 12px) * 1016 / 1448));
+  height:auto;min-height:0;aspect-ratio:1016/1448;
+ }
+ .scene:has(.show-home) .scene-footer,.scene-footer {
+  position:absolute;left:0;right:0;bottom:var(--mobile-bottom);
+  height:var(--mobile-social);margin:0;padding:0;
+ }
+ .footer-social {display:none;height:100%;gap:clamp(12px,4vw,24px)}
+ .scene:has(.show-home) .footer-social {display:flex}
+ .social-preview {width:min(42vw,165px);height:100%}
+ .content-board,.content-board:has(.profile-grid) {
+  width:min(100%,540px);height:100%;min-height:0;max-height:100%;
+ }
+ .content-header {flex:none}
+ .content-scroll {min-height:0;overflow:auto;overscroll-behavior:contain}
+ .overlay-layer {position:absolute;inset:0;overflow:hidden}
+ .modal-card {max-height:100%;overscroll-behavior:contain}
+ .scene:has(.show-home) .overlay-layer {padding:var(--mobile-top) 12px calc(var(--mobile-bottom) + var(--mobile-social) + 12px);grid-template-rows:minmax(0,1fr)}
+ .scene:has(.show-home) .modal-card {align-self:center}
+ .scene:has(.show-home) .modal-backdrop {bottom:calc(var(--mobile-bottom) + var(--mobile-social) + 6px)}
+ .modal-card:not(.game-card) .modal-head {position:sticky;top:0;z-index:2;background:#edc89c}
+ .session-options {max-height:calc(100dvh - 80px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain}
+}
+@media(max-width:700px) and (orientation:landscape), (pointer:coarse) and (max-height:500px) and (orientation:landscape) {
+ .scene,.scene:has(.show-home) {--mobile-top:calc(58px + env(safe-area-inset-top));--mobile-social:54px;--mobile-bottom:calc(18px + env(safe-area-inset-bottom))}
+ .profile-badge {width:44px;height:44px}
+ .home-menu {width:min(70vw,calc((100dvh - var(--mobile-top) - var(--mobile-bottom) - var(--mobile-social) - 12px) * 1448 / 1086));aspect-ratio:1448/1086;background-image:url('../public/assets/marco-recuadro-pc.webp')}
+ .home-links {inset:29% 9% 8%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:0 3%}
+ .content-header {min-height:52px;padding:4px 10px}
+ .back-button {width:40px;height:40px}
+}
