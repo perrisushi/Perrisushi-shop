@@ -30,14 +30,14 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
   return {counts,counterOnly,consistent};
  };
  const runtime={configured:Boolean(enabled&&pool&&legacy&&sourceCompatible),async containerState(user){
-  if(!runtime.configured)return {available:false};let client;
+  if(!runtime.configured||typeof legacy?.handleShopAction!=='function'){const reason=!enabled?'games_disabled':!pool?'database_not_configured':!sourceCompatible?'database_project_mismatch':'original_backend_missing';emit('container_unavailable',{reason});return {available:false,reason}}let client;
   try{
-   client=measuredClient(await timed('poolMs',()=>pool.connect()));if(!await sharedSession(client,user))return {available:false};
-   const catalog=await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1');if(!catalog.rows.length)return {available:false};
+   client=measuredClient(await timed('poolMs',()=>pool.connect()));if(!await sharedSession(client,user)){emit('container_unavailable',{reason:'session_not_shared'});return {available:false,reason:'session_not_shared'}}
+   const catalog=await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1');if(!catalog.rows.length){emit('container_unavailable',{reason:'catalog_unavailable'});return {available:false,reason:'catalog_unavailable'}}
    const storage=await chestStorage(client,user.nick);
    if(!storage.consistent)emit('container_inventory_mismatch');
-   return {available:storage.consistent,counts:storage.counts};
-  }catch(error){emit('container_read_failed',{failure:gameFailure(error)});return {available:false}}finally{client?.release()}
+   return {available:storage.consistent,counts:storage.counts,reason:storage.consistent?'ready':'inventory_mismatch'};
+  }catch(error){emit('container_read_failed',{failure:gameFailure(error)});return {available:false,reason:error.code==='42501'||error instanceof BackendError&&error.code==='operation_disabled'?'storage_permissions':error.code==='42P01'?'storage_schema_missing':['28P01','28000'].includes(error.code)?'database_credentials':'database_unavailable'}}finally{client?.release()}
  },async availability(user){
   const reject=reason=>{emit(reason);return {available:false,games:emptyGames(),reason}};
   if(!enabled)return reject('games_disabled');

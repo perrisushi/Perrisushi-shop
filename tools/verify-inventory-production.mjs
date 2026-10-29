@@ -32,7 +32,8 @@ try{
  const repo=createRepository({url:process.env.SUPABASE_URL,key:'local',allowSessionWrites:true,fetchImpl});
  const economy=createEconomy({url:process.env.SUPABASE_URL,key:'local',enabled:true,rafflePrice:3500,raffleMax:3,fetchImpl});
  const games=createGames({pool,legacy,enabled:true,onError:e=>console.log('LOCAL GAME:',e.message)});
- const handler=createBackend({repository:repo,economy,games,publicOrigin:'http://127.0.0.1:4192',sessionStore:'supabase',allowSessionWrites:true});
+ const freshBackend=()=>createBackend({repository:repo,economy,games,publicOrigin:'http://127.0.0.1:4192',sessionStore:'supabase',allowSessionWrites:true});
+ const handler=freshBackend();
  api=http.createServer(handler);
  web=createFrontendServer({apiTarget:'http://127.0.0.1:4193',authenticate:handler.authenticate});
  await new Promise(r=>api.listen(4193,'127.0.0.1',r));await new Promise(r=>web.listen(4192,'127.0.0.1',r));
@@ -49,9 +50,28 @@ try{
   await legacyPage.locator('[data-live-item="'+id+'"]').click();await legacyPage.locator('[data-open-container]').click();await legacyPage.locator('.container-rewards li').first().waitFor();await legacyPage.locator('.modal-close').click();
   const row=(await db.query("select perri_cofres,perri_cofres_minijuego from shop_inventories where nick='LocalB'")).rows[0];assert.deepEqual(row,{perri_cofres:id==='bolsa_gemas'?7:6,perri_cofres_minijuego:3});
  }
- results.push({mode:'legacy-counters',mobile:true,sixContainersVisible:true,bagPreservedChests:true,chestConsumedOnce:true});await legacyContext.close();
+ results.push({mode:'legacy-counters',mobile:true,sixContainersVisible:true,bagPreservedChests:true,chestConsumedOnce:true});
+ // Una lectura de disponibilidad negativa no debe eliminar la acción real de apertura.
+ const bagBeforeFalse=(await db.query("select bolsa_chatarra from shop_inventories where nick='LocalB'")).rows[0].bolsa_chatarra;
+ await legacyPage.route('**/api/inventory',async route=>{const response=await route.fetch(),data=await response.json();await route.fulfill({response,json:{...data,canOpenContainers:false,containerOpeningReason:'unavailable'}})});
+ await legacyPage.reload();await legacyPage.locator('[data-live-item="bolsa_chatarra"]').waitFor();await legacyPage.locator('[data-live-item="bolsa_chatarra"]').click();await legacyPage.locator('[data-open-container]').waitFor();
+ await legacyPage.screenshot({path:output+'/opening-button-unavailable-flag.png'});
+ await legacyPage.locator('[data-open-container]').click();await legacyPage.locator('.container-rewards li').first().waitFor();await legacyPage.locator('.modal-close').click();
+ assert.equal((await db.query("select bolsa_chatarra from shop_inventories where nick='LocalB'")).rows[0].bolsa_chatarra,bagBeforeFalse-1);
+ results.push({mode:'unavailable-flag',buttonVisible:true,realOpening:true});
+ await legacyPage.unroute('**/api/inventory');
+ await db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values(gen_random_uuid(),'LocalB','perriCofres',now()-interval '1 day')");
+ await legacyPage.reload();await legacyPage.locator('[data-live-item="perri_cofres"]').waitFor();
+ const deniedState=await legacyPage.evaluate(()=>fetch('/api/inventory').then(r=>r.json()));assert.equal(deniedState.canOpenContainers,false);assert.equal(deniedState.containerOpeningReason,'inventory_mismatch');
+ const beforeDenied=(await db.query("select * from shop_inventories where nick='LocalB'")).rows;
+ await legacyPage.locator('[data-live-item="perri_cofres"]').click();await legacyPage.locator('[data-open-container]').waitFor();
+ const deniedResponse=legacyPage.waitForResponse(r=>r.url().endsWith('/api/inventory/open'));await legacyPage.locator('[data-open-container]').click();assert.equal((await deniedResponse).status(),409);await legacyPage.locator('.container-status').filter({hasText:'Tus objetos se han conservado'}).waitFor();
+ assert.equal(await legacyPage.locator('.container-rewards').count(),0);assert.deepEqual((await db.query("select * from shop_inventories where nick='LocalB'")).rows,beforeDenied);
+ await legacyPage.screenshot({path:output+'/opening-rejected-with-message.png'});results.push({mode:'blocked-opening',buttonVisible:true,serverRejected:true,inventoryUnchanged:true,errorVisible:true});await legacyContext.close();
  const items=['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'];
  for(const [width,height,mobile] of [[1440,1000,false],[1024,768,false],[320,568,true],[390,844,true],[430,932,true],[844,390,true]]){
+  // Cada escenario tiene su instancia aislada: conserva las cuotas reales sin acumular toda la batería en una sola cuenta/minuto.
+  api.removeAllListeners('request');api.on('request',freshBackend());
   await db.query("update shop_inventories set bolsa_gemas=1,bolsa_chatarra=1,bolsa_especial=1,cajita_armas=1 where nick='LocalA'");
   await db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values(gen_random_uuid(),'LocalA','perriCofres',now()+interval '1 day'),(gen_random_uuid(),'LocalA','perriCofresMinijuego',now()+interval '1 day')");
   await db.query("update shop_inventories set perri_cofres=1,perri_cofres_minijuego=1 where nick='LocalA'");

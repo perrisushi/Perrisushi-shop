@@ -321,3 +321,13 @@ test('el historial filtrado por permisos RLS no se interpreta como una cuenta an
   await f.db.exec('reset role');assert.equal((await f.db.query("select perri_cofres from shop_inventories where nick='LocalA'")).rows[0].perri_cofres,4);
  }finally{await f.db.close()}
 });
+test('disponibilidad de apertura distingue configuración y fallos de datos sin filtrar detalles privados',async()=>{
+ assert.equal((await createGames().containerState({})).reason,'games_disabled');
+ assert.equal((await createGames({enabled:true}).containerState({})).reason,'database_not_configured');
+ assert.equal((await createGames({enabled:true,pool:{},legacy,sourceCompatible:false}).containerState({})).reason,'database_project_mismatch');
+ assert.equal((await createGames({enabled:true,pool:{},legacy:{}}).containerState({})).reason,'original_backend_missing');
+ for(const [code,reason] of [['42501','storage_permissions'],['42P01','storage_schema_missing'],['28P01','database_credentials'],['ECONNREFUSED','database_unavailable']]){
+  const events=[],games=createGames({enabled:true,legacy,pool:{connect:async()=>{throw Object.assign(Error('PRIVATE-DATABASE-SECRET'),{code})}},onDiagnostic:e=>events.push(e)});
+  const result=await games.containerState({});assert.equal(result.reason,reason);assert.equal(result.available,false);assert.ok(!JSON.stringify({result,events}).includes('PRIVATE-DATABASE-SECRET'));
+ }
+});

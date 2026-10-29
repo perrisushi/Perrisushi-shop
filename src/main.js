@@ -152,7 +152,7 @@ function containerArt(id,opened=false){
 }
 function inventoryItemMarkup(id){
  const item=itemDetails(id),quantity=dataState.inventory.inventory?.[id]??0,op=containerOperations.get(id),rewards=op?.result?.rewards;
- const canOpen=openableContainers.includes(id)&&dataState.inventory.canOpenContainers===true&&(quantity>0||pendingContainer(id));
+ const canOpen=openableContainers.includes(id)&&(quantity>0||pendingContainer(id));
  return `<div class="modal-head"><h2 id="modal-title">${escapeText(rewards?'Recompensas obtenidas':item.name)}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>
  <div class="item-detail ${openableContainers.includes(id)?'container-detail':''}"><img src="${escapeText(openableContainers.includes(id)?containerArt(id,Boolean(rewards)):item.image)}" alt="${escapeText(item.name)}"/>
  ${rewards?`<p class="reward-confirmation">${escapeText(item.name)} · Apertura completada</p><ul class="container-rewards">${rewards.map(reward=>{

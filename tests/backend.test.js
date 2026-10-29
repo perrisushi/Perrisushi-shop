@@ -201,3 +201,8 @@ test('regresión: una tabla auxiliar vacía no oculta cofres, bolsas ni cajas de
   assert.deepEqual(await repository.inventory(),inventory);
  },{repository,games:{containerState:async()=>({available:true,counts:{}})}});
 });
+test('inventario informa el motivo de apertura bloqueada sin ocultar cantidades ni exponer errores privados',()=>{
+ return use(async({login,request})=>{
+  const auth=await login(),response=await request('/inventory',{cookie:auth.cookie});assert.equal(response.status,200);assert.equal(response.data.canOpenContainers,false);assert.equal(response.data.containerOpeningReason,'inventory_mismatch');assert.equal(response.data.inventory.pc,8);assert.ok(!JSON.stringify(response.data).includes('token'));
+ },{games:{containerState:async()=>({available:false,reason:'inventory_mismatch'})}});
+});

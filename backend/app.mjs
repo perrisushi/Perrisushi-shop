@@ -120,7 +120,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    }
    if(route==='/api/inventory'){
     const [row,state]=await Promise.all([repository.inventory(user.nick),games?.containerState?.(user)??Promise.resolve({available:false})]);
-    if(row){const {nick,...values}=row;send(200,{inventory:values,canOpenContainers:state.available===true})}else send(200,{inventory:null});return;
+    if(row){const {nick,...values}=row;send(200,{inventory:values,canOpenContainers:state.available===true,containerOpeningReason:state.reason??(state.available?'ready':'unavailable')})}else send(200,{inventory:null});return;
    }
    if(['/api/history','/api/users','/api/notifications'].includes(route)){
     const kind=route.split('/').pop(),options=pagination(url);const rows=await repository.page(kind,user.nick,options);
