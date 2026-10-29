@@ -27,7 +27,7 @@ test('C1-C8 conserva los bloques y elimina solo los rótulos señalados',async()
 test('descripciones verificadas no se inventan para objetos desconocidos',async()=>{
  const source=await readFile('games/original/index-production.html','utf8');
  for(const id of ['agua_divina','pocion_divina','pinza_real','gema_experiencia','incubadora_mejorada','cajita_armas'])assert.ok(source.includes(itemDetails(id).description),id);
- for(const id of ['llaves','fragmento_key','cuchillo','collar','revivir_pet','saco_chatarra','chatarra','boleto_sorteo1'])assert.equal(itemDetails(id).description,undefined,id);
+ for(const id of ['llaves','fragmento_key','cuchillo','collar','saco_chatarra','boleto_sorteo1'])assert.equal(itemDetails(id).description,undefined,id);
  assert.equal(itemDetails('un_objeto_nuevo').description,undefined);
  for(const item of Object.values(itemCatalog))assert.ok(item.name);
  assert.deepEqual(Object.keys(gameDescriptions).sort(),['PerriCasillas','PerriDuelos','PerriPet','PerriRPG']);

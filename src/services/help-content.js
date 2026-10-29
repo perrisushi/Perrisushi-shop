@@ -108,27 +108,27 @@ export const itemCatalog=Object.freeze({
   },
   "casco_sushi": {
     "name": "Casco de Sushi",
-    "description": "+2% proteccion contra ataque",
+    "description": "Equipo de defensa de PerriDuelos",
     "image": "./public/assets/objeto-casco.webp"
   },
   "guantes_sushi": {
     "name": "Guantes de Sushi",
-    "description": "+5% acierto de ataque",
+    "description": "Equipo de defensa de PerriDuelos",
     "image": "./public/assets/objeto-guantes.webp"
   },
   "pechera_sushi": {
     "name": "Pechera de Sushi",
-    "description": "+2% proteccion contra ataque",
+    "description": "Equipo de defensa de PerriDuelos",
     "image": "./public/assets/objeto-pechera.webp"
   },
   "pantalones_sushi": {
     "name": "Pantalones de Sushi",
-    "description": "+2% proteccion contra ataque",
+    "description": "Equipo de defensa de PerriDuelos",
     "image": "./public/assets/objeto-pantalones.webp"
   },
   "botas_sushi": {
     "name": "Botas de Sushi",
-    "description": "+2% proteccion contra ataque",
+    "description": "Equipo de defensa de PerriDuelos",
     "image": "./public/assets/objeto-botas.webp"
   },
   "llaves": {
@@ -137,7 +137,7 @@ export const itemCatalog=Object.freeze({
   },
   "polvo_gema": {
     "name": "Gemas",
-    "description": "Recurso utilizado para mejorar equipo en PerriDuelos.",
+    "description": "Moneda utilizada en los minijuegos",
     "image": "./public/assets/objeto-gemas.webp"
   },
   "fragmento_key": {
@@ -149,7 +149,8 @@ export const itemCatalog=Object.freeze({
   },
   "chatarra": {
     "name": "Chatarra",
-    "image": "./public/assets/objeto-chatarra.webp"
+    "image": "./public/assets/objeto-chatarra.webp",
+    "description": "Recurso obtenido en PerriPet"
   },
   "cuchillo": {
     "name": "Cuchillo",
@@ -161,7 +162,8 @@ export const itemCatalog=Object.freeze({
   },
   "revivir_pet": {
     "name": "Revivir Pet",
-    "image": "./public/assets/objeto-revivir.webp"
+    "image": "./public/assets/objeto-revivir.webp",
+    "description": "Sirve para revivir a la mascota en el minijuego PerriPet"
   },
   "saco_chatarra": {
     "name": "Saco de chatarra",
