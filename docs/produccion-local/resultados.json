@@ -23,6 +23,10 @@
       "method": "GET"
     },
     {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
       "path": "/rest/v1/shop_access",
       "method": "GET"
     },
@@ -863,30 +867,6 @@
       "method": "GET"
     },
     {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
       "path": "/rest/v1/shop_inventories",
       "method": "GET"
     },
@@ -1095,70 +1075,6 @@
       "method": "GET"
     },
     {
-      "path": "/rest/v1/shop_inventories",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
       "path": "/rest/v1/shop_sessions",
       "method": "GET"
     },
@@ -1247,6 +1163,70 @@
       "method": "GET"
     },
     {
+      "path": "/rest/v1/shop_inventories",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
       "path": "/rest/v1/shop_sessions",
       "method": "GET"
     },
@@ -1284,6 +1264,42 @@
     },
     {
       "path": "/rest/v1/shop_inventories",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
       "method": "GET"
     },
     {
@@ -2395,6 +2411,10 @@
       "method": "GET"
     },
     {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
       "path": "/rest/v1/shop_access",
       "method": "GET"
     },
@@ -3287,54 +3307,6 @@
       "method": "GET"
     },
     {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
       "path": "/rest/v1/shop_inventories",
       "method": "GET"
     },
@@ -3531,6 +3503,118 @@
       "method": "GET"
     },
     {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_inventories",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
       "path": "/rest/v1/shop_inventories",
       "method": "GET"
     },
@@ -3632,70 +3716,6 @@
     },
     {
       "path": "/rest/v1/shop_inventories",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_inventories",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
       "method": "GET"
     },
     {
@@ -4587,6 +4607,10 @@
       "method": "GET"
     },
     {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
       "path": "/rest/v1/shop_access",
       "method": "GET"
     },
@@ -5443,18 +5467,6 @@
       "method": "GET"
     },
     {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
       "path": "/rest/v1/shop_inventories",
       "method": "GET"
     },
@@ -5663,134 +5675,6 @@
       "method": "GET"
     },
     {
-      "path": "/rest/v1/shop_inventories",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_inventories",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_sessions",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_access",
-      "method": "GET"
-    },
-    {
-      "path": "/rest/v1/shop_players",
-      "method": "GET"
-    },
-    {
       "path": "/rest/v1/shop_sessions",
       "method": "GET"
     },
@@ -5900,6 +5784,134 @@
     },
     {
       "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_inventories",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_sessions",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_access",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_players",
+      "method": "GET"
+    },
+    {
+      "path": "/rest/v1/shop_inventories",
       "method": "GET"
     },
     {

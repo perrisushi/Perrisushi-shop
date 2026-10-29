@@ -1,5 +1,5 @@
 import {metricsContext} from './metrics.mjs';
-export class BackendError extends Error{constructor(status,code){super(code);this.status=status;this.code=code}}
+export class BackendError extends Error{constructor(status,code,diagnostic){super(code);this.status=status;this.code=code;this.diagnostic=diagnostic}}
 const INVENTORY_FIELDS='nick,monedas,llaves,polvo_gema,duelo,perricita,pc,espada,espada_lv2,espada_lv3,escudo,cuchillo,collar,random_key,espada_legendaria,escudo_madera,escudo_metal,escudo_legendario,casco_sushi,guantes_sushi,pechera_sushi,pantalones_sushi,botas_sushi,updated_at,fragmento_key,perri_cofres,perri_cofres_minijuego,boleto_sorteo1,boleto_sorteo2,mini_sorteo,pinza_real,chatarra,agua_divina,espada_sagrada,gema_experiencia,incubadora_mejorada,pocion_divina,reloj_cronotiempo,saco_chatarra,bolsa_gemas,bolsa_chatarra,cajita_armas,bolsa_especial,revivir_pet';
 const SELECT={shop_operations:'action,response',shop_access:'nick,code_hash,active',shop_players:'nick,active',shop_sessions:'token,nick,expires_at',shop_profiles:'nick,selected_logo_id,owned_logo_ids,karma,achievements,selected_title_id',shop_logo_catalog:'logo_id,name,asset_path,sort_order,enabled,is_default',shop_inventories:INVENTORY_FIELDS,shop_activity:'id,game,result,details,created_at',shop_notifications:'id,kind,title,message,read_at,created_at',shop_public_users:'nick,pc,logo_id,karma,achievements,selected_title_id',shop_random_key_tickets:'id,status,obtained_at,expires_at',shop_random_key_claims:'id,game,key,claimed_at'};
 const quoted=value=>'"'+String(value).replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
@@ -23,12 +23,12 @@ export function createRepository({url,key,fetchImpl=globalThis.fetch,allowSessio
   try{
    const metric=metricsContext.getStore();if(metric)metric.queries++;
    const response=await fetchImpl(target,{method,headers:{apikey:key,Authorization:'Bearer '+key,Accept:'application/json','Content-Type':'application/json',Prefer:'return=minimal'},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(timeoutMs),redirect:'error',cache:'no-store'});
-   if(!response.ok){const problem=await response.json().catch(()=>null);const missing=['boleto_sorteo1','saco_chatarra'].find(field=>String(problem?.message??'').includes(field)&&!inventoryOmissions.has(field));if(problem?.code==='42703'&&table==='shop_inventories'&&missing){inventoryOmissions.add(missing);return query(table,{nick,filters,order,limit,cursor,column,method,body})}throw Error()}
+   if(!response.ok){const problem=await response.json().catch(()=>null);const missing=['boleto_sorteo1','saco_chatarra'].find(field=>String(problem?.message??'').includes(field)&&!inventoryOmissions.has(field));if(problem?.code==='42703'&&table==='shop_inventories'&&missing){inventoryOmissions.add(missing);return query(table,{nick,filters,order,limit,cursor,column,method,body})}throw new BackendError(503,'backend_unavailable',{source:'supabase',table,method,httpStatus:response.status,upstreamCode:['42501','42703','42P01','23503','23505','PGRST100','PGRST116','PGRST204','PGRST301','PGRST302'].includes(problem?.code)?problem.code:'other'})}
    if(method!=='GET')return null;
    const data=await response.json();if(!Array.isArray(data))throw Error();
    if(data.some(row=>typeof row.id==='number'&&!Number.isSafeInteger(row.id)))throw Error();
    return data;
-  }catch{throw new BackendError(503,'backend_unavailable')}
+  }catch(error){if(error instanceof BackendError)throw error;throw new BackendError(503,'backend_unavailable',{source:'supabase',table,method,failure:['AbortError','TimeoutError'].includes(error?.name)?'timeout':'transport'})}
  }
  const one=async(table,options)=>(await query(table,options))[0]??null;
  return Object.freeze({configured,
@@ -37,7 +37,8 @@ export function createRepository({url,key,fetchImpl=globalThis.fetch,allowSessio
    const exact=await one('shop_access',{nick});if(exact)return exact;
    const literal=nick.replace(/[\\%_*]/g,c=>'\\'+c);
    const rows=await query('shop_access',{filters:{nick:'ilike.'+quoted(literal)},limit:2});
-   return rows.length===1&&rows[0].nick.toLowerCase()===nick.toLowerCase()?rows[0]:null;
+   if(rows.length>1)throw new BackendError(503,'backend_unavailable',{source:'supabase',table:'shop_access',method:'GET',failure:'ambiguous_nick'});
+   return rows.length===1&&typeof rows[0].nick==='string'&&rows[0].nick.toLowerCase()===nick.toLowerCase()?rows[0]:null;
   },
   accessStatus:nick=>one('shop_access',{nick,statusOnly:true}),player:nick=>one('shop_players',{nick}),
   session:token=>one('shop_sessions',{filters:{token:'eq.'+quoted(token)}}),

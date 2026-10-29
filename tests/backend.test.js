@@ -85,7 +85,7 @@ test('paginación limitada, estados ausentes sin upsert y operaciones económica
 test('configuración ausente es explícita, login limitado y errores no filtran secretos',async()=>{
  await use(async({request})=>assert.equal((await request('/session')).data.error,'backend_not_configured'),{repository:createRepository()});
  await use(async({login})=>{for(let i=0;i<8;i++)assert.equal((await login('Unknown')).status,401);assert.equal((await login('Unknown')).status,429)});
- await use(async({login})=>assert.deepEqual((await login()).data,{error:'request_failed'}),{repository:{configured:true,access:async()=>{throw Error('secret')},player:async()=>null}});
+ await use(async({login})=>assert.deepEqual((await login()).data,{error:'backend_unavailable'}),{repository:{configured:true,access:async()=>{throw Error('secret')},player:async()=>null}});
 });
 test('PostgREST usa columnas explícitas, filtros por propietario y nunca pool/minijuegos',async()=>{
  const calls=[];const repo=createRepository({url:'https://example.supabase.co',key:'not-a-real-key',fetchImpl:async(url,opts)=>{calls.push([new URL(url),opts]);return {ok:true,json:async()=>[]}}});
@@ -149,7 +149,7 @@ test('nick canónico: consulta literal acotada, sin comodines ni ambigüedad',as
  const repo=createRepository({url:'https://example.supabase.co',key:'test-only',fetchImpl:async(url)=>{const u=new URL(url);calls.push(u);return {ok:true,json:async()=>u.searchParams.get('nick').startsWith('eq.')?[]:candidates}}});
  assert.equal((await repo.canonicalAccess('alpha')).nick,'Alpha');
  assert.equal(calls[1].searchParams.get('limit'),'2');
- candidates=[{nick:'Alpha'},{nick:'ALPHA'}];assert.equal(await repo.canonicalAccess('alpha'),null);
+ candidates=[{nick:'Alpha'},{nick:'ALPHA'}];await assert.rejects(repo.canonicalAccess('alpha'),e=>e.status===503&&e.diagnostic.failure==='ambiguous_nick');
  candidates=[{nick:'Other'}];assert.equal(await repo.canonicalAccess('%_*'),null);
  assert.ok(calls.at(-1).searchParams.get('nick').includes('\\\\%'));
 });
@@ -171,7 +171,7 @@ test('recuperar recibo propio no permite leer operaciones de otra cuenta',()=>us
  assert.equal((await request('/shop/receipt?id=bad',{cookie:a.cookie})).status,400);
 }));
 test('Railway sin proxy autenticado no bloquea a todos los usuarios por compartir IP',async()=>{
- const repository=fixture();repository.access=async nick=>({nick,active:true,code_hash:digest('own-test')});repository.player=async nick=>({nick,active:true});repository.createSession=async()=>{};
+ const repository=fixture(),sessions=new Map();repository.access=async nick=>({nick,active:true,code_hash:digest('own-test')});repository.player=async nick=>({nick,active:true});repository.createSession=async row=>sessions.set(row.token,row);repository.session=async token=>sessions.get(token);
  await use(async({request})=>{
   for(let i=0;i<25;i++)assert.equal((await request('/auth/login',{method:'POST',origin:'https://site.example',body:{nick:'Local'+i,password:'own-test'}})).status,200);
   for(let i=0;i<8;i++)assert.equal((await request('/auth/login',{method:'POST',origin:'https://site.example',body:{nick:'Limited',password:'wrong'}})).status,401);

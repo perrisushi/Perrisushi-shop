@@ -17,7 +17,7 @@ if(process.env.DATABASE_URL){let database;try{database=new URL(process.env.DATAB
 const games=createGames({pool:gamePool,legacy:legacyGames,enabled:process.env.PW2_GAMES_ENABLED==='true'});
 if(production&&!process.env.PUBLIC_ORIGIN)throw Error('PUBLIC_ORIGIN obligatorio en producción');
 const configuredOrigin=publicOrigin(process.env.PUBLIC_ORIGIN??'http://127.0.0.1:4173');
-const handler=createBackend({repository,economy,games,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(process.env.CSRF_SECRET?{csrfSecret:process.env.CSRF_SECRET}:{}),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
+const handler=createBackend({repository,economy,games,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(process.env.CSRF_SECRET?{csrfSecret:process.env.CSRF_SECRET}:{}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
 const site=serveSite({authenticate:handler.authenticate});
 const server=http.createServer((req,res)=>{
  if(req.url==='/healthz'){res.writeHead(repository.configured?200:503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ready:repository.configured}));return}

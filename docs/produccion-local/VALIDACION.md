@@ -2,7 +2,7 @@
 
 Se ha trabajado exclusivamente en el código local. No se ha accedido a GitHub, Railway ni Supabase. No hay publicación ni validación de datos remotos.
 
-- `npm test`: 83/83 pruebas aprobadas.
+- `npm test`: 99/99 pruebas aprobadas. Diagnóstico del 401 y compatibilidad del login antiguo documentados en ../LOGIN_ANTIGUO_401.md.
 - `npm run build`: 480 archivos públicos; sin backend, SQL, tests, backups ni secretos.
 - `node tools/verify-integration-final.mjs`: seis tamaños (1649×928, 1280×720, 1024×768, 390×844, 360×800 y 360×640), cero errores JavaScript.
 - `node tools/verify-production-local.mjs`: PostgreSQL local y navegador en escritorio, móvil 390 y móvil 360; los cuatro juegos, canje, compra y prueba de respuesta perdida con reintento sin segundo cobro. Cero errores JavaScript/API inesperados y cero recursos 404. Capturas en capturas/ y registro en resultados.json.

@@ -1,11 +1,12 @@
-import {randomBytes} from 'node:crypto';
+import {randomBytes,randomUUID} from 'node:crypto';
 import {isIP} from 'node:net';
 import {metricsContext} from './metrics.mjs';
 import {logoAsset} from './logo-assets.mjs';
 import {BackendError} from './repository.mjs';
 import {publicOrigin as validatePublicOrigin} from './request-security.mjs';
-import {digest,sessionKey,newToken,matchesPassword,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
-export function createBackend({repository,economy,games,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{}}={}){
+import {authenticateTraditional,authDiagnostic} from './traditional-auth.mjs';
+import {digest,sessionKey,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
+export function createBackend({repository,economy,games,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
  if(proxySecret&&proxySecret.length<32)throw Error('Proxy secret too short');
  const origin=validatePublicOrigin(publicOrigin);
  if(production&&(new URL(origin).protocol!=='https:'||sessionStore!=='supabase'||!allowSessionWrites))throw Error('Production requires HTTPS and approved persistent sessions');
@@ -21,7 +22,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
  const sessionRead=key=>sessionStore==='memory'?Promise.resolve(sessions.get(key)??null):repository.session(key);
  async function identity(req){
   const token=cookieToken(req.headers.cookie);if(!token)return null;
-  const row=await sessionRead(sessionKey(token));if(!row||!Number.isFinite(Date.parse(row.expires_at))||Date.parse(row.expires_at)<=now())return null;
+  let row;try{row=await sessionRead(sessionKey(token))}catch(error){try{onAuthDiagnostic({event:'traditional_auth',requestId:randomUUID(),stage:'session_restore',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}if(!row||!Number.isFinite(Date.parse(row.expires_at))||Date.parse(row.expires_at)<=now())return null;
   const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);
   if(!access||!player||access.active===false||player.active===false)return null;
   return {nick:row.nick,token};
@@ -56,14 +57,11 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    if(req.method==='POST'&&route==='/api/auth/login'){
     const data=await jsonBody(req);if(typeof data.nick!=='string'||!data.nick.length||data.nick.length>80||/[\x00-\x1f]/.test(data.nick)||typeof data.password!=='string'||!data.password.length||data.password.length>1024)fail(400,'invalid_request');
     if(!loginIp.take(clientIP)||!loginNick.take(digest(data.nick.trim().toLowerCase())))fail(429,'too_many_requests');
-    const access=await (repository.canonicalAccess??repository.access)(data.nick.trim());
-    const player=await repository.player(access?.nick??data.nick.trim());
-    const valid=matchesPassword(data.password.trim(),access?.code_hash);if(!valid||!access||!player||access.active===false||player.active===false)fail(401,'invalid_credentials');
-    const token=newToken(),row={token:sessionKey(token),nick:access.nick,expires_at:new Date(now()+sessionTtlMs).toISOString(),created_at:new Date(now()).toISOString(),updated_at:new Date(now()).toISOString()};
-    if(sessionStore==='supabase'){if(!allowSessionWrites)fail(503,'session_writes_disabled');await repository.createSession(row)}else{
+    const requestId=randomUUID();res.setHeader?.('X-Request-ID',requestId);
+    const {token,row}=await authenticateTraditional({repository,nick:data.nick,password:data.password,sessionStore,allowSessionWrites,sessionTtlMs,now,requestId,onDiagnostic:onAuthDiagnostic,createMemorySession:row=>{
      for(const [key,value]of sessions)if(Date.parse(value.expires_at)<=now())sessions.delete(key);
      if(sessions.size>=5000)fail(503,'session_capacity');sessions.set(row.token,row);
-    }
+    }});
     send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
    if(req.method==='POST'&&!['/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
