@@ -1,0 +1,62 @@
+{
+  "localOnly": true,
+  "physicalMobile": false,
+  "results": [
+    {
+      "mode": "legacy-counters",
+      "mobile": true,
+      "sixContainersVisible": true,
+      "bagPreservedChests": true,
+      "chestConsumedOnce": true
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "mobile": false,
+      "containers": 6,
+      "realLocalBackend": true,
+      "lostResponseRecovered": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "mobile": false,
+      "containers": 6,
+      "realLocalBackend": true,
+      "lostResponseRecovered": true
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "mobile": true,
+      "containers": 6,
+      "realLocalBackend": true,
+      "lostResponseRecovered": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "containers": 6,
+      "realLocalBackend": true,
+      "lostResponseRecovered": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "containers": 6,
+      "realLocalBackend": true,
+      "lostResponseRecovered": true
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "containers": 6,
+      "realLocalBackend": true,
+      "lostResponseRecovered": true
+    }
+  ],
+  "errors": []
+}

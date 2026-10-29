@@ -1,3 +1,5 @@
+> Corrección posterior (30/10/2026): el recuento auxiliar no debe sustituir las cantidades originales de inventarios antiguos. La regresión y su corrección se documentan en [regresion-cofres](../regresion-cofres/INFORME.md).
+
 # Inventario y aperturas: integración y acabado
 
 ## Función integrada

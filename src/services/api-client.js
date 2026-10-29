@@ -66,7 +66,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
           if(response.status===401) { csrfToken=''; clearCache();if(path!=='/auth/login')onSessionExpired(); }
           const fallback=response.status===401?'session_expired':response.status===403?'forbidden':response.status===429?'too_many_requests':'request_failed';
           let code=fallback;
-          try{const data=await response.json();if(['origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable'].includes(data?.error))code=data.error}catch{}
+          try{const data=await response.json();if(['origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','inventory_mismatch','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable'].includes(data?.error))code=data.error}catch{}
           throw new ApiError(response.status,code);
         }
         let result;

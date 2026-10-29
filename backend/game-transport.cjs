@@ -1,6 +1,6 @@
 const {AsyncLocalStorage}=require('node:async_hooks');
 const context=new AsyncLocalStorage();
-exports.withClient=(client,worker,seeds={})=>context.run({client,reads:new Map(),players:new Map(),seeds:{...seeds},preserveCatalog:seeds.preserveCatalog===true},worker);
+exports.withClient=(client,worker,seeds={})=>context.run({client,reads:new Map(),players:new Map(),seeds:{...seeds},preserveCatalog:seeds.preserveCatalog===true,counterOnlyChests:seeds.counterOnlyChests===true},worker);
 const ident=name=>{if(!/^[a-z_][a-z0-9_]*$/.test(name))throw Error('invalid_identifier');return '"'+name+'"'};
 const tables=new Set(['shop_players','shop_access','shop_sessions','shop_profiles','shop_logo_catalog','shop_inventories','shop_public_users','shop_activity','shop_notifications','shop_operations','shop_random_key_tickets','shop_random_key_pool','shop_random_key_claims','shop_perripet_states','shop_perripet_inventory','shop_inventory_chests','shop_perri_chests','shop_rpg_catalog','shop_rpg_inventory','shop_rpg_equipment','shop_rpg_loadout','shop_rpg_combat_state','shop_rpg_ledger','perri_casillas_games']);
 const rpcs=new Set(['shop_rpg_ensure_starter_set','shop_rpg_purchase_items','shop_rpg_equip_armor','shop_rpg_set_loadout','shop_rpg_consume_item','shop_rpg_claim_boss_reward']);
@@ -14,6 +14,10 @@ async function request(input,opts={}){
   sql='SELECT public.'+ident(parts[1])+'('+Object.entries(body??{}).map(([key,value])=>ident(key)+'=>'+param(value)).join(',')+') AS result';
  }else{
   const table=parts[0];if(!tables.has(table))throw Error('table_not_allowed');
+  // Modo de compatibilidad decidido en servidor y bajo bloqueo: cuenta sin NINGÚN
+  // registro auxiliar. El backend original soporta operar con sus contadores;
+  // no permitir que su sincronización opcional los sustituya por ceros.
+  if(table==='shop_inventory_chests'&&state.counterOnlyChests)throw Error('legacy_inventory_counter_mode');
   const filters=[];
   for(const [key,filter]of u.searchParams){if(['select','order','limit','on_conflict','offset'].includes(key))continue;
    const name=ident(key),dot=filter.indexOf('.'),op=filter.slice(0,dot);let value=filter.slice(dot+1);

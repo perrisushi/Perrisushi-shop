@@ -19,13 +19,24 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
   const rows=(await client.query("SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE",[sessionKey(user.token),user.nick])).rows;
   return rows.length===1?rows[0]:null;
  };
+ // Los contadores originales no se sustituyen por la ausencia de historial auxiliar.
+ const chestStorage=async(client,nick)=>{
+  if((await client.query("SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered")).rows[0]?.filtered)throw new BackendError(503,'operation_disabled');
+  const inventory=(await client.query('SELECT perri_cofres,perri_cofres_minijuego FROM public.shop_inventories WHERE nick=$1',[nick])).rows[0];
+  const rows=(await client.query("SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=now())::int quantity FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type",[nick])).rows;
+  const counts=Object.fromEntries(rows.filter(r=>r.quantity>0).map(r=>[r.chest_type,r.quantity]));
+  const counterOnly=rows.length===0;
+  const consistent=Boolean(inventory)&&(counterOnly||Number(inventory.perri_cofres??0)===(counts.perriCofres??0)&&Number(inventory.perri_cofres_minijuego??0)===(counts.perriCofresMinijuego??0));
+  return {counts,counterOnly,consistent};
+ };
  const runtime={configured:Boolean(enabled&&pool&&legacy&&sourceCompatible),async containerState(user){
   if(!runtime.configured)return {available:false};let client;
   try{
    client=measuredClient(await timed('poolMs',()=>pool.connect()));if(!await sharedSession(client,user))return {available:false};
    const catalog=await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1');if(!catalog.rows.length)return {available:false};
-   const counts=await client.query("SELECT chest_type,count(*)::int quantity FROM public.shop_inventory_chests WHERE nick=$1 AND status='available' AND expires_at>=now() GROUP BY chest_type",[user.nick]);
-   return {available:true,counts:Object.fromEntries(counts.rows.map(r=>[r.chest_type,r.quantity]))};
+   const storage=await chestStorage(client,user.nick);
+   if(!storage.consistent)emit('container_inventory_mismatch');
+   return {available:storage.consistent,counts:storage.counts};
   }catch(error){emit('container_read_failed',{failure:gameFailure(error)});return {available:false}}finally{client?.release()}
  },async availability(user){
   const reject=reason=>{emit(reason);return {available:false,games:emptyGames(),reason}};
@@ -68,8 +79,10 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
    if(!inventory)throw new BackendError(409,'inventory_missing');
    const openingContainer=['publicShopOpenInventoryChest','publicShopOpenRewardContainer'].includes(body.action);
    if(openingContainer&&!(await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1')).rows.length)throw new BackendError(503,'operation_disabled');
+   const chestState=openingContainer?await chestStorage(client,user.nick):null;
+   if(chestState&&!chestState.consistent)throw new BackendError(409,'inventory_mismatch');
    const scoped={...payload};for(const field of ['openId','operationId','chestOpenId'])if(Object.hasOwn(scoped,field))scoped[field]='pw2:inner:'+user.nick+':'+operationId;
-   const raw=await transport.withClient(client,()=>legacy.handleShopAction({...scoped,action:body.action,sessionToken:sessionKey(user.token)}),{shop_sessions:verified.session,shop_access:verified.access,preserveCatalog:openingContainer});
+   const raw=await transport.withClient(client,()=>legacy.handleShopAction({...scoped,action:body.action,sessionToken:sessionKey(user.token)}),{shop_sessions:verified.session,shop_access:verified.access,preserveCatalog:openingContainer,counterOnlyChests:chestState?.counterOnly===true});
    const gear=new Set(['espada','espadaLv2','espadaLv3','espadaLegendaria','escudo','escudoMadera','escudoMetal','escudoLegendario','cuchillo','collar','cascoSushi','guantesSushi','pecheraSushi','pantalonesSushi','botasSushi','pinzaReal']);
    const result=JSON.parse(JSON.stringify(raw,(key,value)=>['sessionToken','code_hash','password_hash','token'].includes(key)?undefined:key==='defenderInventory'&&value?Object.fromEntries(Object.entries(value).filter(([field])=>gear.has(field))):value));
    if(!result?.ok){await client.query('ROLLBACK');return result??{ok:false,error:'game_failed'}}

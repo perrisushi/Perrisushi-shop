@@ -192,3 +192,12 @@ test('apertura de inventario: identidad de cookie, CSRF, selección cerrada y re
   const bag=await invoke({itemId:'bolsa_gemas',idempotencyKey});assert.equal(bag.status,200);assert.equal(calls[1].body.itemKey,'bolsaGemas');
  },{games:{configured:true,execute:async(user,body)=>{calls.push({user,body});return {ok:true,inventory:{private:'excluded'},rewardBundle:{rewards:[{label:'Premio',quantity:1}]}}}}});
 });
+test('regresión: una tabla auxiliar vacía no oculta cofres, bolsas ni cajas del inventario original',()=>{
+ const repository=fixture();const inventory={nick:'Alpha',pc:8,monedas:2,perri_cofres:7,perri_cofres_minijuego:3,bolsa_gemas:2,bolsa_chatarra:4,bolsa_especial:1,cajita_armas:5};repository.inventory=async()=>({...inventory});
+ return use(async({login,request})=>{
+  const auth=await login();const response=await request('/inventory',{cookie:auth.cookie});assert.equal(response.status,200);const {nick,...expected}=inventory;assert.deepEqual(response.data.inventory,expected);
+  const {renderLiveInventory,setPageData}=await import('../src/services/live-ui.js');setPageData('inventory',{status:'ready',...response.data});const html=renderLiveInventory();
+  for(const id of ['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'])assert.ok(html.includes('data-live-item="'+id+'"'),id);
+  assert.deepEqual(await repository.inventory(),inventory);
+ },{repository,games:{containerState:async()=>({available:true,counts:{}})}});
+});

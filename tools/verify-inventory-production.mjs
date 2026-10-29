@@ -38,6 +38,18 @@ try{
  await new Promise(r=>api.listen(4193,'127.0.0.1',r));await new Promise(r=>web.listen(4192,'127.0.0.1',r));
  browser=await chromium.launch({channel:'msedge',headless:true});await mkdir(output,{recursive:true});
  const results=[];
+ // Regresión real: cuenta antigua con cantidades y sin filas en la tabla auxiliar.
+ await db.query("update shop_inventories set perri_cofres=7,perri_cofres_minijuego=3,bolsa_gemas=2,bolsa_chatarra=2,bolsa_especial=2,cajita_armas=2 where nick='LocalB'");
+ const legacyContext=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),legacyPage=await legacyContext.newPage();legacyPage.on('pageerror',e=>errors.push(e.message));
+ await legacyPage.goto('http://127.0.0.1:4192/#inventory');await legacyPage.getByLabel('Usuario',{exact:true}).fill('LocalB');await legacyPage.getByLabel('Contraseña',{exact:true}).fill('local-e2e');await legacyPage.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await legacyPage.waitForFunction(()=>document.body.dataset.access==='ready');await legacyPage.goto('http://127.0.0.1:4192/#inventory');
+ for(const id of ['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'])await legacyPage.locator('[data-live-item="'+id+'"]').waitFor();
+ await legacyPage.evaluate(()=>Promise.all([...document.querySelectorAll('.pw04-inventory-grid img')].map(i=>i.decode())));
+ await legacyPage.screenshot({path:output+'/legacy-inventory.png'});
+ for(const id of ['bolsa_gemas','perri_cofres']){
+  await legacyPage.locator('[data-live-item="'+id+'"]').click();await legacyPage.locator('[data-open-container]').click();await legacyPage.locator('.container-rewards li').first().waitFor();await legacyPage.locator('.modal-close').click();
+  const row=(await db.query("select perri_cofres,perri_cofres_minijuego from shop_inventories where nick='LocalB'")).rows[0];assert.deepEqual(row,{perri_cofres:id==='bolsa_gemas'?7:6,perri_cofres_minijuego:3});
+ }
+ results.push({mode:'legacy-counters',mobile:true,sixContainersVisible:true,bagPreservedChests:true,chestConsumedOnce:true});await legacyContext.close();
  const items=['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'];
  for(const [width,height,mobile] of [[1440,1000,false],[1024,768,false],[320,568,true],[390,844,true],[430,932,true],[844,390,true]]){
   await db.query("update shop_inventories set bolsa_gemas=1,bolsa_chatarra=1,bolsa_especial=1,cajita_armas=1 where nick='LocalA'");

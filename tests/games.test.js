@@ -236,6 +236,7 @@ test('cofres y bolsas originales: consumo, premios persistidos, recibo idempoten
   }
   for(const chestType of ['perriCofres','perriCofresMinijuego']){
    const chestId=randomUUID();await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA',$2,now()+interval '1 day')",[chestId,chestType]);
+   await f.db.query("update shop_inventories set perri_cofres=case when $1='perriCofres' then 1 else perri_cofres end,perri_cofres_minijuego=case when $1='perriCofresMinijuego' then 1 else perri_cofres_minijuego end where nick='LocalA'",[chestType]);
    const payload={action:'publicShopOpenInventoryChest',chestType,chestOpenId:'untrusted',idempotencyKey:randomUUID()};
    const result=await f.games.execute(f.user,payload);assert.equal(result.ok,true,JSON.stringify(result));assert.ok(result.rewardBundle.rewards.length>=2);assert.equal((await f.db.query('select status from shop_inventory_chests where chest_id=$1',[chestId])).rows[0].status,'opened');
    const inventory=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
@@ -280,10 +281,43 @@ test('aperturas concurrentes entre instancias: un único consumo, propiedad del 
 test('disponibilidad de cofres lee propiedad y caducidad sin modificar registros ni inventarios',async()=>{
  const f=await fixture();try{
   await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()+interval '1 day'),($2,'LocalA','perriCofres',now()-interval '1 day'),($3,'LocalB','perriCofresMinijuego',now()+interval '1 day')",[randomUUID(),randomUUID(),randomUUID()]);
+  await f.db.exec("update shop_inventories set perri_cofres=1 where nick='LocalA'");
   const before=(await f.db.query('select * from shop_inventory_chests order by chest_id')).rows;
   const state=await f.games.containerState(f.user);assert.equal(state.available,true);assert.deepEqual(state.counts,{perriCofres:1});
   assert.equal((await f.games.containerState({...f.user,nick:'LocalB'})).available,false);
   assert.deepEqual((await f.db.query('select * from shop_inventory_chests order by chest_id')).rows,before);
   assert.equal((await f.db.query('select count(*)::int n from shop_operations')).rows[0].n,0);
+ }finally{await f.db.close()}
+});
+test('cuentas antiguas sin historial auxiliar: abrir bolsas y cofres conserva contadores y evita duplicados',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=2,perri_cofres_minijuego=1,bolsa_gemas=1,bolsa_chatarra=1,bolsa_especial=1,cajita_armas=1 where nick='LocalA'");
+  assert.equal((await f.games.containerState(f.user)).available,true);
+  for(const itemKey of ['bolsaGemas','bolsaChatarra','bolsaEspecial','cajitaArmas']){
+   const result=await f.games.execute(f.user,{action:'publicShopOpenRewardContainer',itemKey,openId:'server',idempotencyKey:randomUUID()});assert.equal(result.ok,true,JSON.stringify(result));
+   assert.deepEqual((await f.db.query("select perri_cofres,perri_cofres_minijuego from shop_inventories where nick='LocalA'")).rows[0],{perri_cofres:2,perri_cofres_minijuego:1});
+  }
+  for(const chestType of ['perriCofres','perriCofresMinijuego']){
+   const payload={action:'publicShopOpenInventoryChest',chestType,chestOpenId:'server',idempotencyKey:randomUUID()};const result=await f.games.execute(f.user,payload);assert.equal(result.ok,true,JSON.stringify(result));assert.ok(result.rewardBundle.rewards.length>=2);assert.deepEqual(await f.games.execute(f.user,payload),result);
+  }
+  assert.deepEqual((await f.db.query("select perri_cofres,perri_cofres_minijuego from shop_inventories where nick='LocalA'")).rows[0],{perri_cofres:1,perri_cofres_minijuego:0});
+  assert.equal((await f.db.query('select count(*)::int n from shop_inventory_chests')).rows[0].n,0);
+ }finally{await f.db.close()}
+});
+
+test('una discrepancia con historial existente se rechaza sin borrar objetos ni conceder premios',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=4,bolsa_gemas=1 where nick='LocalA'");await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()-interval '1 day')",[randomUUID()]);
+  const before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
+  assert.equal((await f.games.containerState(f.user)).available,false);
+  await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenRewardContainer',itemKey:'bolsaGemas',openId:'server',idempotencyKey:randomUUID()}),e=>e.code==='inventory_mismatch');
+  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);assert.equal((await f.db.query('select count(*)::int n from shop_operations')).rows[0].n,0);
+ }finally{await f.db.close()}
+});
+test('el historial filtrado por permisos RLS no se interpreta como una cuenta antigua sin historial',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=4 where nick='LocalA';create role chest_reader;grant usage on schema public to chest_reader;grant select on all tables in schema public to chest_reader;alter table shop_sessions disable row level security;alter table shop_access disable row level security;alter table shop_players disable row level security;alter table shop_logo_catalog disable row level security;alter table shop_inventories disable row level security;set role chest_reader;");
+  assert.equal((await f.games.containerState(f.user)).available,false);
+  await f.db.exec('reset role');assert.equal((await f.db.query("select perri_cofres from shop_inventories where nick='LocalA'")).rows[0].perri_cofres,4);
  }finally{await f.db.close()}
 });
