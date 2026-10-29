@@ -71,7 +71,15 @@ export function createRepository({url,key,fetchImpl=globalThis.fetch,allowSessio
   page:(kind,nick,{cursor,limit})=>{
    const table={history:'shop_activity',notifications:'shop_notifications',tickets:'shop_random_key_tickets',claims:'shop_random_key_claims',users:'shop_public_users'}[kind];
    if(!table)throw new BackendError(400,'invalid_page');
-   if(kind==='users')return query('shop_public_users',{cursor,column:'nick',order:'nick.asc',limit:limit+1});
+   if(kind==='users'){
+    const filters={};
+    if(cursor){
+     if(typeof cursor.nick!=='string'||!cursor.nick.length||cursor.nick.length>100||(cursor.pc!==null&&!Number.isSafeInteger(cursor.pc)))throw new BackendError(400,'invalid_cursor');
+     if(cursor.pc===null){filters.pc='is.null';filters.nick='gt.'+cursor.nick}
+     else{const quoted=JSON.stringify(cursor.nick);filters.or='(pc.lt.'+cursor.pc+',and(pc.eq.'+cursor.pc+',nick.gt.'+quoted+'),pc.is.null)'}
+    }
+    return query('shop_public_users',{filters,order:'pc.desc.nullslast,nick.asc',limit:limit+1});
+   }
    return query(table,{nick,cursor,column:'id',order:'id.asc',limit:limit+1});
   }
  });

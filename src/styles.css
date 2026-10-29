@@ -250,6 +250,26 @@ img {max-width:100%;height:auto;user-select:none}
  .game-card .modal-close { width:44px; min-height:44px; flex:none; }
 }
 .game-tile { cursor: pointer; }
+/* C1-C8 : espacios ajustados, tarjetas y ayudas sin modificar los juegos. */
+.content-header {min-height:88px;padding:12px 24px}
+.content-header h1 {margin:0}
+.game-tile {position:relative;display:block;padding:0}
+.game-launch {display:grid;place-items:center;width:100%;min-height:150px;padding:40px 12px 12px;background:transparent;border:0;border-radius:8px;color:inherit;cursor:pointer}
+.game-help {position:absolute;top:6px;right:6px;width:32px;height:32px;border:2px solid #c4934d;border-radius:50%;background:linear-gradient(#795134,#392319);color:#ffe4a9;font:bold 19px Georgia,serif;z-index:2;touch-action:manipulation}
+.game-help:before {content:"";position:absolute;inset:-6px}
+.overlay-layer:has(.info-card) {position:fixed;inset:0}
+.info-card {width:min(100%,480px);max-height:calc(100dvh - 32px)}
+.info-card .modal-head h2 {overflow-wrap:anywhere}
+.info-card .modal-close {flex:none;min-width:44px;min-height:44px}
+.item-detail {text-align:center}
+.item-detail img {display:block;width:112px;height:112px;object-fit:contain;margin:18px auto 12px}
+.item-detail p {font-size:16px;line-height:1.5;overflow-wrap:anywhere}
+.game-tile,.game-help,.game-launch,.pw04-inventory-slot,.album-tabs button,.album-grid button,.textured-button {-webkit-tap-highlight-color:transparent}
+@media(max-width:700px),(max-height:500px) {
+ .content-header {min-height:66px;padding:8px 12px}
+ .game-launch {min-height:140px}
+ .game-launch img {height:88px}
+}
 /* El acceso permanece cerrado hasta que el servidor verifica la sesión. */
 body:not([data-access="ready"]) .scene > :not(.overlay-layer) {display:none!important}
 body:not([data-access="ready"]) > .skip-link {display:none}

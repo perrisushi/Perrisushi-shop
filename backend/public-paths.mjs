@@ -1,4 +1,4 @@
-export const publicPattern=/^\/(?:index\.html|src\/(?:main|routes|game-bridge|casillas-host)\.js|src\/services\/(?:api-client|live-ui)\.js|src\/(?:styles|desktop-layout-fix|preview-pages)\.css|public\/assets\/[\w-]+\.(?:webp|mp3))$/;
+export const publicPattern=/^\/(?:index\.html|src\/(?:main|routes|game-bridge|casillas-host)\.js|src\/services\/(?:api-client|live-ui|help-content)\.js|src\/(?:styles|desktop-layout-fix|preview-pages)\.css|public\/assets\/[\w-]+\.(?:webp|mp3))$/;
 export function gamePath(path){
  if(path==='/musica-web.mp3')return '/public/assets/musica-web.mp3';
  if(path==='/perricasillas'||path==='/perricasillas/')return '/games/original/index-production.html';

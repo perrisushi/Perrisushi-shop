@@ -44,7 +44,7 @@ try{
    await page.goto('http://127.0.0.1:4178/#'+route);await page.waitForFunction(()=>document.querySelector('.profile-badge').dataset.authenticated==='true');
    if(route==='profile')await page.waitForFunction(()=>document.querySelector('.profile-details h2').textContent.includes('Viajero'));
    if(route==='users'){await page.locator('.pw04-user-row').first().waitFor();assert.equal(await page.locator('.pw04-user-row').count(),20);await page.locator('[data-live-next="users"]').click();await page.waitForFunction(()=>!document.querySelector('[data-live-next="users"]'));assert.equal(await page.locator('.pw04-user-row').count(),21)}
-   if(route==='inventory'){await page.locator('[data-live-item="espada"] img').waitFor();assert.ok(await page.locator('[data-live-item]').count()>24);assert.equal(await page.locator('.pw04-inventory-grid').evaluate(e=>e.scrollHeight>e.clientHeight),true);await page.locator('[data-live-item="espada"]').click();await page.getByText('espada: 3.',{exact:true}).waitFor()}
+   if(route==='inventory'){await page.locator('[data-live-item="espada"] img').waitFor();assert.ok(await page.locator('[data-live-item]').count()>24);assert.equal(await page.locator('.pw04-inventory-grid').evaluate(e=>e.scrollHeight>e.clientHeight),true);await page.locator('[data-live-item="espada"]').click();await page.locator('.item-detail').waitFor();await page.getByText('Cantidad: 3',{exact:true}).waitFor();await page.keyboard.press('Escape')}
    if(route==='shop'){await page.getByText('Canje local de prueba',{exact:false}).first().waitFor();assert.equal(await page.locator('.pw04-shop-cta:not([disabled])').count(),0)}
    await capture(route);
   }

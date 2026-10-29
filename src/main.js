@@ -1,6 +1,7 @@
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createApiClient} from './services/api-client.js';
 import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderLiveUsers,renderLiveInventory,renderLiveShop,bindPageEvents} from './services/live-ui.js';
+import {itemDetails,gameDescriptions} from './services/help-content.js';
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false;
 const remoteStates={};
@@ -64,7 +65,7 @@ function shellView(route, content) {
   return `<section class="content-board" aria-label="${routeTitles[route]}">
     <header class="content-header">
       <button type="button" class="back-button" data-route="home" aria-label="Volver al inicio"><img src="${ASSETS}boton-atras.webp" alt="" /></button>
-      <div><span class="eyebrow">PERRISUSHI WORLD</span><h1>${routeTitles[route]}</h1></div>
+      <div><h1>${routeTitles[route]}</h1></div>
     </header>
     <div class="content-scroll">${content}</div>
   </section>`;
@@ -78,8 +79,8 @@ function emptyNotice(title, details, icon = '') {
 function profileView() {
   return shellView('profile', `<div class="profile-grid">
     <div class="profile-portrait">${avatarMarkup(selectedAvatar)}<span class="portrait-subtitle">${escapeText(profileState.profile?.selectedTitleId??'')}</span></div>
-    <div class="profile-details"><span class="section-kicker">ESTADO DE LA CUENTA</span><h2>${session?escapeText(session.nick):'Bienvenido, viajero'}</h2>
-      <p>${profileState.status==='ready'?'Tu perfil personal.':escapeText(message(profileState))}</p>
+    <div class="profile-details"><h2>${escapeText(session?.nick)}</h2>
+      ${profileState.status==='ready'?'':stateNotice(profileState)}
       <div class="info-strip"><span>PC · Gemas</span><strong>${escapeText(profileState.balances?.pc??'—')} · ${escapeText(profileState.balances?.gemas??'—')}</strong></div><div class="info-strip"><span>Logros</span><strong>${escapeText(Array.isArray(profileState.profile?.achievements)?profileState.profile.achievements.join(' · '):'—')}</strong></div>
       <div class="info-strip"><span>Karma</span><strong>${escapeText(profileState.profile?.karma??'—')}</strong></div>
       <div class="profile-actions"><button class="textured-button history-button" type="button" data-action="history" aria-label="Historial" title="Historial"><span aria-hidden="true">⌛</span></button><button class="textured-button" type="button" data-action="album">Cambiar Perrilogos</button></div>
@@ -99,8 +100,7 @@ function gamesView() {
   const games = [
     ['menu-duelos','PerriDuelos'],['boton-perripet','PerriPet'],['boton-perricasilla','PerriCasillas'],['boton-perrirpg','PerriRPG']
   ];
-  return shellView('games', `<p class="page-intro">Elige tu juego.</p>
-    <div class="games-grid">${games.map(([file, name]) => `<button type="button" class="game-tile" data-game="${name}"><img src="${ASSETS}${file}.webp" alt="${name}" loading="lazy"/><span>Jugar</span></button>`).join('')}</div>`);
+  return shellView('games', `<div class="games-grid">${games.map(([file,name])=>`<article class="game-tile" data-game="${name}"><button type="button" class="game-launch" aria-label="Abrir ${name}"><img src="${ASSETS}${file}.webp" alt="${name}" loading="lazy"/></button><button type="button" class="game-help" data-game-help="${name}" aria-label="Información de ${name}" aria-haspopup="dialog">?</button></article>`).join('')}</div>`);
 }
 
 function shopView() {
@@ -136,6 +136,13 @@ function navigate(route) {
 const gameRoutes={PerriDuelos:'/perriduelos-app/index.html',PerriPet:'/perripet-app/index.html',PerriCasillas:'/perricasillas',PerriRPG:'/perrirpg.html'};
 const economicOperations=new Map();let economicReceipt=null;
 function modalMarkup(type) {
+  if(type.startsWith('item:')){
+    const id=type.slice(5),item=itemDetails(id),quantity=dataState.inventory.inventory?.[id];
+    return `<div class="modal-head"><h2 id="modal-title">${escapeText(item.name)}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><div class="item-detail">${item.image?'<img src="'+item.image+'" alt="'+escapeText(item.name)+'"/>':''}<p>Cantidad: <strong>${escapeText(quantity??'—')}</strong></p>${item.description?'<p>'+escapeText(item.description)+'</p>':''}</div>`;
+  }
+  if(type.startsWith('game-help:')){
+    const name=type.slice(10);return `<div class="modal-head"><h2 id="modal-title">${escapeText(name)}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">${escapeText(gameDescriptions[name])}</p>`;
+  }
   if(type==='game-unavailable')return `<div class="modal-head"><h2 id="modal-title">Minijuegos</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p>El servicio de minijuegos no está disponible. Vuelve a intentarlo más tarde.</p>`;
 
   if(type.startsWith('game:')){const name=type.slice(5);return `<div class="modal-head"><h2 id="modal-title">${escapeText(name)}</h2><button type="button" class="textured-button" data-action="game-fullscreen" aria-label="Pantalla completa">⛶</button><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><iframe class="original-game" src="${gameRoutes[name]}" title="${escapeText(name)}" sandbox="allow-scripts allow-same-origin" allow="autoplay; fullscreen"></iframe>`}
@@ -147,7 +154,7 @@ function modalMarkup(type) {
   }
   if(type==='album'){
     const s=profileState,logos=s.logos??[],owned=s.profile?.ownedLogoIds??[];
-    return `<div class="modal-head"><h2 id="modal-title">Álbum de Perrilogos</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><div class="album-selected">${avatarMarkup(selectedAvatar)}<p>Perrilogo de tu cuenta</p></div>${s.status!=='ready'?stateNotice(s):`<p class="album-note">Selecciona uno de tus Perrilogos encontrados.</p><div class="album-tabs" role="group" aria-label="Colección"><button type="button" data-live-album="found" aria-pressed="true">Encontrados</button><button type="button" data-live-album="unknown" aria-pressed="false">Desconocidos</button></div><div class="album-grid">${logos.map(l=>`<button type="button" ${owned.includes(l.id)&&l.assetId?'':'disabled'} data-avatar-id="${escapeText(l.id)}" data-owned="${owned.includes(l.id)}" ${owned.includes(l.id)?'':'hidden'}><img src="${ASSETS}logo-${logoId(l.assetId??l.id)}.webp" alt=""/><span>${escapeText(l.name)}</span></button>`).join('')}</div>`}`;
+    return `<div class="modal-head"><h2 id="modal-title">Álbum de Perrilogos</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><div class="album-selected">${avatarMarkup(selectedAvatar)}</div>${s.status!=='ready'?stateNotice(s):`<p class="album-note">Selecciona uno de tus Perrilogos encontrados.</p><div class="album-tabs" role="group" aria-label="Colección"><button type="button" data-live-album="found" aria-pressed="true">Encontrados</button><button type="button" data-live-album="unknown" aria-pressed="false">Desconocidos</button></div><div class="album-grid">${logos.map(l=>`<button type="button" ${owned.includes(l.id)&&l.assetId?'':'disabled'} data-avatar-id="${escapeText(l.id)}" data-owned="${owned.includes(l.id)}" ${owned.includes(l.id)?'':'hidden'}><img src="${ASSETS}logo-${logoId(l.assetId??l.id)}.webp" alt=""/><span>${escapeText(l.name)}</span></button>`).join('')}</div>`}`;
   }
   if (type === 'assistance') return `<div class="modal-head"><h2 id="modal-title">Asistencia</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">Si necesitas ayuda con la tienda, puedes escribir a Perrisushi por Twitch. También publicamos avisos y novedades en YouTube.</p><a class="support-link textured-button" href="https://www.twitch.tv/perrisushi" target="_blank" rel="noopener noreferrer">Abrir Twitch</a>`;
   if (type === 'logout') return `<div class="modal-head"><h2 id="modal-title">Cerrar sesión</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">No hay sesión iniciada.</p>`;
@@ -163,7 +170,7 @@ function openModal(type) {
   modalKind=type;
   lastFocus = sessionOptions.contains(document.activeElement) ? menuToggle : document.activeElement;
   closeMenu();
-  overlay.innerHTML = `${type==='auth'?'':'<div class="modal-backdrop" data-action="close-modal"></div>'}<section class="modal-card ${type === 'album' ? 'album-card' : type.startsWith('game:') ? 'game-card' : ''}" role="dialog" aria-modal="true" aria-labelledby="modal-title">${modalMarkup(type)}</section>`;
+  overlay.innerHTML = `${type==='auth'?'':'<div class="modal-backdrop" data-action="close-modal"></div>'}<section class="modal-card ${type === 'album' ? 'album-card' : type.startsWith('game:') ? 'game-card' : type.startsWith('item:')||type.startsWith('game-help:')?'info-card':''}" role="dialog" aria-modal="true" aria-labelledby="modal-title">${modalMarkup(type)}</section>`;
   overlay.hidden = false;
   [...document.querySelector('#app').children].forEach(el => { if (el !== overlay) el.inert = true; });
   document.body.style.overflow = 'hidden';
@@ -190,6 +197,7 @@ menuToggle.addEventListener('click', () => {
   menuToggle.setAttribute('aria-expanded',String(!sessionOptions.hidden));
 });
 document.addEventListener('click', e => {
+  const help=e.target.closest('[data-game-help]')?.dataset.gameHelp;if(help&&Object.hasOwn(gameDescriptions,help)){openModal('game-help:'+help);return}
   const game=e.target.closest('[data-game]')?.dataset.game;if(game&&Object.hasOwn(gameRoutes,game)){void launchOriginalGame(game);return}
   const economic=e.target.closest('[data-economy]');if(economic&&!economic.disabled){void runEconomicOperation(economic.dataset.economy,economic);return}
   const avatar=e.target.closest('[data-avatar-id]');if(avatar&&!avatar.disabled){void savePersonalChange('avatar',avatar.dataset.avatarId,avatar);return}
@@ -197,7 +205,7 @@ document.addEventListener('click', e => {
   const liveAlbum=e.target.closest('[data-live-album]')?.dataset.liveAlbum;
   if(liveAlbum){overlay.querySelectorAll('[data-owned]').forEach(el=>el.hidden=el.dataset.owned!==String(liveAlbum==='found'));overlay.querySelectorAll('[data-live-album]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.liveAlbum===liveAlbum)));return}
   const item=e.target.closest('[data-live-item]')?.dataset.liveItem;
-  if(item){const target=stage.querySelector('#pw04-item-info');target.textContent=`${item.replaceAll('_',' ')}: ${dataState.inventory.inventory?.[item]??'—'}.`;return}
+  if(item&&Object.hasOwn(dataState.inventory.inventory??{},item)){openModal('item:'+item);return}
   const next=e.target.closest('[data-live-next]');
   if(next){void loadMore(next.dataset.liveNext,next.dataset.cursor,next);return}
   const action = e.target.closest('[data-action]')?.dataset.action;

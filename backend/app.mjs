@@ -30,10 +30,10 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
  function pagination(url,cursorField='cursor'){
   const raw=url.searchParams.get('limit')??'20';if(!/^\d{1,3}$/.test(raw))throw new BackendError(400,'invalid_page');
   const limit=Math.min(50,Math.max(1,Number(raw)));let cursor;
-  const value=url.searchParams.get(cursorField);if(value){try{if(value.length>200)throw Error();const parsed=JSON.parse(Buffer.from(value,'base64url').toString());if(typeof parsed!=='string'||parsed.length>100||/[\x00-\x1f]/.test(parsed))throw Error();cursor=parsed}catch{throw new BackendError(400,'invalid_cursor')}}
+  const value=url.searchParams.get(cursorField);if(value){try{if(value.length>800)throw Error();const parsed=JSON.parse(Buffer.from(value,'base64url').toString());if(url.pathname==='/api/users'){if(!parsed||typeof parsed!=='object'||Array.isArray(parsed)||Object.keys(parsed).sort().join(',')!=='nick,pc'||typeof parsed.nick!=='string'||!parsed.nick.length||parsed.nick.length>100||/[\x00-\x1f]/.test(parsed.nick)||(parsed.pc!==null&&!Number.isSafeInteger(parsed.pc)))throw Error()}else if(typeof parsed!=='string'||parsed.length>100||/[\x00-\x1f]/.test(parsed))throw Error();cursor=parsed}catch{throw new BackendError(400,'invalid_cursor')}}
   return {limit,cursor};
  }
- const pageDTO=(rows,{limit},kind)=>({items:rows.slice(0,limit),nextCursor:rows.length>limit?Buffer.from(JSON.stringify(String(rows[limit-1][kind==='users'?'nick':'id']))).toString('base64url'):null});
+ const pageDTO=(rows,{limit},kind)=>({items:rows.slice(0,limit),nextCursor:rows.length>limit?Buffer.from(JSON.stringify(kind==='users'?{pc:rows[limit-1].pc??null,nick:rows[limit-1].nick}:String(rows[limit-1].id))).toString('base64url'):null});
  async function jsonBody(req,max=4096){const parts=[];let size=0;for await(const chunk of req){const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);size+=bytes.length;if(size>max)throw new BackendError(413,'body_too_large');parts.push(bytes)}try{const value=JSON.parse(Buffer.concat(parts).toString('utf8'));if(!value||typeof value!=='object'||Array.isArray(value))throw Error();return value}catch{throw new BackendError(400,'invalid_request')}}
  const fail=(status,code)=>{throw new BackendError(status,code)};
  const handle=function handle(req,res){return metricsContext.run({queries:0},async()=>{
