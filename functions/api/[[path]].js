@@ -17,7 +17,7 @@ export async function onRequest({request,env}){
   if(target.origin!==backend.origin||!target.pathname.startsWith('/api/'))return new Response(null,{status:400});
   const response=await fetch(target,{method:request.method,headers,body,redirect:'manual',signal:AbortSignal.timeout(12000)});
   if(response.status>=300&&response.status<400)return unavailable();
-  const returned=new Headers({'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});for(const key of ['content-type','set-cookie','x-csrf-token','x-request-id'])if(response.headers.has(key))returned.set(key,response.headers.get(key));
+  const returned=new Headers({'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});for(const key of ['content-type','set-cookie','x-csrf-token','x-request-id','server-timing'])if(response.headers.has(key))returned.set(key,response.headers.get(key));
   return new Response(response.body,{status:response.status,headers:returned});
  }catch{return unavailable()}
 }

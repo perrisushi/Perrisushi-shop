@@ -10,6 +10,6 @@ export async function onRequest(context){
  if(!response.ok)return new Response('No se pudo comprobar tu sesión. Vuelve a intentarlo.',{status:503,headers:{'Cache-Control':'no-store'}});
  let session;try{session=await response.json()}catch{return new Response(null,{status:503,headers:{'Cache-Control':'no-store'}})}
  if(session.authenticated!==true)return new Response(null,{status:303,headers:{Location:'/', 'Cache-Control':'no-store'}});
- const result=await context.next();const headers=new Headers(result.headers);headers.set('Cache-Control','no-store');
+ const result=await context.next();const headers=new Headers(result.headers);headers.set('Cache-Control',/\.html$/.test(gamePath(path))?'no-store':'private, no-cache');headers.set('Vary','Cookie, Accept-Encoding');
  return new Response(result.body,{status:result.status,headers});
 }

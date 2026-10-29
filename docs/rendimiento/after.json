@@ -1,0 +1,196 @@
+{
+  "mode": "LOCAL PGLITE; SYNTHETIC LATENCY PER SQL/REST CALL",
+  "latencyMs": 20,
+  "randomSeed": 123456789,
+  "results": [
+    {
+      "name": "Duelos:first",
+      "ms": 539.54,
+      "sql": 17,
+      "rest": 0
+    },
+    {
+      "name": "Duelos:warm1",
+      "ms": 468.94,
+      "sql": 15,
+      "rest": 0
+    },
+    {
+      "name": "Duelos:warm2",
+      "ms": 465.74,
+      "sql": 15,
+      "rest": 0
+    },
+    {
+      "name": "Duelos:warm3",
+      "ms": 464.19,
+      "sql": 15,
+      "rest": 0
+    },
+    {
+      "name": "Pet:first",
+      "ms": 347.52,
+      "sql": 15,
+      "rest": 0
+    },
+    {
+      "name": "Pet:warm1",
+      "ms": 338.18,
+      "sql": 14,
+      "rest": 0
+    },
+    {
+      "name": "Pet:warm2",
+      "ms": 310.62,
+      "sql": 13,
+      "rest": 0
+    },
+    {
+      "name": "Pet:warm3",
+      "ms": 313.48,
+      "sql": 13,
+      "rest": 0
+    },
+    {
+      "name": "Casillas:first",
+      "ms": 369.47,
+      "sql": 12,
+      "rest": 0
+    },
+    {
+      "name": "Casillas:warm1",
+      "ms": 343.77,
+      "sql": 11,
+      "rest": 0
+    },
+    {
+      "name": "Casillas:warm2",
+      "ms": 340.44,
+      "sql": 11,
+      "rest": 0
+    },
+    {
+      "name": "Casillas:warm3",
+      "ms": 339.3,
+      "sql": 11,
+      "rest": 0
+    },
+    {
+      "name": "RPG:first",
+      "ms": 339.72,
+      "sql": 16,
+      "rest": 0
+    },
+    {
+      "name": "RPG:warm1",
+      "ms": 339.68,
+      "sql": 16,
+      "rest": 0
+    },
+    {
+      "name": "RPG:warm2",
+      "ms": 341.63,
+      "sql": 16,
+      "rest": 0
+    },
+    {
+      "name": "RPG:warm3",
+      "ms": 337.23,
+      "sql": 16,
+      "rest": 0
+    },
+    {
+      "name": "RPG:purchase",
+      "ms": 432.54,
+      "sql": 19,
+      "rest": 0
+    },
+    {
+      "name": "RPG:consume",
+      "ms": 341.8,
+      "sql": 11,
+      "rest": 0
+    },
+    {
+      "name": "Casillas:open",
+      "ms": 1300.33,
+      "sql": 42,
+      "rest": 0,
+      "reward": "polvoGema"
+    },
+    {
+      "name": "Pet:save",
+      "ms": 495.57,
+      "sql": 16,
+      "rest": 0
+    },
+    {
+      "name": "identity:0",
+      "ms": 45.39,
+      "sql": 0,
+      "rest": 1
+    },
+    {
+      "name": "identity:1",
+      "ms": 32.64,
+      "sql": 0,
+      "rest": 1
+    },
+    {
+      "name": "identity:2",
+      "ms": 31.37,
+      "sql": 0,
+      "rest": 1
+    }
+  ],
+  "assets": [
+    {
+      "path": "/src/main.js",
+      "round": 0,
+      "status": 200,
+      "bytes": 8405,
+      "encoding": "gzip",
+      "ms": 2.88
+    },
+    {
+      "path": "/src/main.js",
+      "round": 1,
+      "status": 304,
+      "bytes": 0,
+      "encoding": "gzip",
+      "ms": 0.2
+    },
+    {
+      "path": "/public/assets/fondo-menu-web-pc.webp",
+      "round": 0,
+      "status": 200,
+      "bytes": 157872,
+      "encoding": "identity",
+      "ms": 0.41
+    },
+    {
+      "path": "/public/assets/fondo-menu-web-pc.webp",
+      "round": 1,
+      "status": 304,
+      "bytes": 0,
+      "encoding": "identity",
+      "ms": 0.08
+    },
+    {
+      "path": "/perrirpg.js",
+      "round": 0,
+      "status": 200,
+      "bytes": 11589,
+      "encoding": "gzip",
+      "ms": 0.99
+    },
+    {
+      "path": "/perrirpg.js",
+      "round": 1,
+      "status": 304,
+      "bytes": 0,
+      "encoding": "gzip",
+      "ms": 0.11
+    }
+  ]
+}

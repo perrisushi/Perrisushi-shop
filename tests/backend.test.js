@@ -116,7 +116,7 @@ test('métricas reales del adaptador en lecturas usan solo GET y no incluyen ide
  },{repository,onMetric:m=>metrics.push(m)});
  assert.ok(outbound.every(c=>c.method==='GET'));
  assert.deepEqual(metrics.map(m=>[m.route,m.queries]),[['/api/auth/login',2],['/api/session',2],['/api/profile',5],['/api/inventory',3],['/api/history',3],['/api/users',3],['/api/notifications',3],['/api/shop/random-key',5],['/api/shop/raffles',3]]);
- assert.ok(!JSON.stringify(metrics).includes('Alpha'));assert.deepEqual(Object.keys(metrics[0]),['route','method','status','durationMs','queries']);
+ assert.ok(!JSON.stringify(metrics).includes('Alpha'));assert.deepEqual(Object.keys(metrics[0]),['route','method','status','durationMs','queries','restMs','sqlQueries','sqlMs','poolMs','lockMs']);
 });
 test('avatar adquirido y notificación propia: CSRF, UUID e identidad, sin cambios económicos',()=>use(async({login,request,repository})=>{
  const writes=[];let selected='buho-1';

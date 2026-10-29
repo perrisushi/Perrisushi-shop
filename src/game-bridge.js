@@ -4,15 +4,19 @@
  const native=window.fetch.bind(window),pending=new Map();let csrf='',contextPromise;
  const gameName=location.pathname.includes('perriduelos')?'PerriDuelos':location.pathname.includes('perripet')?'PerriPet':location.pathname.includes('perrirpg')?'PerriRPG':'PerriCasillas';
  const expired=()=>window.parent.postMessage({type:'pw2-session-expired'},location.origin);
+ const parentContext=()=>window.parent===window?Promise.resolve(null):new Promise(resolve=>{
+  const id=crypto.randomUUID();let timer;const finish=value=>{clearTimeout(timer);window.removeEventListener('message',receive);resolve(value)};
+  const receive=event=>{if(event.source===window.parent&&event.origin===location.origin&&event.data?.type==='pw2-game-context'&&event.data.id===id)finish(event.data.context)};
+  window.addEventListener('message',receive);timer=setTimeout(()=>finish(null),500);window.parent.postMessage({type:'pw2-game-context-request',id},location.origin);
+ });
  const getContext=()=>contextPromise??=(async()=>{
-  const s=await native('/api/session',{credentials:'same-origin',cache:'no-store'});
-  if(!s.ok)throw Error('No se pudo comprobar tu sesión. Vuelve a intentarlo.');
-  const identity=await s.json();if(!identity.authenticated){expired();throw Error('Inicia sesión en PerriWeb')}
-  csrf=s.headers.get('x-csrf-token')??'';
+  const bootstrap=await parentContext();
+  if(bootstrap?.available&&typeof bootstrap.nick==='string'&&/^[\w-]{43}$/.test(bootstrap.csrfToken??'')&&bootstrap.games?.[gameName]!==false){csrf=bootstrap.csrfToken;const {csrfToken,...data}=bootstrap;return data}
   const r=await native('/api/games/context',{credentials:'same-origin',cache:'no-store'});
   if(r.status===401){expired();throw Error('Inicia sesión en PerriWeb')}
   if(!r.ok)throw Error('Los juegos no están disponibles. Inténtalo más tarde.');
-  const data=await r.json();if(data.nick!==identity.nick||!data.available||data.games?.[gameName]===false)throw Error('Este juego no está disponible. Inténtalo más tarde.');
+  csrf=r.headers.get('x-csrf-token')??'';
+  const data=await r.json();if(typeof data.nick!=='string'||!data.available||data.games?.[gameName]===false||! /^[\w-]{43}$/.test(csrf))throw Error('Este juego no está disponible. Inténtalo más tarde.');
   return data;
  })().catch(e=>{contextPromise=null;throw e});
  window.fetch=async(input,options={})=>{

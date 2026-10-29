@@ -29,6 +29,15 @@ test('arranque de juegos automático con conexión existente; apagado explícito
  assert.equal(gamesEnabled(undefined,true),true);assert.equal(gamesEnabled(undefined,false),false);assert.equal(gamesEnabled('false',true),false);assert.equal(gamesEnabled('true',false),true);assert.throws(()=>gamesEnabled('yes',true));
 });
 
+test('los límites SQL siguen activos en la transacción y no se filtran a la conexión reutilizada',async()=>{
+ const f=await fixture();try{
+  const before=await f.db.query("select current_setting('lock_timeout') lock,current_setting('statement_timeout') statement");
+  const games=createGames({pool:f.pool,enabled:true,legacy:{handleShopAction:async()=>{const row=(await f.db.query("select current_setting('lock_timeout') lock,current_setting('statement_timeout') statement")).rows[0];assert.equal(row.lock,'5s');assert.equal(row.statement,'10s');return {ok:true}}}});
+  assert.equal((await games.execute(f.user,{action:'publicShopRpgState',idempotencyKey:randomUUID()})).ok,true);
+  assert.deepEqual((await f.db.query("select current_setting('lock_timeout') lock,current_setting('statement_timeout') statement")).rows,before.rows);
+ }finally{await f.db.close()}
+});
+
 test('disponibilidad distingue desactivación, conexión ausente, proyecto distinto, sesión y errores sin revelar secretos',async()=>{
  assert.equal((await createGames().availability({})).reason,'games_disabled');
  assert.equal((await createGames({enabled:true,legacy}).availability({})).reason,'database_not_configured');

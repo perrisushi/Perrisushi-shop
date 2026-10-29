@@ -2,6 +2,7 @@
 import {PGlite} from '@electric-sql/pglite';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
+import {performance} from 'node:perf_hooks';
 import http from 'node:http';
 import assert from 'node:assert/strict';
 import {createRepository} from '../backend/repository.mjs';
@@ -15,6 +16,7 @@ process.env.SUPABASE_URL='https://local-only.invalid';process.env.SUPABASE_SERVI
 const {default:legacy}=await import('../backend/games-original.cjs');
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE??'C:/Users/borja/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const db=new PGlite();let browser,api,web;const errors=[],failed=[],calls=[],apiErrors=[];
+const output=process.env.PW2_QA_DIR??'docs/produccion-local',timings=[];
 let tail=Promise.resolve();const pool={async connect(){let release;const previous=tail;tail=new Promise(r=>release=r);await previous;return {query:(...args)=>db.query(...args),release}}};
 try{
  await db.exec('create role anon;create role authenticated;create role service_role;');
@@ -23,6 +25,7 @@ try{
  await db.exec("insert into shop_players(nick) values('LocalA'),('LocalB');insert into shop_inventories(nick,pc,polvo_gema,monedas,random_key,duelo) values('LocalA',10000,5000,10,1,5),('LocalB',10000,5000,10,0,5);insert into shop_profiles(nick,selected_logo_id,owned_logo_ids) values('LocalA','logo-buho-1','[\"logo-buho-1\"]');insert into shop_random_key_tickets values(gen_random_uuid(),'LocalA','Activa',now(),now()+interval '1 day',now());insert into shop_random_key_pool(game,key,status) values('Local game','LOCAL-ONLY-NO-REAL-KEY','Disponible');");
  await db.query("insert into shop_access(nick,code_hash,active) values('LocalA',$1,true),('LocalB',$1,true)",[digest('local-e2e')]);
  const fetchImpl=async(url,options)=>{calls.push({path:new URL(url).pathname,method:options.method});const client=await pool.connect();try{
+  const u=new URL(url);if(u.pathname.endsWith('/shop_sessions')&&u.searchParams.get('select')?.includes('shop_players!inner'))return Response.json((await client.query("SELECT s.nick,s.expires_at,json_build_object('active',p.active,'shop_access',json_build_object('active',a.active)) shop_players FROM shop_sessions s JOIN shop_players p ON p.nick=s.nick JOIN shop_access a ON a.nick=s.nick WHERE s.token=$1",[u.searchParams.get('token').slice(3)])).rows);
   const name=new URL(url).pathname.split('/rpc/')[1];if(name?.startsWith('pw2_')){const b=options.body?JSON.parse(options.body):{};const args=[b.p_nick,b.p_operation,b.p_action,b.p_price,b.p_max];try{const rows=(await client.query(name==='pw2_economy_status'?'select pw2_economy_status() result':'select pw2_economy_operation($1,$2,$3,$4,$5) result',name==='pw2_economy_status'?[]:args)).rows;return Response.json(rows[0].result)}catch(e){return Response.json({message:e.message},{status:400})}}
   const r=await transport.withClient(client,()=>transport.fetch(url,options));return new Response(await r.text(),{status:r.status,headers:{'Content-Type':'application/json'}});
  }catch(error){return Response.json({code:error.code,message:error.message},{status:400})}finally{client.release()}};
@@ -33,12 +36,13 @@ try{
  api=http.createServer(handler);
  web=createFrontendServer({apiTarget:'http://127.0.0.1:4193',authenticate:handler.authenticate});
  await new Promise(r=>api.listen(4193,'127.0.0.1',r));await new Promise(r=>web.listen(4192,'127.0.0.1',r));
- browser=await chromium.launch({channel:'msedge',headless:true});await mkdir('docs/produccion-local/capturas',{recursive:true});
+ browser=await chromium.launch({channel:'msedge',headless:true});await mkdir(output+'/capturas',{recursive:true});
  for(const [width,height]of [[1649,928],[390,844],[360,800]]){
   const page=await browser.newPage({viewport:{width,height}});page.on('pageerror',e=>errors.push(e.message));page.on('response',async r=>{if(r.status()===404&&r.url().startsWith('http://127.0.0.1'))failed.push(r.url());if(r.status()>=400&&r.url().includes('/api/')&&!r.headers()['x-pw2-test-injected'])apiErrors.push({url:r.url(),status:r.status(),body:await r.text().catch(()=>'(response closed)')})});
-  await page.goto('http://127.0.0.1:4192/#profile');await page.locator('#traditional-login').waitFor();await page.getByLabel('Usuario',{exact:true}).fill('LocalA');await page.getByLabel('Contraseña',{exact:true}).fill('local-e2e');await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.profile-badge').dataset.authenticated==='true');
+  await page.goto('http://127.0.0.1:4192/#profile');await page.locator('#traditional-login').waitFor();await page.getByLabel('Usuario',{exact:true}).fill('LocalA');await page.getByLabel('Contraseña',{exact:true}).fill('local-e2e');let start=performance.now(),count=calls.length;await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.profile-badge').dataset.authenticated==='true');timings.push({width,kind:'login-to-profile',ms:performance.now()-start,rest:calls.length-count});
   await page.goto('http://127.0.0.1:4192/#games');await page.waitForFunction(()=>document.querySelector('.profile-badge').dataset.authenticated==='true');
   for(const name of ['PerriDuelos','PerriPet','PerriCasillas','PerriRPG']){
+   start=performance.now();count=calls.length;
    await page.locator(`[data-game="${name}"]`).click();await page.locator('iframe.original-game').waitFor();const frame=await page.locator('iframe.original-game').elementHandle();const content=await frame.contentFrame();await content.waitForLoadState('load');
    if(name==='PerriCasillas'){await content.locator('.perricasillas-cell').first().waitFor();if(width<=390)await content.waitForFunction(()=>document.querySelector('.perricasillas-cell')?.getBoundingClientRect().width>=30)}
    if(name==='PerriCasillas'&&width<=390){const opened=await content.locator('.perricasillas-cell.is-open').count();await content.locator('.perricasillas-cell:not(.is-open):not([disabled])').first().click();await content.waitForFunction(n=>document.querySelectorAll('.perricasillas-cell.is-open').length===n+1,opened);await content.locator('#perriCasillasRewardClose').click()}
@@ -60,14 +64,14 @@ try{
     assert.equal((await db.query("select polvo_gema from shop_inventories where nick='LocalA'")).rows[0].polvo_gema,5000-item.price_pg);
     await content.evaluate(()=>window.dispatchEvent(new MessageEvent('message',{origin:location.origin,data:{type:'perrirpg-refresh'}})));
    }
-   await page.waitForTimeout(700);await page.screenshot({path:`docs/produccion-local/capturas/${width}-${name}.png`});await page.locator('#overlay-layer > section > .modal-head .modal-close').click();
+   timings.push({width,kind:name+':iframe-and-initial-actions',ms:performance.now()-start,rest:calls.length-count});await page.waitForTimeout(700);await page.screenshot({path:`${output}/capturas/${width}-${name}.png`});await page.locator('#overlay-layer > section > .modal-head .modal-close').click();
   }
   if(width===1649){
    await page.goto('http://127.0.0.1:4192/#shop');await page.locator('[data-economy="redeem"]:not([disabled])').waitFor();await page.locator('[data-economy="redeem"]').click();await page.locator('#overlay-layer').getByText('LOCAL-ONLY-NO-REAL-KEY',{exact:true}).waitFor();await page.locator('.modal-close').click();
-   await page.locator('[data-pw04-shop-tab="sorteos"]').click();const ids=[];let drop=true;await page.route('**/api/shop/raffles/buy',async route=>{ids.push(route.request().postDataJSON().idempotencyKey);if(drop){drop=false;await route.fetch();await route.abort()}else await route.continue()});await page.locator('[data-economy="buy"]:not([disabled])').click();await page.locator('[data-economy="buy"]').filter({hasText:'Pulsa para reintentar'}).waitFor();await page.locator('[data-economy="buy"]:not([disabled])').click();await page.getByText('Boletos: 1 · PC: 6500',{exact:true}).waitFor();assert.equal(ids.length,2);assert.equal(ids[0],ids[1]);await page.screenshot({path:'docs/produccion-local/capturas/recibo.png'});await page.locator('.modal-close').click();
+   await page.locator('[data-pw04-shop-tab="sorteos"]').click();const ids=[];let drop=true;await page.route('**/api/shop/raffles/buy',async route=>{ids.push(route.request().postDataJSON().idempotencyKey);if(drop){drop=false;await route.fetch();await route.abort()}else await route.continue()});await page.locator('[data-economy="buy"]:not([disabled])').click();await page.locator('[data-economy="buy"]').filter({hasText:'Pulsa para reintentar'}).waitFor();await page.locator('[data-economy="buy"]:not([disabled])').click();await page.getByText('Boletos: 1 · PC: 6500',{exact:true}).waitFor();assert.equal(ids.length,2);assert.equal(ids[0],ids[1]);await page.screenshot({path:output+'/capturas/recibo.png'});await page.locator('.modal-close').click();
   }
   await page.close();
  }
  assert.deepEqual(errors,[]);assert.deepEqual([...new Set(failed)],[]);assert.deepEqual(apiErrors,[]);
- await writeFile('docs/produccion-local/resultados.json',JSON.stringify({mode:'LOCAL POSTGRESQL ONLY',viewports:3,games:4,errors,failed,apiErrors,calls},null,2));console.log(JSON.stringify({viewports:3,games:4,errors,failed,calls:calls.length}));
+ await writeFile(output+'/resultados.json',JSON.stringify({mode:'LOCAL POSTGRESQL ONLY',viewports:3,games:4,errors,failed,apiErrors,timings,calls},null,2));console.log(JSON.stringify({viewports:3,games:4,errors,failed,calls:calls.length,timings}));
 }finally{await browser?.close();web?.closeAllConnections();api?.closeAllConnections();if(web)await new Promise(r=>web.close(r));if(api)await new Promise(r=>api.close(r));await db.close()}

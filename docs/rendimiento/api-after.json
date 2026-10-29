@@ -1,0 +1,198 @@
+{
+  "mode": "LOCAL API; SAME FIXTURES; SYNTHETIC 20 MS PER REST REQUEST",
+  "latencyMs": 20,
+  "results": [
+    {
+      "path": "/auth/login",
+      "sample": 0,
+      "ms": 132.22,
+      "rest": 4
+    },
+    {
+      "path": "/auth/login",
+      "sample": 1,
+      "ms": 124.83,
+      "rest": 4
+    },
+    {
+      "path": "/auth/login",
+      "sample": 2,
+      "ms": 124.09,
+      "rest": 4
+    },
+    {
+      "path": "/auth/login",
+      "sample": 3,
+      "ms": 122.01,
+      "rest": 4
+    },
+    {
+      "path": "/session",
+      "sample": 0,
+      "ms": 30.95,
+      "rest": 1
+    },
+    {
+      "path": "/session",
+      "sample": 1,
+      "ms": 29.84,
+      "rest": 1
+    },
+    {
+      "path": "/session",
+      "sample": 2,
+      "ms": 29.52,
+      "rest": 1
+    },
+    {
+      "path": "/session",
+      "sample": 3,
+      "ms": 29.94,
+      "rest": 1
+    },
+    {
+      "path": "/profile",
+      "sample": 0,
+      "ms": 64.29,
+      "rest": 4
+    },
+    {
+      "path": "/profile",
+      "sample": 1,
+      "ms": 62.23,
+      "rest": 4
+    },
+    {
+      "path": "/profile",
+      "sample": 2,
+      "ms": 61.86,
+      "rest": 4
+    },
+    {
+      "path": "/profile",
+      "sample": 3,
+      "ms": 60.93,
+      "rest": 4
+    },
+    {
+      "path": "/users",
+      "sample": 0,
+      "ms": 62.03,
+      "rest": 2
+    },
+    {
+      "path": "/users",
+      "sample": 1,
+      "ms": 61.84,
+      "rest": 2
+    },
+    {
+      "path": "/users",
+      "sample": 2,
+      "ms": 61.44,
+      "rest": 2
+    },
+    {
+      "path": "/users",
+      "sample": 3,
+      "ms": 61.71,
+      "rest": 2
+    },
+    {
+      "path": "/inventory",
+      "sample": 0,
+      "ms": 62.65,
+      "rest": 2
+    },
+    {
+      "path": "/inventory",
+      "sample": 1,
+      "ms": 61.92,
+      "rest": 2
+    },
+    {
+      "path": "/inventory",
+      "sample": 2,
+      "ms": 63.58,
+      "rest": 2
+    },
+    {
+      "path": "/inventory",
+      "sample": 3,
+      "ms": 62.68,
+      "rest": 2
+    },
+    {
+      "path": "/shop/random-key",
+      "sample": 0,
+      "ms": 61.89,
+      "rest": 4
+    },
+    {
+      "path": "/shop/random-key",
+      "sample": 1,
+      "ms": 59.54,
+      "rest": 4
+    },
+    {
+      "path": "/shop/random-key",
+      "sample": 2,
+      "ms": 60.04,
+      "rest": 4
+    },
+    {
+      "path": "/shop/random-key",
+      "sample": 3,
+      "ms": 60.81,
+      "rest": 4
+    },
+    {
+      "path": "/shop/raffles",
+      "sample": 0,
+      "ms": 62.18,
+      "rest": 2
+    },
+    {
+      "path": "/shop/raffles",
+      "sample": 1,
+      "ms": 62.37,
+      "rest": 2
+    },
+    {
+      "path": "/shop/raffles",
+      "sample": 2,
+      "ms": 63.15,
+      "rest": 2
+    },
+    {
+      "path": "/shop/raffles",
+      "sample": 3,
+      "ms": 62.48,
+      "rest": 2
+    },
+    {
+      "path": "/games/context",
+      "sample": 0,
+      "ms": 62.59,
+      "rest": 2
+    },
+    {
+      "path": "/games/context",
+      "sample": 1,
+      "ms": 62.54,
+      "rest": 2
+    },
+    {
+      "path": "/games/context",
+      "sample": 2,
+      "ms": 62.03,
+      "rest": 2
+    },
+    {
+      "path": "/games/context",
+      "sample": 3,
+      "ms": 63.08,
+      "rest": 2
+    }
+  ]
+}

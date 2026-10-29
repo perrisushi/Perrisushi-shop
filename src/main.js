@@ -1,9 +1,9 @@
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createApiClient} from './services/api-client.js';
-import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderLiveUsers,renderLiveInventory,renderLiveShop,bindPageEvents} from './services/live-ui.js';
+import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,bindPageEvents} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
-let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false;
+let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
 const remoteStates={};
 
 const ASSETS = './public/assets/';
@@ -179,7 +179,7 @@ function openModal(type) {
 function closeModal() {
   if(!session)return;
   if (overlay.hidden) return;
-  if(modalKind?.startsWith('game:'))api.clearCache();
+  if(modalKind?.startsWith('game:')){api.clearCache();gameBootstrap=null}
   overlay.hidden=true;overlay.replaceChildren();
   modalKind=null;
   [...document.querySelector('#app').children].forEach(el => { if (el !== overlay) el.inert = false; });
@@ -233,7 +233,7 @@ document.addEventListener('keydown', e => {
   }
 });
 window.addEventListener('hashchange',render);
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(event.data?.type==='pw2-game-updated')api.clearCache();if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.clearCache();if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
 window.addEventListener('pageshow',event=>{if(event.persisted)void bootstrapSession()});
 bindPageEvents();
 renderMusicOption();
@@ -247,7 +247,7 @@ function showLogin(error){
 }
 function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]()}
 function resetPrivateState(){
-  session=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
+  session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
   for(const kind of ['users','inventory','shop'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
   setAuthenticatedProfile(null);
@@ -262,9 +262,9 @@ function errorState(error){
   return {status:'error',error:error.code};
 }
 function syncIdentity(){const el=document.querySelector('.identity-chip strong');el.textContent=session?session.nick.slice(0,16):sessionState.status==='error'?'Sin conexión':'Sin sesión';el.title=session?.nick??message(sessionState)}
-async function bootstrapSession(){
+async function bootstrapSession(authenticated=null){
   resetPrivateState();const generation=sessionEpoch;sessionState={status:'loading'};profileState={status:'loading'};
-  try{const result=await api.getSession();if(generation!==sessionEpoch)return;session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
+  try{const result=authenticated??await api.getSession();if(generation!==sessionEpoch)return;session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
    if(session){const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
    else profileState={status:'signedOut'};
   }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
@@ -290,9 +290,9 @@ async function openRemoteModal(kind){remoteStates[kind]=session?{status:'loading
  paintRemote(kind);
 }
 async function loadMore(kind,cursor,button){
- const generation=sessionEpoch;button.disabled=true;
+ const generation=sessionEpoch,previousUsers=dataState.users;button.disabled=true;
  try{
-  if(kind==='users'){const result=await api.listUsers({cursor});if(generation!==sessionEpoch)return;setPageData('users',{status:'ready',items:[...dataState.users.items,...result.items],nextCursor:result.nextCursor});if(normalizeRoute(location.hash)==='users')paintStage()}
+  if(kind==='users'){const result=await api.listUsers({cursor});if(generation!==sessionEpoch||dataState.users!==previousUsers)return;setPageData('users',{status:'ready',items:[...previousUsers.items,...result.items],nextCursor:result.nextCursor});if(normalizeRoute(location.hash)==='users'){const list=button.isConnected&&stage.querySelector('.pw04-user-rows');if(list){list.insertAdjacentHTML('beforeend',renderUserRows(result.items));if(result.nextCursor)button.dataset.cursor=result.nextCursor;else button.remove()}else paintStage()}}
   else if(['history','notifications'].includes(kind)){const result=await (kind==='history'?api.getHistory({cursor}):api.getNotifications({cursor}));if(generation!==sessionEpoch)return;remoteStates[kind]={status:'ready',items:[...remoteStates[kind].items,...result.items],nextCursor:result.nextCursor};paintRemote(kind)}
   else if(['tickets','claims'].includes(kind)){const result=await api.listRandomKeys({[kind==='tickets'?'ticketCursor':'claimCursor']:cursor});if(generation!==sessionEpoch)return;const current=dataState.shop.randomKey;current[kind]={items:[...current[kind].items,...result[kind].items],nextCursor:result[kind].nextCursor};if(normalizeRoute(location.hash)==='shop')paintStage()}
  }catch(error){if(generation===sessionEpoch){errorState(error);button.textContent=message({error:error.code})}}
@@ -308,7 +308,7 @@ async function logoutAccount(){
 document.addEventListener('submit',async event=>{
  if(event.target.id!=='traditional-login')return;event.preventDefault();if(logoutPending)return;const form=event.target,submit=form.querySelector('button'),status=form.querySelector('#login-status');submit.disabled=true;status.textContent='Comprobando acceso…';
  const data=new FormData(form);resetPrivateState();sessionState={status:'loading'};syncIdentity();
- try{await api.login(data.get('nick'),data.get('password'));form.reset();history.replaceState(null,'','#home');await bootstrapSession()}
+ try{const authenticated=await api.login(data.get('nick'),data.get('password'));form.reset();history.replaceState(null,'','#home');await bootstrapSession(authenticated)}
  catch(error){sessionState={status:'error',error:error.code};profileState=sessionState;syncIdentity();showLogin(error.code);const login=overlay.querySelector('#traditional-login');login.elements.nick.value=String(data.get('nick')??'');login.elements.password.focus()}
  finally{if(submit.isConnected)submit.disabled=false}
 });
@@ -338,9 +338,9 @@ async function runEconomicOperation(kind,button){
 }
 let openingGame=false;
 async function launchOriginalGame(name){
- if(!session){openModal('auth');return}if(openingGame)return;openingGame=true;const generation=sessionEpoch;
+ if(!session){openModal('auth');return}if(openingGame)return;openingGame=true;const generation=sessionEpoch,button=stage.querySelector(`[data-game="${name}"]`);if(button){button.disabled=true;button.setAttribute('aria-busy','true')}
  try{const context=await api.getGameContext();if(generation!==sessionEpoch)return;
   if(context.nick!==session.nick){await bootstrapSession();return}
-  openModal(context.available&&context.games?.[name]!==false?'game:'+name:'game-unavailable');
- }catch(error){if(generation===sessionEpoch){errorState(error);openModal('game-unavailable')}}finally{openingGame=false}
+  gameBootstrap={...context,csrfToken:api.getCsrfToken()};openModal(context.available&&context.games?.[name]!==false?'game:'+name:'game-unavailable');
+ }catch(error){if(generation===sessionEpoch){errorState(error);openModal('game-unavailable')}}finally{openingGame=false;if(button){button.disabled=false;button.removeAttribute('aria-busy')}}
 }

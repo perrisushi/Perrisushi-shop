@@ -1,0 +1,101 @@
+{
+  "mode": "LOCAL POSTGRESQL ONLY",
+  "viewports": 3,
+  "games": 4,
+  "errors": [],
+  "failed": [],
+  "apiErrors": [],
+  "timings": [
+    {
+      "width": 1649,
+      "kind": "login-to-profile",
+      "ms": 129.4878000000001,
+      "rest": 15
+    },
+    {
+      "width": 1649,
+      "kind": "PerriDuelos:iframe-and-initial-actions",
+      "ms": 283.0313000000001,
+      "rest": 43
+    },
+    {
+      "width": 1649,
+      "kind": "PerriPet:iframe-and-initial-actions",
+      "ms": 53.528999999999996,
+      "rest": 13
+    },
+    {
+      "width": 1649,
+      "kind": "PerriCasillas:iframe-and-initial-actions",
+      "ms": 373.77459999999974,
+      "rest": 338
+    },
+    {
+      "width": 1649,
+      "kind": "PerriRPG:iframe-and-initial-actions",
+      "ms": 204.76490000000013,
+      "rest": 92
+    },
+    {
+      "width": 390,
+      "kind": "login-to-profile",
+      "ms": 51.780799999999545,
+      "rest": 13
+    },
+    {
+      "width": 390,
+      "kind": "PerriDuelos:iframe-and-initial-actions",
+      "ms": 75.16899999999987,
+      "rest": 46
+    },
+    {
+      "width": 390,
+      "kind": "PerriPet:iframe-and-initial-actions",
+      "ms": 45.811399999999594,
+      "rest": 13
+    },
+    {
+      "width": 390,
+      "kind": "PerriCasillas:iframe-and-initial-actions",
+      "ms": 376.8817999999992,
+      "rest": 341
+    },
+    {
+      "width": 390,
+      "kind": "PerriRPG:iframe-and-initial-actions",
+      "ms": 98.02859999999964,
+      "rest": 65
+    },
+    {
+      "width": 360,
+      "kind": "login-to-profile",
+      "ms": 42.445699999998396,
+      "rest": 13
+    },
+    {
+      "width": 360,
+      "kind": "PerriDuelos:iframe-and-initial-actions",
+      "ms": 65.04640000000109,
+      "rest": 43
+    },
+    {
+      "width": 360,
+      "kind": "PerriPet:iframe-and-initial-actions",
+      "ms": 44.859300000000076,
+      "rest": 13
+    },
+    {
+      "width": 360,
+      "kind": "PerriCasillas:iframe-and-initial-actions",
+      "ms": 362.28610000000117,
+      "rest": 341
+    },
+    {
+      "width": 360,
+      "kind": "PerriRPG:iframe-and-initial-actions",
+      "ms": 87.7556999999997,
+      "rest": 50
+    }
+  ],
+  "restCalls": 1743
+}

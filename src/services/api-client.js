@@ -100,6 +100,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
   // nunca de un 'nick' enviado por el cliente para acceder a datos privados.
   return Object.freeze({
     clearCache,
+    getCsrfToken:()=>csrfToken,
     getSession: ()=>request(ENDPOINTS.session,{cacheMs:0}),
     login: (nick,password)=>request('/auth/login',{method:'POST',body:{nick,password}}),
     logout: ()=>request('/auth/logout',{method:'POST',body:{}}),

@@ -22,7 +22,7 @@ export function createFrontendServer({apiTarget=process.env.API_TARGET??'http://
     const headers={};for(const name of ['cookie','origin','content-type','x-csrf-token','sec-fetch-site'])if(request.headers[name])headers[name]=request.headers[name];
     headers.host=target.host;
     const upstream=http.request(new URL(request.url,target),{method:request.method,headers,timeout:12000},incoming=>{
-      const returned={};for(const name of ['content-type','cache-control','set-cookie','x-csrf-token','x-content-type-options','x-request-id'])if(incoming.headers[name])returned[name]=incoming.headers[name];
+      const returned={};for(const name of ['content-type','cache-control','set-cookie','x-csrf-token','x-content-type-options','x-request-id','server-timing'])if(incoming.headers[name])returned[name]=incoming.headers[name];
       response.writeHead(incoming.statusCode??502,returned);incoming.pipe(response);
     });
     upstream.on('timeout',()=>upstream.destroy());

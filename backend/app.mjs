@@ -1,6 +1,7 @@
 import {randomBytes,randomUUID} from 'node:crypto';
 import {isIP} from 'node:net';
-import {metricsContext} from './metrics.mjs';
+import {metricsContext,timingHeader} from './metrics.mjs';
+import {performance} from 'node:perf_hooks';
 import {logoAsset} from './logo-assets.mjs';
 import {BackendError} from './repository.mjs';
 import {publicOrigin as validatePublicOrigin} from './request-security.mjs';
@@ -22,9 +23,9 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
  const sessionRead=key=>sessionStore==='memory'?Promise.resolve(sessions.get(key)??null):repository.session(key);
  async function identity(req){
   const token=cookieToken(req.headers.cookie);if(!token)return null;
-  let row;try{row=await sessionRead(sessionKey(token))}catch(error){try{onAuthDiagnostic({event:'traditional_auth',requestId:randomUUID(),stage:'session_restore',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}if(!row||!Number.isFinite(Date.parse(row.expires_at))||Date.parse(row.expires_at)<=now())return null;
-  const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);
-  if(!access||!player||access.active===false||player.active===false)return null;
+  const joined=sessionStore==='supabase'&&typeof repository.authenticatedSession==='function';
+  let row;try{row=await (joined?repository.authenticatedSession(sessionKey(token)):sessionRead(sessionKey(token)))}catch(error){try{onAuthDiagnostic({event:'traditional_auth',requestId:randomUUID(),stage:'session_restore',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}if(!row||typeof row.nick!=='string'||!row.nick||!Number.isFinite(Date.parse(row.expires_at))||Date.parse(row.expires_at)<=now())return null;
+  if(!joined){const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);if(!access||!player||access.active===false||player.active===false)return null}
   return {nick:row.nick,token};
  }
  function pagination(url,cursorField='cursor'){
@@ -37,8 +38,8 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
  async function jsonBody(req,max=4096){const parts=[];let size=0;for await(const chunk of req){const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);size+=bytes.length;if(size>max)throw new BackendError(413,'body_too_large');parts.push(bytes)}try{const value=JSON.parse(Buffer.concat(parts).toString('utf8'));if(!value||typeof value!=='object'||Array.isArray(value))throw Error();return value}catch{throw new BackendError(400,'invalid_request')}}
  const fail=(status,code)=>{throw new BackendError(status,code)};
  const handle=function handle(req,res){return metricsContext.run({queries:0},async()=>{
-  const started=now();let route='unknown',status=500;
-  const send=(code,data,headers={})=>{status=code;res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",...headers});res.end(JSON.stringify(data))};
+  const started=now(),monotonicStart=performance.now();let route='unknown',status=500,detailedTiming=false;
+  const send=(code,data,headers={})=>{status=code;res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",'Server-Timing':detailedTiming?timingHeader(monotonicStart):`app;dur=${Math.max(0,performance.now()-monotonicStart).toFixed(1)}`,...headers});res.end(JSON.stringify(data))};
   try{
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
@@ -62,16 +63,17 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
      for(const [key,value]of sessions)if(Date.parse(value.expires_at)<=now())sessions.delete(key);
      if(sessions.size>=5000)fail(503,'session_capacity');sessions.set(row.token,row);
     }});
-    send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
+    detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
    if(req.method==='POST'&&!['/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
    if(!repository.configured)fail(503,'backend_not_configured');
    const user=await identity(req);
+   detailedTiming=Boolean(user);
    if(user&&!accountReads.take(user.nick))fail(429,'too_many_requests');
    if(route==='/api/session'&&req.method==='GET'){send(200,{authenticated:Boolean(user),...(user?{nick:user.nick,sessionPersistence:sessionStore}:{})},user?{'X-CSRF-Token':csrfFor(user.token,csrfSecret)}:{});return}
    if(!user)fail(401,'session_expired');
-   if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const inventory=await repository.inventory(user.nick),readiness=games?.availability?await games.availability(user):{available:await games?.availableFor?.(user)===true};send(200,{...readiness,available:inventory!==null&&readiness.available===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))});return}
+   if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const [inventory,readiness]=await Promise.all([repository.inventory(user.nick),games?.availability?games.availability(user):Promise.resolve(games?.availableFor?.(user)).then(available=>({available:available===true}))]);send(200,{...readiness,available:inventory!==null&&readiness.available===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))},{'X-CSRF-Token':csrfFor(user.token,csrfSecret)});return}
    // La identidad siempre deriva de la cookie; los parámetros privados ajenos se rechazan.
    for(const field of url.searchParams.keys())if(!(route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:['limit','cursor']).includes(field))fail(400,'invalid_request');
    if(req.method==='POST'){
@@ -121,8 +123,16 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    if(route==='/api/shop/raffles'){const inventory=await repository.inventory(user.nick),policy=await economy?.status();send(200,{available:policy?.raffleEnabled===true,reason:policy?.raffleEnabled?'verified_policy':'rules_not_verified',policy:policy?.raffleEnabled?{price:policy.price,max:policy.max}:null,operationsEnabled:policy?.raffleEnabled===true,tickets:inventory?{boleto_sorteo1:inventory.boleto_sorteo1,boleto_sorteo2:inventory.boleto_sorteo2,mini_sorteo:inventory.mini_sorteo}:null});return}
    fail(405,'method_not_allowed');
   }catch(error){send(error instanceof BackendError?error.status:500,{error:error instanceof BackendError?error.code:'request_failed'})}
-  finally{try{onMetric({route,method:req.method,status,durationMs:Math.max(0,now()-started),queries:metricsContext.getStore().queries})}catch{}}
+  finally{try{const metric=metricsContext.getStore();onMetric({route,method:req.method,status,durationMs:Math.max(0,now()-started),queries:metric.queries,restMs:metric.restMs??0,sqlQueries:metric.sqlQueries??0,sqlMs:metric.sqlMs??0,poolMs:metric.poolMs??0,lockMs:metric.lockMs??0})}catch{}}
  })};
- handle.authenticate=identity;
+ // Solo agrupa verificaciones de recursos simultáneas con la misma cookie.
+ // No conserva sesiones resueltas, no se usa para mutaciones y no altera su revocación.
+ const assetChecks=new Map();
+ handle.authenticate=req=>{
+  const token=cookieToken(req.headers.cookie);if(!token)return Promise.resolve(null);const key=sessionKey(token);
+  if(assetChecks.has(key))return assetChecks.get(key);
+  if(assetChecks.size>=1024)return identity(req);
+  const check=identity(req);assetChecks.set(key,check);check.finally(()=>{if(assetChecks.get(key)===check)assetChecks.delete(key)}).catch(()=>{});return check;
+ };
  return handle;
 }
