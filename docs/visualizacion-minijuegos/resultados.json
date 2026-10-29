@@ -1,0 +1,603 @@
+{
+  "localOnly": true,
+  "realMobile": false,
+  "results": [
+    {
+      "name": "PerriDuelos",
+      "mode": "PC",
+      "fullscreenToggle": true,
+      "escape": true,
+      "restored": true,
+      "smallWindow": true
+    },
+    {
+      "name": "PerriPet",
+      "mode": "PC",
+      "fullscreenToggle": true,
+      "escape": true,
+      "restored": true,
+      "smallWindow": true
+    },
+    {
+      "name": "PerriCasillas",
+      "mode": "PC",
+      "fullscreenToggle": true,
+      "escape": true,
+      "restored": true,
+      "smallWindow": true
+    },
+    {
+      "name": "PerriRPG",
+      "mode": "PC",
+      "fullscreenToggle": true,
+      "escape": true,
+      "restored": true,
+      "smallWindow": true
+    },
+    {
+      "name": "PerriDuelos",
+      "mode": "native",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 9.13299560546875,
+          "y": 0,
+          "width": 737.7340087890625,
+          "height": 390,
+          "right": 746.8670043945312,
+          "bottom": 390
+        },
+        "sx": 0.384236,
+        "sy": 0.384236,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 0,
+          "y": 34.45703125,
+          "width": 579,
+          "height": 306.0859375,
+          "right": 579,
+          "bottom": 340.54296875
+        },
+        "sx": 0.301562,
+        "sy": 0.301562,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": true,
+      "closed": true
+    },
+    {
+      "name": "PerriPet",
+      "mode": "native",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 103.5625,
+          "y": 0,
+          "width": 548.875,
+          "height": 389.984375,
+          "right": 652.4375,
+          "bottom": 389.984375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 25.609375,
+          "y": 0,
+          "width": 527.765625,
+          "height": 374.984375,
+          "right": 553.375,
+          "bottom": 374.984375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": true,
+      "closed": true
+    },
+    {
+      "name": "PerriCasillas",
+      "mode": "native",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 334,
+          "y": 14,
+          "width": 362,
+          "height": 362,
+          "right": 696,
+          "bottom": 376
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 221,
+          "y": 14,
+          "width": 347,
+          "height": 347,
+          "right": 568,
+          "bottom": 361
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": true,
+      "closed": true
+    },
+    {
+      "name": "PerriRPG",
+      "mode": "native",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 756,
+          "height": 390,
+          "right": 756,
+          "bottom": 390
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 579,
+          "height": 375,
+          "right": 579,
+          "bottom": 375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": true,
+      "closed": true
+    },
+    {
+      "name": "PerriDuelos",
+      "mode": "denied",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 9.13299560546875,
+          "y": 0,
+          "width": 737.7340087890625,
+          "height": 390,
+          "right": 746.8670043945312,
+          "bottom": 390
+        },
+        "sx": 0.384236,
+        "sy": 0.384236,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 0,
+          "y": 34.45703125,
+          "width": 579,
+          "height": 306.0859375,
+          "right": 579,
+          "bottom": 340.54296875
+        },
+        "sx": 0.301562,
+        "sy": 0.301562,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "name": "PerriPet",
+      "mode": "denied",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 103.5625,
+          "y": 0,
+          "width": 548.875,
+          "height": 389.984375,
+          "right": 652.4375,
+          "bottom": 389.984375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 25.609375,
+          "y": 0,
+          "width": 527.765625,
+          "height": 374.984375,
+          "right": 553.375,
+          "bottom": 374.984375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "name": "PerriCasillas",
+      "mode": "denied",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 334,
+          "y": 14,
+          "width": 362,
+          "height": 362,
+          "right": 696,
+          "bottom": 376
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 221,
+          "y": 14,
+          "width": 347,
+          "height": 347,
+          "right": 568,
+          "bottom": 361
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "name": "PerriRPG",
+      "mode": "denied",
+      "mobile": true,
+      "events": [
+        {
+          "event": "fullscreen",
+          "active": true
+        },
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 756,
+          "height": 390,
+          "right": 756,
+          "bottom": 390
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 579,
+          "height": 375,
+          "right": 579,
+          "bottom": 375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "name": "PerriDuelos",
+      "mode": "unsupported",
+      "mobile": true,
+      "events": [
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 9.13299560546875,
+          "y": 0,
+          "width": 737.7340087890625,
+          "height": 390,
+          "right": 746.8670043945312,
+          "bottom": 390
+        },
+        "sx": 0.384236,
+        "sy": 0.384236,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 0,
+          "y": 34.45703125,
+          "width": 579,
+          "height": 306.0859375,
+          "right": 579,
+          "bottom": 340.54296875
+        },
+        "sx": 0.301562,
+        "sy": 0.301562,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "name": "PerriPet",
+      "mode": "unsupported",
+      "mobile": true,
+      "events": [
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 103.5625,
+          "y": 0,
+          "width": 548.875,
+          "height": 389.984375,
+          "right": 652.4375,
+          "bottom": 389.984375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 25.609375,
+          "y": 0,
+          "width": 527.765625,
+          "height": 374.984375,
+          "right": 553.375,
+          "bottom": 374.984375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "name": "PerriCasillas",
+      "mode": "unsupported",
+      "mobile": true,
+      "events": [
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 334,
+          "y": 14,
+          "width": 362,
+          "height": 362,
+          "right": 696,
+          "bottom": 376
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 221,
+          "y": 14,
+          "width": 347,
+          "height": 347,
+          "right": 568,
+          "bottom": 361
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "name": "PerriRPG",
+      "mode": "unsupported",
+      "mobile": true,
+      "events": [
+        {
+          "event": "context"
+        }
+      ],
+      "fit": {
+        "width": 756,
+        "height": 390,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 756,
+          "height": 390,
+          "right": 756,
+          "bottom": 390
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 756,
+        "scrollHeight": 390
+      },
+      "smallFit": {
+        "width": 579,
+        "height": 375,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 579,
+          "height": 375,
+          "right": 579,
+          "bottom": 375
+        },
+        "sx": 1,
+        "sy": 1,
+        "scrollWidth": 579,
+        "scrollHeight": 375
+      },
+      "nativeFullscreen": false,
+      "closed": true
+    },
+    {
+      "mode": "close-before-response",
+      "closed": true
+    }
+  ],
+  "errors": []
+}

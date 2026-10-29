@@ -1,14 +1,17 @@
 import { normalizeRoute, routeTitles } from './routes.js';
+import {createGameWindow,mobileGameView} from './game-window.js';
 import {createApiClient} from './services/api-client.js';
 import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,bindPageEvents} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
+let openingGame=false,gameLaunchEpoch=0;
 const remoteStates={};
 
 const ASSETS = './public/assets/';
 const stage = document.querySelector('#contenido');
 const overlay = document.querySelector('#overlay-layer');
+const gameWindow=createGameWindow({overlay});
 const sessionOptions = document.querySelector('#session-options');
 const musicButton = document.querySelector('[data-action="music"]');
 const backgroundMusic = document.querySelector('#background-music');
@@ -135,6 +138,7 @@ function navigate(route) {
 
 const gameRoutes={PerriDuelos:'/perriduelos-app/index.html',PerriPet:'/perripet-app/index.html',PerriCasillas:'/perricasillas',PerriRPG:'/perrirpg.html'};
 const economicOperations=new Map();let economicReceipt=null;
+function gameMarkup(name,pending=false){return `<div class="modal-head"><h2 id="modal-title">${escapeText(name)}</h2><div class="game-window-actions"><button type="button" data-action="game-fullscreen" aria-label="Pantalla completa" aria-pressed="false">⛶</button><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div></div>${pending?'<div class="game-opening" role="status">Abriendo juego…</div>':`<iframe class="original-game" src="${gameRoutes[name]}" title="${escapeText(name)}" sandbox="allow-scripts allow-same-origin" allow="autoplay; fullscreen"></iframe>`}<p class="game-rotate-hint" role="status">Gira el móvil para jugar en horizontal.</p>`}
 function modalMarkup(type) {
   if(type.startsWith('item:')){
     const id=type.slice(5),item=itemDetails(id),quantity=dataState.inventory.inventory?.[id];
@@ -145,7 +149,7 @@ function modalMarkup(type) {
   }
   if(type==='game-unavailable')return `<div class="modal-head"><h2 id="modal-title">Minijuegos</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p>El servicio de minijuegos no está disponible. Vuelve a intentarlo más tarde.</p>`;
 
-  if(type.startsWith('game:')){const name=type.slice(5);return `<div class="modal-head"><h2 id="modal-title">${escapeText(name)}</h2><button type="button" class="textured-button" data-action="game-fullscreen" aria-label="Pantalla completa">⛶</button><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><iframe class="original-game" src="${gameRoutes[name]}" title="${escapeText(name)}" sandbox="allow-scripts allow-same-origin" allow="autoplay; fullscreen"></iframe>`}
+  if(type.startsWith('game:'))return gameMarkup(type.slice(5));
   if(type==='receipt')return `<div class="modal-head"><h2 id="modal-title">Operación completada</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${economicReceipt?.redeemed?`<p>${escapeText(economicReceipt.redeemed.game)}</p><code>${escapeText(economicReceipt.redeemed.key)}</code>`:`<p>Boletos: ${escapeText(economicReceipt?.tickets)} · PC: ${escapeText(economicReceipt?.pc)}</p>`}`;
 
   if(type==='history'||type==='notifications'){
@@ -165,21 +169,29 @@ function modalMarkup(type) {
   <button type="submit" class="textured-button modal-primary">Iniciar sesión</button><p id="login-status" role="status"></p></form>`;
 }
 
-function openModal(type) {
+function openModal(type,{pending=false,immersive=false}={}) {
   if(!session)type='auth';
   modalKind=type;
   lastFocus = sessionOptions.contains(document.activeElement) ? menuToggle : document.activeElement;
   closeMenu();
-  overlay.innerHTML = `${type==='auth'?'':'<div class="modal-backdrop" data-action="close-modal"></div>'}<section class="modal-card ${type === 'album' ? 'album-card' : type.startsWith('game:') ? 'game-card' : type.startsWith('item:')||type.startsWith('game-help:')?'info-card':''}" role="dialog" aria-modal="true" aria-labelledby="modal-title">${modalMarkup(type)}</section>`;
+  overlay.innerHTML = `${type==='auth'?'':'<div class="modal-backdrop" data-action="close-modal"></div>'}<section class="modal-card ${type === 'album' ? 'album-card' : type.startsWith('game:') ? 'game-card' : type.startsWith('item:')||type.startsWith('game-help:')?'info-card':''}" role="dialog" aria-modal="true" aria-labelledby="modal-title">${pending&&type.startsWith('game:')?gameMarkup(type.slice(5),true):modalMarkup(type)}</section>`;
   overlay.hidden = false;
   [...document.querySelector('#app').children].forEach(el => { if (el !== overlay) el.inert = true; });
   document.body.style.overflow = 'hidden';
   overlay.querySelector('input,.modal-close')?.focus();
+  if(type.startsWith('game:'))gameWindow.open(overlay.querySelector('.game-card'),{immersive});
 }
 function closeModal() {
   if(!session)return;
   if (overlay.hidden) return;
-  if(modalKind?.startsWith('game:')){api.clearCache();gameBootstrap=null}
+  if(modalKind?.startsWith('game:')){
+   const card=overlay.querySelector('.game-card'),mobile=gameWindow.isMobile();gameLaunchEpoch++;openingGame=false;api.clearCache();gameBootstrap=null;
+   stage.querySelectorAll('[data-game][aria-busy="true"]').forEach(el=>{el.disabled=false;el.removeAttribute('aria-busy')});
+   void gameWindow.close().then(()=>{if(overlay.querySelector('.game-card')!==card)return;finishCloseModal();if(mobile&&session&&normalizeRoute(location.hash)!=='games')navigate('games')});return;
+  }
+  finishCloseModal();
+}
+function finishCloseModal(){
   overlay.hidden=true;overlay.replaceChildren();
   modalKind=null;
   [...document.querySelector('#app').children].forEach(el => { if (el !== overlay) el.inert = false; });
@@ -218,12 +230,12 @@ document.addEventListener('click', e => {
   else if (action === 'assistance') openModal('assistance');
   else if (action === 'logout') void logoutAccount();
   else if (action === 'notifications') void openRemoteModal('notifications');
-  else if (action === 'game-fullscreen') { const card=overlay.querySelector('.game-card');if(card?.requestFullscreen)void card.requestFullscreen().then(()=>{if(matchMedia('(max-width:700px)').matches&&['game:PerriPet','game:PerriDuelos'].includes(modalKind))void screen.orientation?.lock?.('landscape').catch(()=>{})}).catch(()=>{}); }
+  else if (action === 'game-fullscreen') void gameWindow.toggle();
   else if (action === 'close-modal') closeModal();
   else if (!e.target.closest('#session-options,.nav-toggle')) closeMenu();
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {if(!overlay.hidden) closeModal();else if (!sessionOptions.hidden) { closeMenu(); menuToggle.focus(); }}
+  if (e.key === 'Escape') {if(modalKind?.startsWith('game:')&&(gameWindow.isFullscreen()||gameWindow.recentlyExited())){if(gameWindow.isFullscreen())void gameWindow.toggle();return}if(!overlay.hidden) closeModal();else if (!sessionOptions.hidden) { closeMenu(); menuToggle.focus(); }}
   if (e.key === 'Tab' && !overlay.hidden) {
     const focusables = [...overlay.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]')].filter(el => el.getClientRects().length);
     if (!focusables.length) return;
@@ -233,7 +245,7 @@ document.addEventListener('keydown', e => {
   }
 });
 window.addEventListener('hashchange',render);
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.clearCache();if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.clearCache();if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
 window.addEventListener('pageshow',event=>{if(event.persisted)void bootstrapSession()});
 bindPageEvents();
 renderMusicOption();
@@ -247,6 +259,7 @@ function showLogin(error){
 }
 function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]()}
 function resetPrivateState(){
+  gameLaunchEpoch++;openingGame=false;void gameWindow.close();
   session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
   for(const kind of ['users','inventory','shop'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
@@ -336,11 +349,14 @@ async function runEconomicOperation(kind,button){
   if(generation!==sessionEpoch)return;economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}economicReceipt=result;await loadCurrentRoute('shop');openModal('receipt');
  }catch(error){if(generation===sessionEpoch){operation.busy=false;if(error.code==='operation_conflict'){try{const receipt=await api.getReceipt(operation.id);if(generation!==sessionEpoch)return;if(receipt.kind===(kind==='redeem'?'random-redeem':'raffle-buy')){economicReceipt=receipt;economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}await loadCurrentRoute('shop');openModal('receipt');return}}catch{}button.textContent='Revisa la operación anterior en el historial antes de continuar.';button.disabled=true;return}if(['invalid_request','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','operation_disabled'].includes(error.code)){economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}}errorState(error);button.textContent=message({error:error.code})+' Pulsa para reintentar.';button.disabled=false}}
 }
-let openingGame=false;
 async function launchOriginalGame(name){
- if(!session){openModal('auth');return}if(openingGame)return;openingGame=true;const generation=sessionEpoch,button=stage.querySelector(`[data-game="${name}"]`);if(button){button.disabled=true;button.setAttribute('aria-busy','true')}
- try{const context=await api.getGameContext();if(generation!==sessionEpoch)return;
+ if(!session){openModal('auth');return}if(openingGame)return;openingGame=true;const generation=sessionEpoch,attempt=++gameLaunchEpoch,immersive=mobileGameView(),button=stage.querySelector(`[data-game="${name}"]`);if(button){button.disabled=true;button.setAttribute('aria-busy','true')}
+ // Solicitar fullscreen en la misma pulsación, antes de esperar a la red.
+ if(immersive)openModal('game:'+name,{pending:true,immersive:true});
+ try{const context=await api.getGameContext();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;
   if(context.nick!==session.nick){await bootstrapSession();return}
-  gameBootstrap={...context,csrfToken:api.getCsrfToken()};openModal(context.available&&context.games?.[name]!==false?'game:'+name:'game-unavailable');
- }catch(error){if(generation===sessionEpoch){errorState(error);openModal('game-unavailable')}}finally{openingGame=false;if(button){button.disabled=false;button.removeAttribute('aria-busy')}}
+  const available=context.available&&context.games?.[name]!==false;gameBootstrap={...context,csrfToken:api.getCsrfToken()};
+  if(immersive&&available){const card=overlay.querySelector('.game-card');if(!card)return;card.innerHTML=gameMarkup(name);gameWindow.sync();card.querySelector('.modal-close')?.focus()}
+  else {if(immersive)await gameWindow.close();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;openModal(available?'game:'+name:'game-unavailable')}
+ }catch(error){if(generation===sessionEpoch&&attempt===gameLaunchEpoch){if(immersive)await gameWindow.close();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;errorState(error);openModal('game-unavailable')}}finally{if(attempt===gameLaunchEpoch){openingGame=false;if(button){button.disabled=false;button.removeAttribute('aria-busy')}}}
 }
