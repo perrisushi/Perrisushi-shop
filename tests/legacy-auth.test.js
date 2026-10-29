@@ -67,7 +67,7 @@ test('una escritura de sesión sin fila recuperable no entrega cookie de éxito'
 
 test('búsqueda case-insensitive literal conserva apóstrofos y no permite comodines ni identidad arbitraria',async()=>{
  const queries=[];const repository=createRepository({url:'https://fixture.invalid',key:'LOCAL',fetchImpl:async url=>{const parsed=new URL(url);queries.push(parsed);return {ok:true,json:async()=>parsed.searchParams.get('nick').startsWith('eq.')?[]:[{nick:"O'Neil",active:true,code_hash:digest(secret.trim())}]}}});
- const account=await repository.canonicalAccess("o'neil");assert.equal(account.nick,"O'Neil");assert.equal(queries.length,2);assert.equal(queries[1].searchParams.get('nick'),`ilike."o'neil"`);
+ const account=await repository.canonicalAccess("o'neil");assert.equal(account.nick,"O'Neil");assert.equal(queries.length,2);assert.equal(queries[1].searchParams.get('nick'),`ilike.o'neil`);
 });
 
 test('diagnóstico REST/PostgreSQL solo lectura: detecta otra base o registros distintos sin exponerlos',async()=>{

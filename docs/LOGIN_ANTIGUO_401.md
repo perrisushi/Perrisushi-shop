@@ -1,5 +1,7 @@
 # Investigación del login antiguo: 401
 
+Actualización: la causa de los filtros con comillas añadidas se ha identificado y corregido posteriormente. Leer primero `ACCESS_NOT_FOUND_CORREGIDO.md`.
+
 ## Corrección local y límites
 
 Se conserva la búsqueda de `shop_access` por `nick`, exacta primero y después ILIKE literal sin distinguir mayúsculas. No se selecciona una cuenta arbitraria si hay dos candidatos: esa ambigüedad ahora produce un fallo de datos 503 y un diagnóstico interno, en lugar de aparentar una contraseña incorrecta.

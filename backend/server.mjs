@@ -7,6 +7,7 @@ import {createGames} from './games.mjs';
 import pg from 'pg';
 import legacyGames from './games-original.cjs';
 import {publicOrigin,canonicalSiteRedirect} from './request-security.mjs';
+import {connectionDiagnostics} from './connection-diagnostics.mjs';
 const allowSessionWrites=process.env.ALLOW_SUPABASE_SESSION_WRITES==='true';
 const production=process.env.NODE_ENV==='production';
 const repository=createRepository({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,allowSessionWrites});
@@ -27,4 +28,4 @@ const server=http.createServer((req,res)=>{
  return site(req,res);
 });
 server.requestTimeout=15000;server.headersTimeout=10000;server.maxHeadersCount=32;
-server.listen(Number(process.env.PORT??process.env.BACKEND_PORT??4177),production?'0.0.0.0':'127.0.0.1',()=>console.log(`PerriWeb: ${repository.configured?'configurado':'backend no configurado'}; sesiones ${process.env.SESSION_STORE??'memory'}`));
+server.listen(Number(process.env.PORT??process.env.BACKEND_PORT??4177),production?'0.0.0.0':'127.0.0.1',()=>{console.log(JSON.stringify({event:'auth_connection_configuration',...connectionDiagnostics({supabaseUrl:process.env.SUPABASE_URL,databaseUrl:process.env.DATABASE_URL,serviceKey:process.env.SUPABASE_SERVICE_ROLE_KEY})}));console.log(`PerriWeb: ${repository.configured?'configurado':'backend no configurado'}; sesiones ${process.env.SESSION_STORE??'memory'}`)});

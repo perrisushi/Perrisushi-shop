@@ -139,7 +139,7 @@ test('PATCH atómico de avatar restringe propietario y propiedad; notificaciones
  await repo.setAvatar('Alpha','logo-buho-1');await repo.readNotification('Alpha','12345678-1234-4234-8234-123456789abc');
  assert.deepEqual(calls.map(c=>c[1].method),['PATCH','PATCH']);
  assert.equal(calls[0][0].searchParams.get('owned_logo_ids'),'cs.["logo-buho-1"]');
- for(const [url]of calls)assert.equal(url.searchParams.get('nick'),'eq."Alpha"');
+ for(const [url]of calls)assert.equal(url.searchParams.get('nick'),'eq.Alpha');
  assert.deepEqual(JSON.parse(calls[0][1].body),{selected_logo_id:'logo-buho-1'});
  assert.equal(calls[1][0].searchParams.get('read_at'),'is.null');
  assert.deepEqual(Object.keys(JSON.parse(calls[1][1].body)),['read_at']);
@@ -151,7 +151,7 @@ test('nick canónico: consulta literal acotada, sin comodines ni ambigüedad',as
  assert.equal(calls[1].searchParams.get('limit'),'2');
  candidates=[{nick:'Alpha'},{nick:'ALPHA'}];await assert.rejects(repo.canonicalAccess('alpha'),e=>e.status===503&&e.diagnostic.failure==='ambiguous_nick');
  candidates=[{nick:'Other'}];assert.equal(await repo.canonicalAccess('%_*'),null);
- assert.ok(calls.at(-1).searchParams.get('nick').includes('\\\\%'));
+ assert.ok(calls.at(-1).searchParams.get('nick').startsWith('imatch.^'));
 });
 test('login usa nick canónico y normalización de contraseña heredada sin inicializar cuentas',()=>use(async({login,repository})=>{
  repository.canonicalAccess=async nick=>nick==='alpha'?accounts.Alpha:null;

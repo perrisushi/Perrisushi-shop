@@ -16,7 +16,7 @@ exports.fetch=async(input,opts={})=>{
   const table=parts[0];if(!tables.has(table))throw Error('table_not_allowed');
   const filters=[];
   for(const [key,filter]of u.searchParams){if(['select','order','limit','on_conflict','offset'].includes(key))continue;
-   const name=ident(key),dot=filter.indexOf('.'),op=filter.slice(0,dot);let value=filter.slice(dot+1);if(value.startsWith('"')&&value.endsWith('"'))value=JSON.parse(value);
+   const name=ident(key),dot=filter.indexOf('.'),op=filter.slice(0,dot);let value=filter.slice(dot+1);
    if(['eq','neq','gt','gte','lt','lte','like','ilike'].includes(op))filters.push(name+' '+({eq:'=',neq:'<>',gt:'>',gte:'>=',lt:'<',lte:'<=',like:'LIKE',ilike:'ILIKE'}[op])+' '+param(value));
    else if(op==='is'&&['null','true','false'].includes(value))filters.push(name+' IS '+value.toUpperCase());
    else if(op==='in'&&/^\([^()]*\)$/.test(value))filters.push(name+' IN ('+value.slice(1,-1).split(',').map(param).join(',')+')');
