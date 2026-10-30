@@ -91,7 +91,7 @@ function profileView() {
       <div class="info-strip"><span>PC · Gemas</span><strong>${escapeText(profileState.balances?.pc??'—')} · ${escapeText(profileState.balances?.gemas??'—')}</strong></div><div class="info-strip"><span>Logros</span><strong>${escapeText(Array.isArray(profileState.profile?.achievements)?profileState.profile.achievements.join(' · '):'—')}</strong></div>
       <div class="info-strip"><span>Karma</span><strong>${escapeText(profileState.profile?.karma??'—')}</strong></div>
       <div class="profile-actions"><button class="textured-button history-button" type="button" data-action="history" aria-label="Historial" title="Historial"><span aria-hidden="true">⌛</span></button><button class="textured-button" type="button" data-action="album">Cambiar Perrilogos</button></div>
-      ${googleConfig.enabled?`<div class="google-profile">${googleLinked===true?'<p>Google vinculado</p>':`<button type="button" class="textured-button" data-action="link-google">Vincular Google</button>`}${googleNotice==='linked'?'<p role="status">Tu cuenta de Google se ha vinculado.</p>':''}</div>`:''}
+      ${googleConfig.enabled?`<div class="google-profile">${googleLinked===true?'<p>Google vinculado</p>':googleLinked===null?'<button type="button" class="textured-button" data-action="google-status">Comprobar vinculación de Google</button>':`<button type="button" class="textured-button" data-action="link-google">Vincular Google</button>`}${googleNotice==='linked'?'<p role="status">Tu cuenta de Google se ha vinculado.</p>':''}</div>`:''}
     </div>
   </div>`);
 }
@@ -331,6 +331,7 @@ document.addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
   const route = e.target.closest('[data-route]')?.dataset.route;
   if (route) { closeModal(); navigate(route); return; }
+  if(action==='google-status'){void refreshGoogleStatus(e.target.closest('button'));return}
   if(action==='google-login'){void beginGoogle(e.target.closest('button'));return}
   if(action==='link-google'){openModal('link-google');return}
   if(action==='google-cancel'){void cancelGoogleRegistration(e.target.closest('button'));return}
@@ -525,8 +526,19 @@ document.addEventListener('submit',async event=>{
   const form=event.target,button=form.querySelector('button[type="submit"]'),status=overlay.querySelector('#login-status');if(button.disabled)return;
   button.disabled=true;status.textContent='Creando tu cuenta…';
   try{
-   const result=await api.registerGoogle(form.elements.nick.value,googlePending.csrf,form.elements.acceptedTerms.checked);
+   const result=await api.registerGoogle(form.elements.nick.value,googlePending.csrf,form.elements.acceptedTerms.checked,googleConfig.legalVersion);
    googlePending=null;googleNotice='';history.replaceState(null,'','#home');await bootstrapSession(result);
   }catch(error){status.textContent=message({error:error.code});button.disabled=false}
  }
 });
+
+async function refreshGoogleStatus(button){
+ if(!button||button.disabled||!session)return;button.disabled=true;const generation=sessionEpoch;
+ try{
+  const result=await api.googleStatus();if(generation!==sessionEpoch)return;
+  googleLinked=result.linked===true;
+  if(normalizeRoute(location.hash)==='profile')paintStage();
+ }catch(error){
+  if(generation===sessionEpoch&&button.isConnected){button.textContent='No se pudo comprobar. Reintentar';button.disabled=false}
+ }
+}

@@ -22,6 +22,11 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
  const sessions=new Map();const loginIp=new RateLimiter({max:sharedProxy?120:20,windowMs:sharedProxy?60000:15*60000,now}),loginNick=new RateLimiter({max:8,now}),reads=new RateLimiter({max:sharedProxy?1200:240,windowMs:60000,now}),accountReads=new RateLimiter({max:240,windowMs:60000,now});
  const secure=new URL(origin).protocol==='https:';
  const cookie=(token,clear=false)=>`pw2_session=${clear?'':token}; Path=/; HttpOnly; SameSite=Strict${secure?'; Secure':''}; Max-Age=${clear?0:Math.floor(sessionTtlMs/1000)}`;
+ // El proveedor Google nunca debe impedir entrar o salir con la cuenta tradicional.
+ async function clearGoogleAttempt(req){
+  const token=oauthToken(req.headers.cookie);if(!google||!token)return;
+  try{await google.cancel(token)}catch{try{onAuthDiagnostic({event:'google_auth',reason:'flow_cleanup_failed'})}catch{}}
+ }
  const sessionRead=key=>sessionStore==='memory'?Promise.resolve(sessions.get(key)??null):repository.session(key);
  async function identity(req){
   const token=cookieToken(req.headers.cookie);if(!token)return null;
@@ -56,7 +61,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
     if(!/^application\/json(?:\s*;|$)/i.test(String(req.headers['content-type']??'')))fail(415,'unsupported_media_type');
     if(req.headers['sec-fetch-site']&& !['same-origin','none'].includes(req.headers['sec-fetch-site']))fail(403,'cross_site_request');
    }
-   if(route==='/api/auth/google/config'&&req.method==='GET'){send(200,{enabled:Boolean(google),legalPublished});return}
+   if(route==='/api/auth/google/config'&&req.method==='GET'){send(200,{enabled:Boolean(google),legalPublished,legalVersion:google?.termsVersion??null});return}
    if(route.startsWith('/api/auth/google/')){
     const flowToken=oauthToken(req.headers.cookie);
     if(route==='/api/auth/google/callback'&&req.method==='GET'){
@@ -105,7 +110,8 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
     }
     if(route==='/api/auth/google/register'){
      if(!legalPublished)fail(503,'registration_unavailable');
-     if(Object.keys(body).some(k=>!['nick','csrf','acceptedTerms'].includes(k))||body.acceptedTerms!==true)fail(400,'invalid_request');
+     if(Object.keys(body).some(k=>!['nick','csrf','acceptedTerms','termsVersion'].includes(k))||body.acceptedTerms!==true)fail(400,'invalid_request');
+     if(!google.termsVersion||body.termsVersion!==google.termsVersion)fail(409,'legal_changed');
      if(await identity(req))fail(409,'google_already_signed_in');
      const result=await google.register(flowToken,body.csrf,body.nick);
      send(200,{authenticated:true,nick:result.nick,sessionPersistence:sessionStore},{'Set-Cookie':[cookie(result.token),google.cookie('',true)],'X-CSRF-Token':csrfFor(result.token,csrfSecret)});return;
@@ -117,12 +123,12 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
     const data=await jsonBody(req);if(typeof data.nick!=='string'||!data.nick.length||data.nick.length>80||/[\x00-\x1f]/.test(data.nick)||typeof data.password!=='string'||!data.password.length||data.password.length>1024)fail(400,'invalid_request');
     if(!loginIp.take(clientIP)||!loginNick.take(digest(data.nick.trim().toLowerCase())))fail(429,'too_many_requests');
     const requestId=randomUUID();res.setHeader?.('X-Request-ID',requestId);
-    await google?.cancel(oauthToken(req.headers.cookie));
+    await clearGoogleAttempt(req);
     const {token,row}=await authenticateTraditional({repository,nick:data.nick,password:data.password,sessionStore,allowSessionWrites,sessionTtlMs,now,requestId,onDiagnostic:onAuthDiagnostic,createMemorySession:row=>{
      for(const [key,value]of sessions)if(Date.parse(value.expires_at)<=now())sessions.delete(key);
      if(sessions.size>=5000)fail(503,'session_capacity');sessions.set(row.token,row);
     }});
-    detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
+    detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':google?[cookie(token),google.cookie('',true)]:cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
    if(req.method==='POST'&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
@@ -167,8 +173,8 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
      await repository.readNotification(user.nick,body.id);send(200,{ok:true});return;
     }
     if(Object.keys(body).length)fail(400,'invalid_request');
-    await google?.cancel(oauthToken(req.headers.cookie));
     if(sessionStore==='supabase'){if(!allowSessionWrites)fail(503,'session_writes_disabled');await repository.deleteSession(sessionKey(user.token))}else sessions.delete(sessionKey(user.token));
+    await clearGoogleAttempt(req);
     send(200,{authenticated:false},{'Set-Cookie':google?[cookie('',true),google.cookie('',true)]:cookie('',true)});return;
    }
    if(route==='/api/shop/receipt'){

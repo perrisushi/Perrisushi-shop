@@ -1,11 +1,13 @@
 // QA local: PostgreSQL embebido + backend real; solo el proveedor OAuth se sustituye.
 // No se accede a Google, Railway ni Supabase.
 import {PGlite} from '@electric-sql/pglite';
-import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import {readFile,mkdir,writeFile,mkdtemp} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import http from 'node:http';
 import assert from 'node:assert/strict';
 import {createGoogleAuth} from '../backend/google-auth.mjs';
+import {createLegalPages} from '../backend/legal-pages.mjs';
+import {prepareLegalFiles,legalFields} from './prepare-google-legal.mjs';
 import {createBackend} from '../backend/app.mjs';
 import {createFrontendServer} from '../dev-server.mjs';
 import {digest} from '../backend/security.mjs';
@@ -15,8 +17,9 @@ const db=new PGlite(),errors=[],results=[];
 let backend,frontend,browser,qaClock=Date.now();
 try{
  await mkdir(output,{recursive:true});
- await db.exec('CREATE ROLE anon;CREATE ROLE authenticated;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid PRIMARY KEY)');
+ await db.exec('CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid PRIMARY KEY)');
  await db.exec((await readFile('tests/fixtures/game-schema.sql','utf8')).replace('create extension if not exists pgcrypto;',''));
+ await db.exec('ALTER TABLE shop_access ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false');
  await db.exec(await readFile('sql/002-google-auth.sql','utf8'));
  const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
  await db.query('INSERT INTO auth.users VALUES($1),($2)',[A,B]);
@@ -32,8 +35,13 @@ try{
   deleteSession:token=>db.query('DELETE FROM shop_sessions WHERE token=$1',[token]),
   profile:nick=>one('shop_profiles',nick),inventory:nick=>one('shop_inventories',nick),logos:async()=>(await db.query('SELECT * FROM shop_logo_catalog')).rows,
   page:async()=>[]};
- const google=createGoogleAuth({pool,provider:{authorize:()=> 'https://qa-google.invalid/auth/v1/authorize?provider=google',exchange:async()=>chosen},origin:base,secret:'s'.repeat(40),termsVersion:'local-reviewed-only'});
- backend=http.createServer(createBackend({repository,google,legalPublished:true,now:()=>qaClock,publicOrigin:base,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)}));
+ const legalDirectory=await mkdtemp(output+'/legal-local-');
+ const legalConfig={aprobado:true,...Object.fromEntries(legalFields.map(([key])=>[key,key==='email'?'qa@example.invalid':'Texto local de verificación para '+key+' '+('contenido '.repeat(12))]))};
+ await prepareLegalFiles(legalConfig,{output:legalDirectory});
+ const legal=createLegalPages({enabled:true,directory:legalDirectory});
+ const google=createGoogleAuth({pool,provider:{authorize:()=> 'https://qa-google.invalid/auth/v1/authorize?provider=google',exchange:async()=>chosen},origin:base,secret:'s'.repeat(40),termsVersion:legal.version});
+ const handler=createBackend({repository,google,legalPublished:true,now:()=>qaClock,publicOrigin:base,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)});
+ backend=http.createServer((req,res)=>legal.matches(req.url)?legal.handle(req,res):handler(req,res));
  await new Promise(r=>backend.listen(0,'127.0.0.1',r));
  frontend=createFrontendServer({apiTarget:'http://127.0.0.1:'+backend.address().port,authenticate:async()=>true});
  await new Promise(r=>frontend.listen(4199,'127.0.0.1',r));
@@ -53,6 +61,11 @@ try{
    await page.screenshot({path:output+'/'+size.width+'x'+size.height+'-'+name+'.png'});
    results.push({size,state:name,geometry:data});
   }
+  let statusFailure=true;
+  await context.route('**/api/auth/google/status',route=>{
+   if(statusFailure){statusFailure=false;return route.fulfill({status:503,contentType:'application/json',body:'{"error":"google_unavailable"}'})}
+   return route.continue();
+  });
   await page.goto(base);await page.locator('[data-action="google-login"]').waitFor();
   await shot('login');
   // Traditional account -> reauthentication -> real callback -> linked session.
@@ -61,6 +74,9 @@ try{
   await page.locator('#traditional-login button').click();await page.locator('body[data-access=ready]').waitFor();
   await page.getByRole('button',{name:'Mi perfil',exact:true}).first().click();
   await page.locator('.profile-grid').waitFor();
+  await page.locator('[data-action=google-status]').waitFor();
+  if(size.width<701)await page.locator('[data-action=google-status]').tap();else await page.locator('[data-action=google-status]').click();
+  await page.waitForFunction(()=>!document.querySelector('[data-action=google-status]'));
   if(await page.locator('[data-action=link-google]').count()){
    await page.locator('[data-action=link-google]').click();await page.locator('#google-link').waitFor();
    await shot('link');
@@ -77,7 +93,7 @@ try{
   }
   await page.locator('[data-action=menu]').click();await page.locator('[data-action=logout]').click();
   await page.locator('#traditional-login').waitFor();
-  chosen=A;await page.locator('[data-action=google-login]').click();await page.locator('body[data-access=ready]').waitFor();
+  chosen=A;await (size.width<701?page.locator('[data-action=google-login]').tap():page.locator('[data-action=google-login]').click());await page.locator('body[data-access=ready]').waitFor();
   assert.equal(await page.locator('.identity-chip strong').innerText(),'OldNick');
   await page.reload();await page.locator('body[data-access=ready]').waitFor();
   await context.close();
@@ -89,10 +105,21 @@ try{
   const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+'/api/auth/google/callback?code=local-code'},body:''}));
-  chosen=B;await page.goto(base);await page.locator('[data-action=google-login]').click();await page.locator('#google-register').waitFor();
+  chosen=B;await page.goto(base);await (size.width<701?page.locator('[data-action=google-login]').tap():page.locator('[data-action=google-login]').click());await page.locator('#google-register').waitFor();
   assert.equal((await db.query("SELECT 1 FROM shop_players WHERE nick=$1",['Nuevo'+size.width])).rows.length,0);
   await page.screenshot({path:output+'/'+size.width+'x'+size.height+'-register.png'});
   const geometry=await page.locator('.modal-card').boundingBox();assert.ok(geometry.y>=0&&geometry.y+geometry.height<=size.height+1);
+  if(size.width===390){
+   await page.locator('[name=nick]').focus();await page.setViewportSize({width:390,height:500});
+   await page.waitForTimeout(80);
+   for(const action of ['#google-register button','[data-action=google-cancel]']){
+    const box=await page.locator(action).boundingBox();assert.ok(box.y>=0&&box.y+box.height<=500);
+   }
+   await page.screenshot({path:output+'/390x500-register-reduced-height.png'});
+   results.push({size:{width:390,height:500},state:'register-reduced-height'});
+   await page.setViewportSize(size);
+  }
+
   await page.locator('[name=nick]').fill('OldNick');await page.locator('[name=acceptedTerms]').check();
   await page.locator('#google-register button').click();await page.getByRole('status').filter({hasText:'Ese nick ya está ocupado'}).waitFor();
   await page.locator('[name=nick]').fill('Nuevo'+size.width);await page.locator('#google-register button').click();
@@ -101,6 +128,19 @@ try{
   await page.reload();await page.locator('body[data-access=ready]').waitFor();
   const inventory=await one('shop_inventories','Nuevo'+size.width);assert.equal(inventory.pc,0);
   results.push({size,state:'register-and-persist',geometry});
+  await context.close();
+ }
+ for(const size of [{width:1440,height:900},{width:390,height:844}]){
+  const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  for(const route of ['privacy','terms']){
+   const response=await page.goto(base+'/api/legal/'+route);
+   assert.equal(response.status(),200);assert.ok(response.headers()['content-security-policy'].includes("default-src 'none'"));
+   assert.ok(await page.locator('h1').isVisible());
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+   await page.screenshot({path:output+'/'+size.width+'x'+size.height+'-legal-'+route+'.png',fullPage:true});
+   results.push({size,state:'legal-'+route,public:true});
+  }
   await context.close();
  }
  assert.deepEqual(errors,[]);

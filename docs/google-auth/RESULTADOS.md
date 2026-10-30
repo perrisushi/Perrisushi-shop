@@ -1,53 +1,51 @@
-# Validación local de Google y acceso tradicional
+# Validación final: Google Login listo en código local
 
 ## Resultado
-- npm test: **173 pruebas superadas**, 0 fallos, 0 omitidas.
-- Incluye **23 pruebas específicas** nuevas de Google, SQL, HTTP, sesiones, proxy y páginas legales.
-- npm run build: correcto; **485 archivos públicos**. Borradores, backend, migraciones y pruebas no se copian a dist.
+- npm test: **197 pruebas superadas**, 0 fallos, 0 omitidas.
+- **33 pruebas específicas** de Google/legales, incluidas las regresiones nuevas.
+- npm run build: correcto, **485 archivos públicos**.
 - git diff --check: correcto.
-- node tools/verify-google-auth.mjs: **14 estados visuales/recorridos**, 0 errores JavaScript.
+- node tools/verify-google-auth.mjs: **19 comprobaciones**, 0 errores JavaScript.
+- Configuración railway.json, minijuegos originales y mecánicas conservados.
 
-## Qué se ha comprobado
-PKCE S256, verificación remota simulada de identidad, rechazo de proveedores/usuarios no válidos, ausencia de tokens OAuth en respuestas, callback de un solo uso, caducidad y cancelación, cookie temporal Lax y cookie principal Strict.
+## Funciones terminadas
+- Acceso Google mediante Supabase Auth y PKCE S256 en el backend.
+- Vinculación con sesión válida, CSRF y contraseña actual; revalidación del origen de la sesión.
+- Registro explícito con nick disponible y aceptación versionada de condiciones.
+- Cuenta nueva sin contraseña ficticia y sin permisos de administrador.
+- Vínculo único en ambos sentidos y reserva de nick en PostgreSQL.
+- Sesiones PerriWeb persistentes compartidas con la interfaz y minijuegos.
+- Cierre de sesión y entrada tradicional independientes de fallos de limpieza Google.
+- Retorno OAuth seguro y cookies preservadas a través del proxy.
+- Mensajes comprensibles y reintento funcional si falla la consulta de vinculación.
+- Publicación controlada de documentos legales completos; rechazo de borradores.
+- Asistente local para completar los textos sin editar HTML y sin sobrescribir versiones.
 
-Vinculación con contraseña y CSRF, protección en ambos sentidos (Google ya vinculado a otro nick y nick ya vinculado a otro Google), rechazo de sesión revocada/cuentas desactivadas, límites de intentos y cierre de sesión.
+## Cobertura
+Conservación de hash/nick/inventario/Perrilogo existentes; registro y rollback; peticiones concurrentes; vínculo incompatible; cuentas desactivadas; sesión revocada; caducidad, cancelación y repetición del código; RLS/permisos; compatibilidad del dispatcher original; validación remota del usuario simulado; ausencia de tokens en respuestas; sesiones entre instancias; SQL repetible y fallo transaccional ante índice incompatible.
 
-Registro explícito con nick libre, colisiones por mayúsculas y espacios externos, dos identidades solicitando el mismo nick, solicitudes repetidas/concurrentes, rollback completo ante fallo de perfil, persistencia entre instancias y aceptación versionada de textos legales.
+La aceptación legal exige que la versión del formulario coincida con la del servidor. Los documentos se generan solo con datos completos y aprobados, con contenido escapado. El comando CLI y la publicación HTML con CSP están probados.
 
-Conservación exacta de contraseña/hash, nick, inventario y Perrilogo antiguos en pruebas PostgreSQL locales. Las cuentas sin contraseña reciben NULL y no pueden entrar por el formulario tradicional con una contraseña cualquiera. La sesión Google nueva también se ha utilizado con éxito en el dispatcher original de minijuegos.
+## Navegador local
+- Edge headless, escritorio: 1440×900 y 1000×550.
+- Móvil emulado/táctil: 320×568, 390×844 y 667×375.
+- Formulario enfocado y altura reducida 390×500.
+- Acceso, vinculación, registro, nick ocupado, recarga/persistencia y logout.
+- Recuperación de un fallo inicial simulado de consulta de vinculación.
+- Política/condiciones públicas en PC y móvil; sin desbordamiento horizontal y con cabeceras de seguridad.
 
-RLS y permisos de anon/authenticated impiden leer los vínculos y verificadores. Proxy: destino cerrado, solo retorno OAuth local permitido, múltiples Set-Cookie conservados tanto en Headers estándar como con getAll de Workers.
+Se revisaron capturas. En pantallas bajas el formulario desplaza internamente su contenido y mantiene accesibles las acciones. La prueba de altura reducida no equivale a un teclado físico de Android/iOS.
 
-Páginas legales: los borradores se rechazan, el HTML aprobado se sirve sin sesión con CSP, HEAD no devuelve cuerpo y POST se rechaza.
+## Límites de verificación y configuración manual
+El proveedor OAuth está sustituido exclusivamente en las pruebas; el resto del recorrido usa frontend/backend y PostgreSQL PGlite locales. Las páginas legales de prueba contienen datos sintéticos en TEMP, nunca en el build ni en backend/legal-reviewed.
 
-## Comprobación de navegador
-Microsoft Edge headless con frontend y backend del repositorio y PostgreSQL PGlite local:
-- 1440×900 y 1000×550, escritorio.
-- 320×568, 390×844 y 667×375, móvil emulado y orientación apaisada.
-- Login tradicional, vinculación con reautenticación, callback, entrada Google posterior, persistencia al recargar y logout.
-- Registro explícito en 1440×900, 320×568, 390×844 y 667×375; rechazo de nick ocupado y alta correcta.
-- Formularios dentro de la ventana, sin desbordamiento horizontal.
-- Registro: acciones fijas y desplazamiento interior en pantallas bajas, con acceso a casilla de aceptación y enlaces.
-- Revisión visual de capturas: marcos, márgenes, tipografía y controles conservan la presentación medieval.
+**No se ha comprobado Google con las credenciales reales ni ejecutado check:live contra producción.** La prueba real se realiza por el propietario después de ejecutar el SQL, aportar/aprobar los documentos y activar las variables. Android/iOS físicos requieren esa comprobación.
 
-Solo el proveedor OAuth está sustituido por una URL .invalid interceptada. El reloj del limitador avanza entre recorridos de la misma cuenta de prueba para no agotar artificialmente su cuota. No se ha contactado con Google/Supabase/Railway ni utilizado inventarios reales.
+Los documentos legales reales no están generados porque faltan identidad/dirección/contacto y decisiones jurídicas del responsable. El código y asistente están terminados; no se inventaron esos datos.
 
-## Archivos
-Modificados:
-- backend/app.mjs, backend/server.mjs, backend/traditional-auth.mjs, backend/.env.example.
-- functions/api/[[path]].js y dev-server.mjs.
-- src/main.js, src/styles.css, src/services/api-client.js y src/services/live-ui.js.
-- tests/production-access.test.js: Google deja de estar prohibido como texto de producción, manteniendo la prohibición de maquetas y de cerrar el login para entrar como invitado.
+## Entrega
+Guía de activación: ACTIVACION_PASO_A_PASO.md.
+Único SQL: sql/002-google-auth.sql.
+Comando para los documentos: npm run legal:prepare -- --interactive.
 
-Nuevos:
-- backend/google-auth.mjs y backend/legal-pages.mjs.
-- sql/002-google-auth.sql y sql/002-google-auth-preflight-readonly.sql.
-- tests/google-auth.test.js y tools/verify-google-auth.mjs.
-- Esta documentación, borradores legales y capturas.
-
-## Pendiente fuera del entorno local
-No están verificadas las credenciales/redirects reales, las restricciones/triggers de las tablas de producción, los permisos del rol PostgreSQL desplegado, el recorrido HTTPS a través del proxy real ni Android/iOS físicos.
-
-No se ha ejecutado npm run check:live contra producción. Los textos legales requieren datos y revisión del propietario antes de poder publicar el registro. La función se entrega desactivada hasta esa configuración manual.
-
-No se hicieron Commit, Push, despliegues, cambios de credenciales ni modificaciones en Supabase. No se modificaron los archivos originales ni las mecánicas de los minijuegos.
+Sin Commit, Push, despliegue, ejecución de migraciones, acceso a servicios de producción ni modificaciones de datos reales.

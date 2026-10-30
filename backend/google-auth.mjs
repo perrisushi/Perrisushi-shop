@@ -15,6 +15,7 @@ export function validNewNick(value){
 // Auth HTTP es independiente de la clave service_role usada por el repositorio.
 // Solo se necesitan las credenciales públicas del proyecto; ningún secreto Google.
 export function createGoogleProvider({url,key,origin,fetchImpl=globalThis.fetch}){
+ key=typeof key==='string'?key.trim():'';
  const base=new URL(url);if(base.protocol!=='https:'||base.pathname!=='/'||base.search||base.hash||base.username||base.password||!key)throw Error('Invalid Google Auth configuration');
  const callback=origin+'/api/auth/google/callback';
  async function request(path,options){
@@ -51,7 +52,10 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessi
    if(error instanceof BackendError)throw error;
    const reason=['23505','23503','42501','42P01','42703'].includes(error?.code)?error.code:'database_unavailable';
    try{onDiagnostic({event:'google_auth',reason})}catch{}
-   if(error?.code==='23505')fail(409,'google_conflict');
+   if(error?.code==='23505'){
+    if(['shop_players_pkey','shop_access_pkey','pw2_shop_players_normalized_nick_uq','pw2_shop_access_normalized_nick_uq'].includes(error.constraint))fail(409,'nick_unavailable');
+    fail(409,'google_conflict');
+   }
    fail(503,'google_unavailable');
   }finally{client?.release()}
  }
@@ -79,7 +83,7 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessi
   await client.query('INSERT INTO public.pw2_google_links(auth_user_id,nick) VALUES($1,$2)',[id,nick]);
  }
  return {
-  cookie,csrf,
+  cookie,csrf,termsVersion,
   async start({mode='login',user}={}){
    const token=newToken(),verifier=newToken();
    await tx(async client=>{
@@ -101,7 +105,7 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessi
    return tx(async client=>{
     const row=await flow(client,token,'exchanging');
     if(row.mode==='link'){
-     const valid=(await client.query('SELECT nick FROM public.shop_sessions WHERE token=$1 AND nick=$2 AND expires_at>now() FOR SHARE',[row.source_session,row.nick])).rows[0];
+     const valid=(await client.query('SELECT nick FROM public.shop_sessions WHERE token=$1 AND nick=$2 AND expires_at>now() FOR UPDATE',[row.source_session,row.nick])).rows[0];
      if(!valid)fail(401,'session_expired');
      await link(client,id,row.nick);
      // La cookie Strict no llega al callback externo: rotar la sesión solo tras
@@ -142,7 +146,7 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessi
     if(exists)fail(409,'nick_unavailable');
     // INSERT exclusivamente: jamás UPSERT sobre jugadores o inventarios.
     await client.query('INSERT INTO public.shop_players(nick,active) VALUES($1,true)',[nick]);
-    await client.query('INSERT INTO public.shop_access(nick,code_hash,active) VALUES($1,NULL,true)',[nick]);
+    await client.query('INSERT INTO public.shop_access(nick,code_hash,active,is_admin) VALUES($1,NULL,true,false)',[nick]);
     await client.query('INSERT INTO public.shop_inventories(nick) VALUES($1)',[nick]);
     // Valores iniciales del sistema original (defaultProfile).
     await client.query("INSERT INTO public.shop_profiles(nick,selected_logo_id,owned_logo_ids) VALUES($1,'logo-pelusa-1','[\"logo-pelusa-1\"]'::jsonb)",[nick]);

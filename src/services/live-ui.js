@@ -37,3 +37,5 @@ export function bindPageEvents(root=document){
 }
 
 Object.assign(labels,{google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'La cuenta ya tiene una vinculación diferente. Entra con tu cuenta original.',google_already_signed_in:'Ya tienes una sesión iniciada. Recarga la página.',registration_unavailable:'El registro no está disponible en este momento.',nick_invalid:'Elige un nick de 3 a 30 letras, números, guiones o guiones bajos.',nick_unavailable:'Ese nick ya está ocupado. Si es tu cuenta, entra con tu usuario y contraseña.',account_inactive:'Esta cuenta no tiene el acceso habilitado.'});
+
+Object.assign(labels,{legal_changed:'Las condiciones han cambiado. Recarga la página y revísalas antes de crear la cuenta.'});

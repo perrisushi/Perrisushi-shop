@@ -18,6 +18,7 @@ async function fixture(){
  await db.query("INSERT INTO shop_access(nick,code_hash) VALUES('OldNick',$1),('OtherNick',$1)",[digest('original-password')]);
  await db.query("INSERT INTO shop_inventories(nick,pc,monedas,perri_cofres) VALUES('OldNick',987,12,4),('OtherNick',50,1,0)");
  await db.query("INSERT INTO shop_profiles(nick,owned_logo_ids,selected_logo_id) VALUES('OldNick','[\"logo-buho-1\"]','logo-buho-1')");
+ await db.exec('ALTER TABLE shop_access ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false');
  const migration=await readFile('sql/002-google-auth.sql','utf8');
  await db.exec(migration);await db.exec(migration); // Reejecución sin perder vínculos ni hashes.
  let tail=Promise.resolve();
@@ -185,7 +186,7 @@ test('HTTP: registro acepta términos y CSRF propios, devuelve cookie habitual; 
  const callback=await request('/auth/google/callback?code=A',{cookie});assert.equal(callback.status,303);assert.equal(callback.headers.get('location'),'/?google=register#home');
  const pending=await request('/auth/google/pending',{cookie});assert.equal(pending.data.pending,true);
  assert.equal((await request('/auth/google/register',{method:'POST',cookie,body:{nick:'NuevoNick',csrf:pending.data.csrf}})).status,400);
- const result=await request('/auth/google/register',{method:'POST',cookie,body:{nick:'NuevoNick',csrf:pending.data.csrf,acceptedTerms:true}});
+ const result=await request('/auth/google/register',{method:'POST',cookie,body:{nick:'NuevoNick',csrf:pending.data.csrf,acceptedTerms:true,termsVersion:'local-reviewed-documents'}});
  assert.equal(result.status,200);assert.equal(result.data.nick,'NuevoNick');
  assert.ok(!JSON.stringify(result.data).includes('token'));
  const login=await request('/auth/login',{method:'POST',body:{nick:'NuevoNick',password:'anything'}});
@@ -306,3 +307,70 @@ test('Legales: HTML aprobado es público, tiene CSP y versión verificable; HEAD
   await unlink(join(directory,'privacidad.html'));await unlink(join(directory,'condiciones.html'));await rmdir(directory);
  }
 });
+
+test('HTTP: fallo de limpieza Google no bloquea login tradicional ni logout',()=>httpFixture(async({request,google,repository})=>{
+ google.cancel=async()=>{throw Error('PRIVATE_GOOGLE_CLEANUP')};
+ const oauth='pw2_oauth='+'o'.repeat(43);
+ const login=await request('/auth/login',{method:'POST',cookie:oauth,body:{nick:'OldNick',password:'original-password'}});
+ assert.equal(login.status,200);
+ assert.equal(login.headers.getSetCookie().length,2);
+ assert.match(login.headers.getSetCookie().find(c=>c.startsWith('pw2_oauth=')),/Max-Age=0/);
+ const main=login.headers.getSetCookie().find(c=>c.startsWith('pw2_session=')).split(';')[0];
+ const csrf=login.headers.get('x-csrf-token');
+ const logout=await request('/auth/logout',{method:'POST',cookie:main+'; '+oauth,csrf,body:{}});
+ assert.equal(logout.status,200);
+ assert.equal((await request('/session',{cookie:main})).data.authenticated,false);
+ assert.ok(!JSON.stringify(logout.data).includes('PRIVATE_GOOGLE_CLEANUP'));
+}));
+test('Google: el alta nunca hereda administración de un valor por defecto',async()=>{
+ const f=await fixture();try{
+  await f.db.exec('ALTER TABLE shop_access ALTER COLUMN is_admin SET DEFAULT true');
+  const token=await f.begin();await f.google.callback(token,'A');
+  await f.google.register(token,(await f.google.pending(token)).csrf,'RegularGoogleUser');
+  assert.equal((await f.db.query("SELECT is_admin FROM shop_access WHERE nick='RegularGoogleUser'")).rows[0].is_admin,false);
+ }finally{await f.close()}
+});
+test('Google: SQL de alta reserva el nick también frente a otro escritor',async()=>{
+ const f=await fixture();try{
+  await assert.rejects(f.db.query("INSERT INTO shop_players(nick) VALUES(' oldnick ')"),e=>e.code==='23505');
+  const hashes=(await f.db.query('SELECT nick,code_hash FROM shop_access ORDER BY nick')).rows;
+  await f.db.exec(await readFile('sql/002-google-auth.sql','utf8'));
+  assert.deepEqual((await f.db.query('SELECT nick,code_hash FROM shop_access ORDER BY nick')).rows,hashes);
+ }finally{await f.close()}
+});
+test('Google: una estructura de índice incompatible cancela toda la migración sin cambios parciales',async()=>{
+ const db=new PGlite();try{
+  await db.exec("CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid PRIMARY KEY);CREATE TABLE shop_players(nick text PRIMARY KEY);CREATE TABLE shop_access(nick text PRIMARY KEY,code_hash text NOT NULL);CREATE INDEX pw2_shop_players_normalized_nick_uq ON shop_players(nick);INSERT INTO shop_players VALUES('Original');INSERT INTO shop_access VALUES('Original','UNCHANGED_LOCAL_HASH')");
+  await assert.rejects(db.exec(await readFile('sql/002-google-auth.sql','utf8')),/restricción de nick/);
+  await db.exec('ROLLBACK');
+  const column=(await db.query("SELECT is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='shop_access' AND column_name='code_hash'")).rows[0];
+  assert.equal(column.is_nullable,'NO');
+  assert.equal((await db.query("SELECT to_regclass('public.pw2_google_links') name")).rows[0].name,null);
+  assert.equal((await db.query("SELECT code_hash FROM shop_access WHERE nick='Original'")).rows[0].code_hash,'UNCHANGED_LOCAL_HASH');
+ }finally{await db.close()}
+});
+test('Google: colisión de nick en la base devuelve un mensaje de disponibilidad',async()=>{
+ const google=createGoogleAuth({pool:{connect:async()=>({query:async()=>{throw Object.assign(Error('PRIVATE SQL'),{code:'23505',constraint:'pw2_shop_players_normalized_nick_uq'})},release(){}})},provider:{},origin:'https://perrisushi.com',secret:'s'.repeat(40),termsVersion:'local'});
+ await assert.rejects(google.start(),{code:'nick_unavailable'});
+});
+test('Legales: retirar solo las marcas no permite publicar texto pendiente',async()=>{
+ const {mkdtemp,writeFile,unlink,rmdir}=await import('node:fs/promises');
+ const {tmpdir}=await import('node:os');const {join}=await import('node:path');
+ const directory=await mkdtemp(join(tmpdir(),'pw2-unapproved-legal-'));
+ try{
+  for(const file of ['privacidad.html','condiciones.html'])await writeFile(join(directory,file),'<html>Completar antes de publicar: responsable</html>');
+  assert.throws(()=>createLegalPages({enabled:true,directory}),/aprobar/);
+ }finally{for(const file of ['privacidad.html','condiciones.html'])await unlink(join(directory,file));await rmdir(directory)}
+});
+
+test('HTTP: no registra una cuenta si cambió la versión legal que aceptó el usuario',()=>httpFixture(async({request,db})=>{
+ const config=await request('/auth/google/config');assert.equal(config.data.legalVersion,'local-reviewed-documents');
+ const start=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ const cookie=start.headers.getSetCookie()[0].split(';')[0];
+ await request('/auth/google/callback?code=A',{cookie});
+ const pending=await request('/auth/google/pending',{cookie});
+ const result=await request('/auth/google/register',{method:'POST',cookie,body:{nick:'NoStaleConsent',csrf:pending.data.csrf,acceptedTerms:true,termsVersion:'old-document'}});
+ assert.equal(result.status,409);assert.equal(result.data.error,'legal_changed');
+ assert.equal((await db.query("SELECT 1 FROM shop_players WHERE nick='NoStaleConsent'")).rows.length,0);
+ assert.equal((await request('/auth/google/pending',{cookie})).data.pending,true);
+}));

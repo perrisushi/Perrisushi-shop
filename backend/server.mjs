@@ -29,7 +29,7 @@ const authSecret=process.env.CSRF_SECRET??randomBytes(32).toString('hex');
 let google;
 if(process.env.PW2_GOOGLE_ENABLED==='true'){
  if(!repository.configured||!gamePool||sources.projectMatch==='different'||sources.keyProjectMatch==='different'||!allowSessionWrites||process.env.SESSION_STORE!=='supabase')throw Error('Google requiere PostgreSQL del mismo proyecto y sesiones persistentes habilitadas');
- google=createGoogleAuth({pool:gamePool,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY,origin:configuredOrigin}),onDiagnostic:event=>console.log(JSON.stringify(event))});
+ google=createGoogleAuth({pool:gamePool,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY,origin:configuredOrigin}),onDiagnostic:event=>console.log(JSON.stringify(event))});
 }
 const handler=createBackend({repository,economy,games,google,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
 const site=serveSite({authenticate:handler.authenticate});

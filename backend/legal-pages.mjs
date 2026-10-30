@@ -9,7 +9,7 @@ export function createLegalPages({enabled=false,directory}={}){
   if(!directory)throw Error('PW2_LEGAL_DIRECTORY obligatorio para publicar textos revisados');
   for(const [route,file]of [['/api/legal/privacy','privacidad.html'],['/api/legal/terms','condiciones.html']]){
    const html=readFileSync(resolve(directory,file),'utf8');
-   if(!html.trim()||/data-legal-(?:draft|required)/.test(html))throw Error('Revisar y aprobar los textos legales antes de publicarlos');
+   if(!html.trim()||/data-legal-(?:draft|required)|Completar antes de publicar/i.test(html))throw Error('Revisar y aprobar los textos legales antes de publicarlos');
    pages.set(route,html);
   }
  }

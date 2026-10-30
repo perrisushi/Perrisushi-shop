@@ -189,6 +189,13 @@
     {
       "size": {
         "width": 390,
+        "height": 500
+      },
+      "state": "register-reduced-height"
+    },
+    {
+      "size": {
+        "width": 390,
         "height": 844
       },
       "state": "register-and-persist",
@@ -211,6 +218,38 @@
         "width": 480,
         "height": 351
       }
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "state": "legal-privacy",
+      "public": true
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "state": "legal-terms",
+      "public": true
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "legal-privacy",
+      "public": true
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "legal-terms",
+      "public": true
     }
   ],
   "javascriptErrors": [],

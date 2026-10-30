@@ -1,19 +1,31 @@
-# Textos legales: revisión del propietario
+# Datos legales que debe aportar y aprobar el responsable
 
-Estos HTML son BORRADORES PARA REVISAR, no páginas aprobadas. Se pueden abrir como archivos locales para leer su presentación. No se publican con npm run build.
+Los archivos privacidad.html y condiciones.html de esta carpeta son plantillas privadas; no se incluyen en dist ni se publican directamente.
 
-El texto técnico se ha contrastado con el código: nick, perfiles/Perrilogos, logros, inventarios y saldos, estados de juegos, historial, notificaciones, sesiones, autenticación tradicional, nueva vinculación Google, almacenamiento temporal de operaciones y diagnósticos mínimos.
+Usar el asistente local:
+```powershell
+npm run legal:prepare -- --interactive
+```
 
-Antes de publicar:
-1. Completar identidad del responsable/prestador, dirección y contacto.
-2. Confirmar finalidades/bases jurídicas, proveedores efectivamente contratados y sus ubicaciones/transferencias.
-3. Establecer plazos de conservación (incluidos registros técnicos y copias), derechos y canal de atención, cierre de cuenta y menores.
-4. Revisar reglas económicas/sorteos/canjes, moderación, incidencias, contenidos, responsabilidades y condiciones aplicables.
-5. Sustituir cada sección marcada data-legal-required por contenido definitivo. No basta con ocultarla ni borrar los atributos dejando las instrucciones visibles.
-6. Revisar ambos documentos completos, incluida su adecuación jurídica, y retirar data-legal-draft y las marcas data-legal-required únicamente al aprobarlos.
-7. Guardar las copias finales como privacidad.html y condiciones.html en el directorio elegido para PW2_LEGAL_DIRECTORY y añadirlas manualmente al repositorio si deben viajar al alojamiento. No incluir secretos ni credenciales.
-8. Solo entonces activar PW2_LEGAL_PUBLISHED. El servidor comprueba que estén los dos documentos y rechaza marcas de borrador o secciones sin revisar.
+Preguntará:
+1. Nombre completo o razón social del responsable.
+2. Dirección.
+3. Correo de contacto y derechos.
+4. Finalidades y bases jurídicas aprobadas.
+5. Proveedores reales, ubicación y transferencias/garantías aplicables.
+6. Conservación de cuentas, historiales, registros y copias.
+7. Derechos, bajas y autoridad competente.
+8. Ámbito y menores.
+9. Reglas de PC, monedas, objetos, sorteos y canjes.
+10. Incidencias, moderación, suspensión y cierre.
+11. Otras condiciones: contenidos, disponibilidad, responsabilidad, cambios y conflictos.
 
-No se inventaron responsable, correo, domicilio, plazos, proveedores contratados, bases jurídicas ni jurisdicción. La existencia de integración Cloudflare no demuestra que el alojamiento esté utilizándola actualmente.
+No se inventan esos datos ni se sustituyen por respuestas automáticas. El asistente requiere aprobación explícita antes de generar los HTML; después se deben abrir y revisar antes de activar su publicación.
 
-Cada alta nueva registra la huella de ambos HTML y la fecha de aceptación. Conservar las versiones aprobadas para poder consultar qué texto correspondía a cada versión. Este borrador no sustituye la revisión que corresponda al responsable.
+El resultado se guarda en backend/legal-reviewed. No contiene credenciales ni contraseñas y se debe incluir en el repositorio únicamente una vez revisado para que viaje con el código a Railway.
+
+Si una versión ya existe, no se sobrescribe. Puede prepararse otra con --output backend/legal-reviewed-v2 y configurar ese directorio al publicarla.
+
+Los apartados técnicos se han redactado según las funciones reales: identidad/nick, perfiles, inventario, progresos, historial, notificaciones, cookies, operaciones, Google/Supabase Auth y diagnósticos mínimos. Confirmar los proveedores efectivamente contratados y su régimen de tratamiento: tener una integración de Cloudflare no demuestra que esté usándose en ese despliegue.
+
+Guardar las versiones aprobadas: el alta nueva conserva su huella y fecha de aceptación. No poner un correo, domicilio, plazo, base jurídica o jurisdicción inventados solo para habilitar el registro.

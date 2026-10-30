@@ -1,0 +1,27 @@
+{
+  "format": "pw2-account-merge-plan-v1",
+  "expectedGroups": 3,
+  "pairs": [
+    {
+      "keep": "Isoldequeen",
+      "remove": "isoldequeen"
+    },
+    {
+      "keep": "Kazzialtime",
+      "remove": "KazzialTime"
+    },
+    {
+      "keep": "Sr_vic_",
+      "remove": "Sr_Vic_"
+    }
+  ],
+  "schemaApproved": false,
+  "conflictsApproved": false,
+  "maintenanceRequired": true,
+  "survivingPassword": "keep-original",
+  "sessions": "revoke-both-never-restore",
+  "googleEnabledDuringMerge": false,
+  "realSchemaDiagnosticReceived": true,
+  "realSchemaFingerprint": "fa7d8e7fae89e04f83a85d2af1be2695",
+  "resourceSnapshotReceived": false
+}

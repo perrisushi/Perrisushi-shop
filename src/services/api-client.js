@@ -66,7 +66,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
           if(response.status===401) { csrfToken=''; clearCache();if(path!=='/auth/login')onSessionExpired(); }
           const fallback=response.status===401?'session_expired':response.status===403?'forbidden':response.status===429?'too_many_requests':'request_failed';
           let code=fallback;
-          try{const data=await response.json();if(['origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','chest_unavailable','invalid_request','inventory_mismatch','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable','google_unavailable','google_failed','google_expired','google_conflict','google_already_signed_in','registration_unavailable','nick_invalid','nick_unavailable'].includes(data?.error))code=data.error}catch{}
+          try{const data=await response.json();if(['origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','chest_unavailable','invalid_request','inventory_mismatch','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable','google_unavailable','google_failed','google_expired','google_conflict','google_already_signed_in','registration_unavailable','nick_invalid','nick_unavailable','legal_changed'].includes(data?.error))code=data.error}catch{}
           throw new ApiError(response.status,code);
         }
         let result;
@@ -106,7 +106,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
     googlePending: ()=>request('/auth/google/pending'),
     googleStatus: ()=>request('/auth/google/status'),
     startGoogle: (mode='login',password)=>request('/auth/google/start',{method:'POST',body:{mode,...(password!==undefined?{password}:{})}}),
-    registerGoogle: (nick,csrf,acceptedTerms)=>request('/auth/google/register',{method:'POST',body:{nick,csrf,acceptedTerms}}),
+    registerGoogle: (nick,csrf,acceptedTerms,termsVersion)=>request('/auth/google/register',{method:'POST',body:{nick,csrf,acceptedTerms,termsVersion}}),
     cancelGoogle: ()=>request('/auth/google/cancel',{method:'POST',body:{}}),
     login: (nick,password)=>request('/auth/login',{method:'POST',body:{nick,password}}),
     logout: ()=>request('/auth/logout',{method:'POST',body:{}}),
