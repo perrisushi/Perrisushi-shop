@@ -23,6 +23,7 @@ export function createFrontendServer({apiTarget=process.env.API_TARGET??'http://
     headers.host=target.host;
     const upstream=http.request(new URL(request.url,target),{method:request.method,headers,timeout:12000},incoming=>{
       const returned={};for(const name of ['content-type','cache-control','set-cookie','x-csrf-token','x-content-type-options','x-request-id','server-timing'])if(incoming.headers[name])returned[name]=incoming.headers[name];
+      if(incoming.statusCode===303&&request.url?.startsWith('/api/auth/google/callback?')&&/^\/\?google=(?:login|linked|register|google_failed|google_cancelled|google_expired|google_conflict|account_inactive|session_expired|google_unavailable)#(?:home|profile)$/.test(incoming.headers.location??''))returned.location=incoming.headers.location;
       response.writeHead(incoming.statusCode??502,returned);incoming.pipe(response);
     });
     upstream.on('timeout',()=>upstream.destroy());

@@ -1,4 +1,7 @@
 import http from 'node:http';
+import {randomBytes} from 'node:crypto';
+import {createGoogleAuth,createGoogleProvider} from './google-auth.mjs';
+import {createLegalPages} from './legal-pages.mjs';
 import {createRepository} from './repository.mjs';
 import {createBackend} from './app.mjs';
 import {serveSite} from './site.mjs';
@@ -21,10 +24,18 @@ if(process.env.DATABASE_URL){gamePool=new pg.Pool(databasePoolOptions(process.en
 const games=createGames({pool:gamePool,legacy:legacyGames,enabled:enableGames,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
 if(production&&!process.env.PUBLIC_ORIGIN)throw Error('PUBLIC_ORIGIN obligatorio en producción');
 const configuredOrigin=publicOrigin(process.env.PUBLIC_ORIGIN??'http://127.0.0.1:4173');
-const handler=createBackend({repository,economy,games,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(process.env.CSRF_SECRET?{csrfSecret:process.env.CSRF_SECRET}:{}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
+const legal=createLegalPages({enabled:process.env.PW2_LEGAL_PUBLISHED==='true',directory:process.env.PW2_LEGAL_DIRECTORY});
+const authSecret=process.env.CSRF_SECRET??randomBytes(32).toString('hex');
+let google;
+if(process.env.PW2_GOOGLE_ENABLED==='true'){
+ if(!repository.configured||!gamePool||sources.projectMatch==='different'||sources.keyProjectMatch==='different'||!allowSessionWrites||process.env.SESSION_STORE!=='supabase')throw Error('Google requiere PostgreSQL del mismo proyecto y sesiones persistentes habilitadas');
+ google=createGoogleAuth({pool:gamePool,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY,origin:configuredOrigin}),onDiagnostic:event=>console.log(JSON.stringify(event))});
+}
+const handler=createBackend({repository,economy,games,google,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
 const site=serveSite({authenticate:handler.authenticate});
 const server=http.createServer((req,res)=>{
  if(req.url==='/healthz'){res.writeHead(repository.configured?200:503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ready:repository.configured}));return}
+ if(legal.matches(req.url))return legal.handle(req,res);
  if(req.url?.startsWith('/api/'))return handler(req,res);
  const canonical=canonicalSiteRedirect(req,configuredOrigin);
  if(canonical){res.writeHead(307,{'Location':canonical,'Cache-Control':'no-store'});res.end();return}

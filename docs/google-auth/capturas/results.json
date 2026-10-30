@@ -1,0 +1,218 @@
+{
+  "results": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "state": "login",
+      "geometry": {
+        "x": 480,
+        "y": 243.890625,
+        "width": 480,
+        "height": 412.1875,
+        "vw": 1440,
+        "vh": 900,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "state": "link",
+      "geometry": {
+        "x": 495,
+        "y": 300.484375,
+        "width": 450,
+        "height": 299,
+        "vw": 1440,
+        "vh": 900,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 1000,
+        "height": 550
+      },
+      "state": "login",
+      "geometry": {
+        "x": 260,
+        "y": 68.890625,
+        "width": 480,
+        "height": 412.1875,
+        "vw": 1000,
+        "vh": 550,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 1000,
+        "height": 550
+      },
+      "state": "link",
+      "geometry": {
+        "x": 275,
+        "y": 125.484375,
+        "width": 450,
+        "height": 299,
+        "vw": 1000,
+        "vh": 550,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "state": "login",
+      "geometry": {
+        "x": 16,
+        "y": 63.8125,
+        "width": 288,
+        "height": 440.375,
+        "vw": 320,
+        "vh": 568,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "state": "link",
+      "geometry": {
+        "x": 12,
+        "y": 111,
+        "width": 296,
+        "height": 346,
+        "vw": 320,
+        "vh": 568,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "login",
+      "geometry": {
+        "x": 16,
+        "y": 226.40625,
+        "width": 358,
+        "height": 391.1875,
+        "vw": 390,
+        "vh": 844,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "link",
+      "geometry": {
+        "x": 12,
+        "y": 272.5,
+        "width": 366,
+        "height": 299,
+        "vw": 390,
+        "vh": 844,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 667,
+        "height": 375
+      },
+      "state": "login",
+      "geometry": {
+        "x": 93.5,
+        "y": 16,
+        "width": 480,
+        "height": 351,
+        "vw": 667,
+        "vh": 375,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 667,
+        "height": 375
+      },
+      "state": "link",
+      "geometry": {
+        "x": 108.5,
+        "y": 38,
+        "width": 450,
+        "height": 299,
+        "vw": 667,
+        "vh": 375,
+        "overflow": false
+      }
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "state": "register-and-persist",
+      "geometry": {
+        "x": 480,
+        "y": 213.90625,
+        "width": 480,
+        "height": 472.171875
+      }
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "state": "register-and-persist",
+      "geometry": {
+        "x": 16,
+        "y": 19.828125,
+        "width": 288,
+        "height": 528.34375
+      }
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "register-and-persist",
+      "geometry": {
+        "x": 16,
+        "y": 196.40625,
+        "width": 358,
+        "height": 451.171875
+      }
+    },
+    {
+      "size": {
+        "width": 667,
+        "height": 375
+      },
+      "state": "register-and-persist",
+      "geometry": {
+        "x": 93.5,
+        "y": 16,
+        "width": 480,
+        "height": 351
+      }
+    }
+  ],
+  "javascriptErrors": [],
+  "provider": "substituted locally; real OAuth not verified"
+}

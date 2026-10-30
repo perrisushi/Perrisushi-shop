@@ -333,3 +333,30 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
  .content-header {min-height:52px;padding:4px 10px}
  .back-button {width:40px;height:40px}
 }
+
+
+/* Acceso Google: conserva el marco y los controles de PerriWeb. */
+.google-access {width:100%;min-height:44px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px}
+.access-legal {font:12px/1.6 system-ui;text-align:center;margin:16px 0 0}
+.access-legal a {color:#563319;text-underline-offset:3px}
+.access-accept {display:flex;gap:8px;align-items:flex-start;font:13px/1.5 system-ui;margin-top:16px}
+.access-accept input {flex:none;width:18px;height:18px;margin-top:1px}
+.access-cancel {width:100%;min-height:44px;margin-top:12px}
+.google-profile {margin-top:12px}
+.google-profile .textured-button {margin:0;min-height:44px}
+.google-profile p {margin:6px 0;font-size:14px}
+#google-register small {line-height:1.5}
+@media(max-width:700px),(pointer:coarse) and (max-height:500px){
+ body:not([data-access="ready"]) .modal-card {padding:16px;max-height:calc(100dvh - 24px)}
+ body:not([data-access="ready"]) .login-fields {gap:9px;margin-top:12px}
+ .google-profile {margin-top:8px}
+}
+
+.modal-card:has(#google-register) {display:flex;flex-direction:column;overflow:hidden}
+.modal-card:has(#google-register)>.modal-head,.modal-card:has(#google-register)>button,.modal-card:has(#google-register)>[role="status"] {flex:none}
+#google-register {display:flex;flex-direction:column;min-height:0}
+.access-register-content {min-height:0;overflow:auto;overscroll-behavior:contain;padding-right:3px}
+#google-register>.modal-primary {flex:none;margin-top:12px}
+.access-register-content>p:first-child {margin:12px 0}
+
+#login-status:empty,#google-link-status:empty {display:none}

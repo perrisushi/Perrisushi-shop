@@ -5,6 +5,7 @@ import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,render
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
+let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='';
 let openingGame=false,gameLaunchEpoch=0;
 const containerOperations=new Map();
 let inventoryObserver=null;
@@ -90,6 +91,7 @@ function profileView() {
       <div class="info-strip"><span>PC · Gemas</span><strong>${escapeText(profileState.balances?.pc??'—')} · ${escapeText(profileState.balances?.gemas??'—')}</strong></div><div class="info-strip"><span>Logros</span><strong>${escapeText(Array.isArray(profileState.profile?.achievements)?profileState.profile.achievements.join(' · '):'—')}</strong></div>
       <div class="info-strip"><span>Karma</span><strong>${escapeText(profileState.profile?.karma??'—')}</strong></div>
       <div class="profile-actions"><button class="textured-button history-button" type="button" data-action="history" aria-label="Historial" title="Historial"><span aria-hidden="true">⌛</span></button><button class="textured-button" type="button" data-action="album">Cambiar Perrilogos</button></div>
+      ${googleConfig.enabled?`<div class="google-profile">${googleLinked===true?'<p>Google vinculado</p>':`<button type="button" class="textured-button" data-action="link-google">Vincular Google</button>`}${googleNotice==='linked'?'<p role="status">Tu cuenta de Google se ha vinculado.</p>':''}</div>`:''}
     </div>
   </div>`);
 }
@@ -269,10 +271,8 @@ function modalMarkup(type) {
   if (type === 'assistance') return `<div class="modal-head"><h2 id="modal-title">Asistencia</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">Si necesitas ayuda con la tienda, puedes escribir a Perrisushi por Twitch. También publicamos avisos y novedades en YouTube.</p><a class="support-link textured-button" href="https://www.twitch.tv/perrisushi" target="_blank" rel="noopener noreferrer">Abrir Twitch</a>`;
   if (type === 'logout') return `<div class="modal-head"><h2 id="modal-title">Cerrar sesión</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">No hay sesión iniciada.</p>`;
   if (type === 'music-error') return `<div class="modal-head"><h2 id="modal-title">Música</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">El navegador no pudo reproducir la música. Comprueba el sonido y vuelve a intentarlo.</p>`;
-  return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div>
-  <form id="traditional-login"><div class="login-fields"><label>Usuario<input name="nick" type="text" required maxlength="80" autocomplete="username" /></label>
-  <label>Contraseña<input name="password" type="password" required maxlength="1024" autocomplete="current-password" /></label></div>
-  <button type="submit" class="textured-button modal-primary">Iniciar sesión</button><p id="login-status" role="status"></p></form>`;
+  if(type==='link-google')return `<div class="modal-head"><h2 id="modal-title">Vincular Google</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p>Confirma la contraseña de ${escapeText(session.nick)} para vincular tu cuenta de Google.</p><form id="google-link"><div class="login-fields"><label>Contraseña actual<input type="password" name="password" required maxlength="1024" autocomplete="current-password" /></label></div><button type="submit" class="textured-button modal-primary">Continuar con Google</button><p id="google-link-status" role="status"></p></form>`;
+  return accessMarkup();
 }
 
 function openModal(type,{pending=false,immersive=false}={}) {
@@ -331,6 +331,9 @@ document.addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
   const route = e.target.closest('[data-route]')?.dataset.route;
   if (route) { closeModal(); navigate(route); return; }
+  if(action==='google-login'){void beginGoogle(e.target.closest('button'));return}
+  if(action==='link-google'){openModal('link-google');return}
+  if(action==='google-cancel'){void cancelGoogleRegistration(e.target.closest('button'));return}
   if (action === 'auth') openModal('auth');
   else if (action === 'history') void openRemoteModal('history');
   else if (action === 'album') openModal('album');
@@ -354,15 +357,15 @@ document.addEventListener('keydown', e => {
 });
 window.addEventListener('hashchange',render);
 window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.clearCache();if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
-window.addEventListener('pageshow',event=>{if(event.persisted)void bootstrapSession()});
+window.addEventListener('pageshow',event=>{if(event.persisted)void initializeGoogleAccess()});
 bindPageEvents();
 renderMusicOption();
 overlay.innerHTML='<section class="modal-card" role="status">Comprobando sesión…</section>';overlay.hidden=false;
-void bootstrapSession();
+void initializeGoogleAccess();
 
 function showLogin(error){
  document.body.dataset.access='locked';stage.replaceChildren();closeMenu();openModal('auth');
- const status=overlay.querySelector('#login-status');status.textContent=error?message({error}):sessionState.status==='error'?message(sessionState):'';
+ const status=overlay.querySelector('#login-status');status.textContent=error?message({error}):sessionState.status==='error'?message(sessionState):googleErrorNotice();
  document.title='Entrar | Perrisushi World';
 }
 function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitInventoryGrid()}
@@ -388,7 +391,7 @@ function syncIdentity(){const el=document.querySelector('.identity-chip strong')
 async function bootstrapSession(authenticated=null){
   resetPrivateState();const generation=sessionEpoch;sessionState={status:'loading'};profileState={status:'loading'};
   try{const result=authenticated??await api.getSession();if(generation!==sessionEpoch)return;session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
-   if(session){const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
+   if(session){googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
    else profileState={status:'signedOut'};
   }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
   syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();
@@ -430,7 +433,7 @@ async function logoutAccount(){
 }
 document.addEventListener('submit',async event=>{
  if(event.target.id!=='traditional-login')return;event.preventDefault();if(logoutPending)return;const form=event.target,submit=form.querySelector('button'),status=form.querySelector('#login-status');submit.disabled=true;status.textContent='Comprobando acceso…';
- const data=new FormData(form);resetPrivateState();sessionState={status:'loading'};syncIdentity();
+ googlePending=null;googleNotice='';const data=new FormData(form);resetPrivateState();sessionState={status:'loading'};syncIdentity();
  try{const authenticated=await api.login(data.get('nick'),data.get('password'));form.reset();history.replaceState(null,'','#home');await bootstrapSession(authenticated)}
  catch(error){sessionState={status:'error',error:error.code};profileState=sessionState;syncIdentity();showLogin(error.code);const login=overlay.querySelector('#traditional-login');login.elements.nick.value=String(data.get('nick')??'');login.elements.password.focus()}
  finally{if(submit.isConnected)submit.disabled=false}
@@ -470,3 +473,60 @@ async function launchOriginalGame(name){
   else {if(immersive)await gameWindow.close();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;openModal(available?'game:'+name:'game-unavailable')}
  }catch(error){if(generation===sessionEpoch&&attempt===gameLaunchEpoch){if(immersive)await gameWindow.close();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;errorState(error);openModal('game-unavailable')}}finally{if(attempt===gameLaunchEpoch){openingGame=false;if(button){button.disabled=false;button.removeAttribute('aria-busy')}}}
 }
+
+function googleErrorNotice(){
+ const messages={google_cancelled:'Has cancelado el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'Esta cuenta de Google ya está vinculada a otra cuenta, o tu usuario tiene otra vinculación.',account_inactive:'Esta cuenta no tiene el acceso habilitado.',session_expired:'Tu sesión ha caducado. Vuelve a entrar para vincular Google.',google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google. Vuelve a intentarlo.'};
+ return messages[googleNotice]??'';
+}
+function legalLinks(){
+ return googleConfig.legalPublished?'<p class="access-legal"><a href="/api/legal/privacy" target="_blank" rel="noopener">Política de Privacidad</a> · <a href="/api/legal/terms" target="_blank" rel="noopener">Condiciones del Servicio</a></p>':'';
+}
+function accessMarkup(){
+ if(googlePending)return `<div class="modal-head"><h2 id="modal-title">Crear cuenta</h2></div>
+ ${googleConfig.legalPublished?`<form id="google-register"><div class="access-register-content">
+ <p>¿Ya tienes cuenta? Entra con tu usuario y vincula Google desde tu perfil.</p>
+ <div class="login-fields"><label>Elige tu nick<input name="nick" type="text" required minlength="3" maxlength="30" autocomplete="nickname" aria-describedby="nick-help" /></label><small id="nick-help">De 3 a 30 letras, números, guiones o guiones bajos.</small></div>
+ <label class="access-accept"><input name="acceptedTerms" type="checkbox" required /> He leído la Política de Privacidad y acepto las Condiciones del Servicio.</label>
+ ${legalLinks()}</div><button type="submit" class="textured-button modal-primary">Crear cuenta</button></form>`:'<p>El registro no está disponible en este momento. Si ya tienes cuenta, entra con tu usuario y contraseña.</p>'}
+ <button type="button" class="textured-button access-cancel" data-action="google-cancel">Cancelar y volver al acceso</button><p id="login-status" role="status"></p>`;
+ return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div>
+  <form id="traditional-login"><div class="login-fields"><label>Usuario<input name="nick" type="text" required maxlength="80" autocomplete="username" /></label>
+  <label>Contraseña<input name="password" type="password" required maxlength="1024" autocomplete="current-password" /></label></div>
+  <button type="submit" class="textured-button modal-primary">Iniciar sesión</button><p id="login-status" role="status"></p></form>
+  ${googleConfig.enabled?'<button type="button" class="textured-button google-access" data-action="google-login">Continuar con Google</button>':''}${legalLinks()}`;
+}
+async function initializeGoogleAccess(){
+ const query=new URLSearchParams(location.search);googleNotice=query.get('google')??'';
+ if(query.has('google')){query.delete('google');history.replaceState(null,'',location.pathname+(query.size?'?'+query:'')+location.hash)}
+ googlePending=null;googleLinked=null;
+ try{googleConfig=await api.googleConfig();if(googleConfig.enabled){const pending=await api.googlePending();if(pending.pending)googlePending=pending}}catch{googleConfig={enabled:false,legalPublished:false}}
+ await bootstrapSession();
+}
+async function beginGoogle(button,password){
+ if(!button||button.disabled)return;
+ button.disabled=true;const status=overlay.querySelector('#google-link-status,#login-status');if(status)status.textContent='Conectando con Google…';
+ try{
+  const result=await api.startGoogle(password===undefined?'login':'link',password);
+  const target=new URL(result.url);if(target.protocol!=='https:'||target.pathname!=='/auth/v1/authorize'||target.searchParams.get('provider')!=='google')throw {code:'google_failed'};
+  location.assign(target.href);
+ }catch(error){if(status)status.textContent=message({error:error.code});button.disabled=false}
+}
+async function cancelGoogleRegistration(button){
+ button.disabled=true;
+ try{await api.cancelGoogle();googlePending=null;googleNotice='';showLogin()}
+ catch(error){overlay.querySelector('#login-status').textContent=message({error:error.code});button.disabled=false}
+}
+document.addEventListener('submit',async event=>{
+ if(event.target.id==='google-link'){
+  event.preventDefault();const form=event.target,password=form.elements.password.value;
+  form.elements.password.value='';await beginGoogle(form.querySelector('button[type="submit"]'),password);
+ }else if(event.target.id==='google-register'){
+  event.preventDefault();if(!googlePending)return;
+  const form=event.target,button=form.querySelector('button[type="submit"]'),status=overlay.querySelector('#login-status');if(button.disabled)return;
+  button.disabled=true;status.textContent='Creando tu cuenta…';
+  try{
+   const result=await api.registerGoogle(form.elements.nick.value,googlePending.csrf,form.elements.acceptedTerms.checked);
+   googlePending=null;googleNotice='';history.replaceState(null,'','#home');await bootstrapSession(result);
+  }catch(error){status.textContent=message({error:error.code});button.disabled=false}
+ }
+});

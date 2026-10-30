@@ -27,6 +27,7 @@ export async function authenticateTraditional({repository,nick,password,sessionS
   if(access.active!=null&&typeof access.active!=='boolean')reject(503,'backend_unavailable','invalid_active_field');
   stage='password_verification';
   // Igual que el sistema original: trim, SHA-256 UTF-8, sin lower-case ni NFC.
+  if(access.code_hash===null)reject(401,'invalid_credentials','password_not_configured');
   if(typeof access.code_hash!=='string'||! /^[a-f0-9]{64}$/i.test(access.code_hash.trim()))reject(503,'backend_unavailable','invalid_hash_format');
   if(!matchesPassword(password.trim(),access.code_hash))reject(401,'invalid_credentials','password_mismatch');
   stage='player_lookup';reason='query_failed';

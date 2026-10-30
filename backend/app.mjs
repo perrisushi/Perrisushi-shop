@@ -6,8 +6,10 @@ import {logoAsset} from './logo-assets.mjs';
 import {BackendError} from './repository.mjs';
 import {publicOrigin as validatePublicOrigin} from './request-security.mjs';
 import {authenticateTraditional,authDiagnostic} from './traditional-auth.mjs';
+import {oauthToken} from './google-auth.mjs';
+import {matchesPassword} from './security.mjs';
 import {digest,sessionKey,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
-export function createBackend({repository,economy,games,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
+export function createBackend({repository,economy,games,google,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
  if(proxySecret&&proxySecret.length<32)throw Error('Proxy secret too short');
  const origin=validatePublicOrigin(publicOrigin);
  if(production&&(new URL(origin).protocol!=='https:'||sessionStore!=='supabase'||!allowSessionWrites))throw Error('Production requires HTTPS and approved persistent sessions');
@@ -44,7 +46,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
-   const known=['/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
+   const known=['/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
    if(!['GET','POST'].includes(req.method))fail(405,'method_not_allowed');
    if(!reads.take(clientIP))fail(429,'too_many_requests');
@@ -54,11 +56,68 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
     if(!/^application\/json(?:\s*;|$)/i.test(String(req.headers['content-type']??'')))fail(415,'unsupported_media_type');
     if(req.headers['sec-fetch-site']&& !['same-origin','none'].includes(req.headers['sec-fetch-site']))fail(403,'cross_site_request');
    }
+   if(route==='/api/auth/google/config'&&req.method==='GET'){send(200,{enabled:Boolean(google),legalPublished});return}
+   if(route.startsWith('/api/auth/google/')){
+    const flowToken=oauthToken(req.headers.cookie);
+    if(route==='/api/auth/google/callback'&&req.method==='GET'){
+     let target='/?google=google_failed#home',cookies=google?[google.cookie('',true)]:[];
+     try{
+      if(!google)fail(503,'google_unavailable');
+      if(url.searchParams.has('error'))fail(400,'google_cancelled');
+      const result=await google.callback(flowToken,url.searchParams.get('code'));
+      if(result.token)cookies.push(cookie(result.token));
+      if(result.outcome==='register')cookies=[google.cookie(flowToken)];
+      target='/?google='+result.outcome+'#'+(result.outcome==='linked'?'profile':'home');
+     }catch(error){
+      const allowed=['google_cancelled','google_expired','google_conflict','account_inactive','session_expired','google_unavailable'];
+      target='/?google='+(allowed.includes(error?.code)?error.code:'google_failed')+'#home';
+      try{await google?.cancel(flowToken)}catch{}
+     }
+     status=303;res.writeHead(303,{'Location':target,'Set-Cookie':cookies,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});res.end();return;
+    }
+    if(!google)fail(503,'google_unavailable');
+    if(route==='/api/auth/google/pending'&&req.method==='GET'){send(200,await google.pending(flowToken));return}
+    if(route==='/api/auth/google/status'&&req.method==='GET'){
+     const user=await identity(req);if(!user)fail(401,'session_expired');send(200,await google.status(user.nick));return;
+    }
+    if(req.method!=='POST')fail(405,'method_not_allowed');
+    const body=await jsonBody(req);
+    if(route==='/api/auth/google/cancel'){
+     if(Object.keys(body).length)fail(400,'invalid_request');
+     await google.cancel(flowToken);send(200,{ok:true},{'Set-Cookie':google.cookie('',true)});return;
+    }
+    if(!loginIp.take(clientIP))fail(429,'too_many_requests');
+    if(route==='/api/auth/google/start'){
+     if(Object.keys(body).some(k=>!['mode','password'].includes(k)))fail(400,'invalid_request');
+     const mode=body.mode??'login',user=await identity(req);
+     if(mode==='link'){
+      if(!user)fail(401,'session_expired');
+      if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
+      if(!loginNick.take(digest(user.nick.toLowerCase())))fail(429,'too_many_requests');
+      if(typeof body.password!=='string'||body.password.length>1024)fail(400,'invalid_request');
+      const access=await (repository.canonicalAccess??repository.access)(user.nick);
+      if(!access||access.nick!==user.nick||access.active===false||!matchesPassword(body.password.trim(),access.code_hash))fail(400,'invalid_credentials');
+     }else if(mode!=='login')fail(400,'invalid_request');
+     else if(user)fail(409,'google_already_signed_in');
+     await google.cancel(flowToken);
+     const result=await google.start({mode,user:mode==='link'?user:null});
+     send(200,{url:result.url},{'Set-Cookie':result.cookie});return;
+    }
+    if(route==='/api/auth/google/register'){
+     if(!legalPublished)fail(503,'registration_unavailable');
+     if(Object.keys(body).some(k=>!['nick','csrf','acceptedTerms'].includes(k))||body.acceptedTerms!==true)fail(400,'invalid_request');
+     if(await identity(req))fail(409,'google_already_signed_in');
+     const result=await google.register(flowToken,body.csrf,body.nick);
+     send(200,{authenticated:true,nick:result.nick,sessionPersistence:sessionStore},{'Set-Cookie':[cookie(result.token),google.cookie('',true)],'X-CSRF-Token':csrfFor(result.token,csrfSecret)});return;
+    }
+    fail(405,'method_not_allowed');
+   }
    if(req.method==='POST'&&['/api/shop/random-key/redeem','/api/shop/raffles/buy'].includes(route)&&!economy)fail(403,'operation_disabled');
    if(req.method==='POST'&&route==='/api/auth/login'){
     const data=await jsonBody(req);if(typeof data.nick!=='string'||!data.nick.length||data.nick.length>80||/[\x00-\x1f]/.test(data.nick)||typeof data.password!=='string'||!data.password.length||data.password.length>1024)fail(400,'invalid_request');
     if(!loginIp.take(clientIP)||!loginNick.take(digest(data.nick.trim().toLowerCase())))fail(429,'too_many_requests');
     const requestId=randomUUID();res.setHeader?.('X-Request-ID',requestId);
+    await google?.cancel(oauthToken(req.headers.cookie));
     const {token,row}=await authenticateTraditional({repository,nick:data.nick,password:data.password,sessionStore,allowSessionWrites,sessionTtlMs,now,requestId,onDiagnostic:onAuthDiagnostic,createMemorySession:row=>{
      for(const [key,value]of sessions)if(Date.parse(value.expires_at)<=now())sessions.delete(key);
      if(sessions.size>=5000)fail(503,'session_capacity');sessions.set(row.token,row);
@@ -108,8 +167,9 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
      await repository.readNotification(user.nick,body.id);send(200,{ok:true});return;
     }
     if(Object.keys(body).length)fail(400,'invalid_request');
+    await google?.cancel(oauthToken(req.headers.cookie));
     if(sessionStore==='supabase'){if(!allowSessionWrites)fail(503,'session_writes_disabled');await repository.deleteSession(sessionKey(user.token))}else sessions.delete(sessionKey(user.token));
-    send(200,{authenticated:false},{'Set-Cookie':cookie('',true)});return;
+    send(200,{authenticated:false},{'Set-Cookie':google?[cookie('',true),google.cookie('',true)]:cookie('',true)});return;
    }
    if(route==='/api/shop/receipt'){
     const id=url.searchParams.get('id');if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id??''))fail(400,'invalid_request');

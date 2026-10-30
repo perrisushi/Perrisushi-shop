@@ -6,7 +6,7 @@ import {onRequest as pages} from '../functions/_middleware.js';
 import {labels,renderLiveUsers,renderLiveInventory,renderLiveShop,setPageData} from '../src/services/live-ui.js';
 import {createApiClient} from '../src/services/api-client.js';
 
-const forbidden=/maqueta|demostraci[oó]n|vista previa|fictici|pendiente|supabase|backend|google|datos de prueba|se mantendr[aá]n intactos|acciones desactivadas/i;
+const forbidden=/maqueta|demostraci[oó]n|vista previa|fictici|pendiente|supabase|backend|datos de prueba|se mantendr[aá]n intactos|acciones desactivadas/i;
 test('las vistas de producción y los errores públicos no contienen textos provisionales',async()=>{
  for(const state of [{status:'loading'},{status:'signedOut'},{status:'ready',items:[],inventory:{pc:0},randomKey:{},raffles:{}}]){
   for(const kind of ['users','inventory','shop'])setPageData(kind,state);
@@ -16,8 +16,8 @@ test('las vistas de producción y los errores públicos no contienen textos prov
  const source=await readFile('src/main.js','utf8');
  assert.doesNotMatch(source,/render\w+Preview|bindPreview|google-signin|or-rule|security-note|pw04-demo-badge|Las cuentas actuales|Por ahora conservamos|Ver opciones de acceso/);
  assert.doesNotMatch(await readFile('scripts/build.mjs','utf8'),/preview-pages\.js/);
- const auth=source.slice(source.indexOf('return `<div class="modal-head"><h2 id="modal-title">Entrar'),source.indexOf('function openModal'));
- assert.doesNotMatch(auth,/close-modal|disabled|Google/i);
+ const auth=source.slice(source.indexOf('return `<div class="modal-head"><h2 id="modal-title">Entrar'),source.indexOf('async function initializeGoogleAccess'));
+ assert.doesNotMatch(auth,/close-modal|disabled/i);
  assert.match(await readFile('index.html','utf8'),/body data-access="checking"/);
 });
 
