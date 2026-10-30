@@ -66,7 +66,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
           if(response.status===401) { csrfToken=''; clearCache();if(path!=='/auth/login')onSessionExpired(); }
           const fallback=response.status===401?'session_expired':response.status===403?'forbidden':response.status===429?'too_many_requests':'request_failed';
           let code=fallback;
-          try{const data=await response.json();if(['origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','inventory_mismatch','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable'].includes(data?.error))code=data.error}catch{}
+          try{const data=await response.json();if(['origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','chest_unavailable','invalid_request','inventory_mismatch','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable'].includes(data?.error))code=data.error}catch{}
           throw new ApiError(response.status,code);
         }
         let result;
@@ -108,6 +108,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
     updateAvatar: (avatarId)=>request('/profile/avatar',{method:'POST',body:{avatarId}}),
     getHistory: ({cursor,limit=20}={})=>request(ENDPOINTS.history,{params:{cursor,limit:pageLimit(limit)},cacheMs:10_000}),
     listUsers: ({cursor,limit=20}={})=>request(ENDPOINTS.users,{params:{cursor,limit:pageLimit(limit)},cacheMs:60_000}),
+    getContainerOpening: (itemId,id)=>request('/inventory/open/status',{params:{itemId,id}}),
     openContainer: (itemId,idempotencyKey)=>request('/inventory/open',{method:'POST',body:{itemId,idempotencyKey}}),
     getInventory: ()=>request(ENDPOINTS.inventory,{cacheMs:20_000}),
     getReceipt: id=>request('/shop/receipt',{params:{id}}),

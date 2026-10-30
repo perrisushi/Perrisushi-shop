@@ -257,7 +257,7 @@ test('apertura: sin propiedad, caducado, identidad ajena, manipulación y fallo 
   await assert.rejects(f.games.execute({...f.user,nick:'LocalB'},request),e=>e.code==='session_expired');
   const absent=await f.games.execute(f.user,{...request,itemKey:'bolsaEspecial',idempotencyKey:randomUUID()});assert.equal(absent.ok,false);assert.equal(absent.error,'item_not_owned');
   await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()-interval '1 day')",[randomUUID()]);
-  assert.equal((await f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'x',idempotencyKey:randomUUID()})).ok,false);
+  await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'x',idempotencyKey:randomUUID()}),e=>e.code==='item_not_owned');
   await f.db.exec("create function reject_chest_receipt() returns trigger language plpgsql as $$ begin if NEW.operation_id like 'pw2:game:%' then raise exception 'fail'; end if; return NEW; end $$;create trigger reject_chest_receipt before insert on shop_operations for each row execute function reject_chest_receipt();");
   await assert.rejects(f.games.execute(f.user,request),e=>e.code==='games_unavailable');
   assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);assert.equal((await f.db.query('select count(*)::int n from shop_activity')).rows[0].n,0);
@@ -305,15 +305,18 @@ test('cuentas antiguas sin historial auxiliar: abrir bolsas y cofres conserva co
  }finally{await f.db.close()}
 });
 
-test('una discrepancia con historial existente se rechaza sin borrar objetos ni conceder premios',async()=>{
+test('historial parcial: una bolsa no altera cofres y una unidad histórica válida se puede abrir',async()=>{
  const f=await fixture();try{
-  await f.db.exec("update shop_inventories set perri_cofres=4,bolsa_gemas=1 where nick='LocalA'");await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()-interval '1 day')",[randomUUID()]);
-  const before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
-  assert.equal((await f.games.containerState(f.user)).available,false);
-  await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenRewardContainer',itemKey:'bolsaGemas',openId:'server',idempotencyKey:randomUUID()}),e=>e.code==='inventory_mismatch');
-  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);assert.equal((await f.db.query('select count(*)::int n from shop_operations')).rows[0].n,0);
+  await f.db.exec("update shop_inventories set perri_cofres=4,bolsa_gemas=1 where nick='LocalA'");const id=randomUUID();await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()-interval '1 day')",[id]);
+  assert.equal((await f.games.containerState(f.user)).available,true);
+  assert.equal((await f.games.execute(f.user,{action:'publicShopOpenRewardContainer',itemKey:'bolsaGemas',openId:'server',idempotencyKey:randomUUID()})).ok,true);
+  assert.equal((await f.db.query("select perri_cofres from shop_inventories where nick='LocalA'")).rows[0].perri_cofres,4);
+  assert.equal((await f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:randomUUID()})).ok,true);
+  assert.equal((await f.db.query("select perri_cofres from shop_inventories where nick='LocalA'")).rows[0].perri_cofres,3);
+  assert.equal((await f.db.query('select status from shop_inventory_chests where chest_id=$1',[id])).rows[0].status,'available');
  }finally{await f.db.close()}
 });
+
 test('el historial filtrado por permisos RLS no se interpreta como una cuenta antigua sin historial',async()=>{
  const f=await fixture();try{
   await f.db.exec("update shop_inventories set perri_cofres=4 where nick='LocalA';create role chest_reader;grant usage on schema public to chest_reader;grant select on all tables in schema public to chest_reader;alter table shop_sessions disable row level security;alter table shop_access disable row level security;alter table shop_players disable row level security;alter table shop_logo_catalog disable row level security;alter table shop_inventories disable row level security;set role chest_reader;");
@@ -330,4 +333,78 @@ test('disponibilidad de apertura distingue configuración y fallos de datos sin 
   const events=[],games=createGames({enabled:true,legacy,pool:{connect:async()=>{throw Object.assign(Error('PRIVATE-DATABASE-SECRET'),{code})}},onDiagnostic:e=>events.push(e)});
   const result=await games.containerState({});assert.equal(result.reason,reason);assert.equal(result.available,false);assert.ok(!JSON.stringify({result,events}).includes('PRIVATE-DATABASE-SECRET'));
  }
+});
+test('Perricofre con historial parcial consume una unidad vigente sin exigir igualdad global',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=21,perri_cofres_minijuego=5 where nick='LocalA'");
+  const tracked=randomUUID();await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()+interval '1 day'),($2,'LocalA','perriCofresMinijuego',now()-interval '1 day')",[tracked,randomUUID()]);
+  const request={action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:randomUUID()};
+  const result=await f.games.execute(f.user,request);assert.equal(result.ok,true);assert.ok(result.rewardBundle.rewards.length>=2);assert.deepEqual(await f.games.execute(f.user,request),result);
+  assert.deepEqual((await f.db.query("select perri_cofres,perri_cofres_minijuego from shop_inventories where nick='LocalA'")).rows[0],{perri_cofres:20,perri_cofres_minijuego:5});
+  assert.equal((await f.db.query('select status from shop_inventory_chests where chest_id=$1',[tracked])).rows[0].status,'opened');
+ }finally{await f.db.close()}
+});
+
+test('cofres caducados o revocados no conceden premios y el rechazo no crea un recibo pendiente',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=1 where nick='LocalA'");await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()-interval '1 day')",[randomUUID()]);
+  const id=randomUUID(),before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
+  await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:id}),e=>e.code==='chest_unavailable');
+  assert.deepEqual(await f.games.containerReceipt(f.user,{itemId:'perri_cofres',idempotencyKey:id}),{status:'not_found'});
+  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);assert.equal((await f.db.query('select count(*)::int n from shop_operations')).rows[0].n,0);
+ }finally{await f.db.close()}
+});
+
+test('estado de apertura autenticado: sin recibo, confirmado, aislado por propietario y sin consumo adicional',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=2 where nick='LocalA'");const id=randomUUID();
+  assert.deepEqual(await f.games.containerReceipt(f.user,{itemId:'perri_cofres',idempotencyKey:id}),{status:'not_found'});
+  const opened=await f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:id});
+  const before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows;
+  const receipt=await f.games.containerReceipt(f.user,{itemId:'perri_cofres',idempotencyKey:id});assert.deepEqual(receipt,{status:'complete',rewards:opened.rewardBundle.rewards});
+  const other={nick:'LocalB',token:'y'.repeat(43)};await f.db.query("insert into shop_sessions(token,nick,expires_at) values($1,'LocalB',now()+interval '1 day')",[sessionKey(other.token)]);
+  assert.deepEqual(await f.games.containerReceipt(other,{itemId:'perri_cofres',idempotencyKey:id}),{status:'not_found'});
+  await assert.rejects(f.games.containerReceipt(f.user,{itemId:'bolsa_gemas',idempotencyKey:id}),e=>e.code==='operation_conflict');
+  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);
+ }finally{await f.db.close()}
+});
+
+test('COMMIT confirmado con respuesta perdida: consultar recibo recupera premios sin volver a abrir',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=1 where nick='LocalA'");let lose=true;
+  const pool={connect:async()=>({release:()=>{},query:async(...args)=>{const value=await f.db.query(...args);if(args[0]==='COMMIT'&&lose){lose=false;throw Object.assign(Error('lost'),{code:'ECONNRESET'})}return value}})};
+  const runtime=createGames({pool,legacy,enabled:true}),id=randomUUID();
+  await assert.rejects(runtime.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:id}),e=>e.code==='games_unavailable');
+  const receipt=await runtime.containerReceipt(f.user,{itemId:'perri_cofres',idempotencyKey:id});assert.equal(receipt.status,'complete');assert.ok(receipt.rewards.length>=2);
+  assert.equal((await f.db.query("select perri_cofres from shop_inventories where nick='LocalA'")).rows[0].perri_cofres,0);
+ }finally{await f.db.close()}
+});
+test('fallo tras consumir la fila auxiliar revierte cofre, premios, perfil e historial en la misma transacción',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=1 where nick='LocalA'");const tracked=randomUUID();await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()+interval '1 day')",[tracked]);
+  const beforeInventory=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,beforeProfile=(await f.db.query("select * from shop_profiles where nick='LocalA'")).rows,beforeTracking=(await f.db.query('select * from shop_inventory_chests')).rows;
+  await f.db.exec("create function reject_final_receipt() returns trigger language plpgsql as $$ begin if NEW.operation_id like 'pw2:game:%' then raise exception 'fail receipt'; end if; return NEW; end $$;create trigger reject_final_receipt before insert on shop_operations for each row execute function reject_final_receipt();");
+  const id=randomUUID();await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:id}),e=>e.code==='games_unavailable');
+  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,beforeInventory);assert.deepEqual((await f.db.query("select * from shop_profiles where nick='LocalA'")).rows,beforeProfile);assert.deepEqual((await f.db.query('select * from shop_inventory_chests')).rows,beforeTracking);
+  assert.equal((await f.db.query('select count(*)::int n from shop_activity')).rows[0].n,0);assert.deepEqual(await f.games.containerReceipt(f.user,{itemId:'perri_cofres',idempotencyKey:id}),{status:'not_found'});
+ }finally{await f.db.close()}
+});
+
+test('dos aperturas simultáneas con UUID distintos y un cofre solo confirman una recompensa',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=1 where nick='LocalA'");let tail=Promise.resolve();const pool={async connect(){let release;const previous=tail;tail=new Promise(r=>release=r);await previous;return {query:(...args)=>f.db.query(...args),release}}};
+  const a=createGames({pool,legacy,enabled:true}),b=createGames({pool,legacy,enabled:true}),ids=[randomUUID(),randomUUID()];
+  const results=await Promise.allSettled([a,b].map((g,i)=>g.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:ids[i]})));
+  assert.equal(results.filter(r=>r.status==='fulfilled'&&r.value.ok).length,1);assert.equal(results.filter(r=>r.status==='rejected'&&r.reason.code==='item_not_owned').length,1);
+  assert.equal((await f.db.query("select perri_cofres from shop_inventories where nick='LocalA'")).rows[0].perri_cofres,0);assert.equal((await f.db.query("select count(*)::int n from shop_activity where game='Perricofre'")).rows[0].n,1);
+ }finally{await f.db.close()}
+});
+test('una fila auxiliar cuyo UPDATE no se confirma impide confirmar premios y revierte el consumo',async()=>{
+ const f=await fixture();try{
+  await f.db.exec("update shop_inventories set perri_cofres=1 where nick='LocalA'");await f.db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values($1,'LocalA','perriCofres',now()+interval '1 day')",[randomUUID()]);
+  await f.db.exec("create function stop_chest_update() returns trigger language plpgsql as $$ begin return NULL; end $$;create trigger stop_chest_update before update on shop_inventory_chests for each row execute function stop_chest_update();");
+  const before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,id=randomUUID();
+  await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:id}),e=>e.code==='operation_conflict');
+  assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);assert.deepEqual(await f.games.containerReceipt(f.user,{itemId:'perri_cofres',idempotencyKey:id}),{status:'not_found'});assert.equal((await f.db.query('select count(*)::int n from shop_activity')).rows[0].n,0);
+ }finally{await f.db.close()}
 });

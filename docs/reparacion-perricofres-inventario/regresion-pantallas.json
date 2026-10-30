@@ -1,0 +1,74 @@
+{
+  "localFixtures": true,
+  "physicalMobileTested": false,
+  "results": [
+    {
+      "width": 320,
+      "height": 568,
+      "menusStable": true,
+      "socialFit": true,
+      "sections": 5
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "menusStable": true,
+      "socialFit": true,
+      "sections": 5
+    },
+    {
+      "width": 373,
+      "height": 734,
+      "menusStable": true,
+      "socialFit": true,
+      "sections": 5
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "menusStable": true,
+      "socialFit": true,
+      "sections": 5
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "menusStable": true,
+      "socialFit": true,
+      "sections": 5
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "menusStable": true,
+      "socialFit": true,
+      "sections": 5
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "menusStable": true,
+      "socialFit": true,
+      "sections": 5
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "desktopHomeUnchanged": true,
+      "inventorySingleScroll": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "desktopHomeUnchanged": true,
+      "inventorySingleScroll": true
+    },
+    {
+      "width": 1440,
+      "height": 450,
+      "desktopHomeUnchanged": true,
+      "inventorySingleScroll": true
+    }
+  ],
+  "errors": []
+}

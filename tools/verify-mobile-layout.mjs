@@ -83,13 +83,13 @@ try{
  for(const [width,height] of [[1440,1000],[1024,768],[1440,450]]){
   const context=await browser.newContext({viewport:{width,height}}),page=await context.newPage();await setup(page);await page.waitForTimeout(300);const desktopState=()=>[...document.querySelectorAll('body *')].map(el=>({rect:el.getBoundingClientRect().toJSON(),styles:[null,'::before','::after'].map(p=>{const s=getComputedStyle(el,p);return Object.fromEntries([...s].map(k=>[k,s.getPropertyValue(k)]))})}));const after=await page.evaluate(desktopState);await page.screenshot({path:output+'/pc-'+width+'-after.png'});
   await page.route('**/src/styles.css?baseline=1',r=>r.fulfill({contentType:'text/css',body:css.split('/* La geometría móvil')[0].replace('.scene:has(.show-home) .footer-social {display:flex}', '.scene:has(.show-home):has(#session-options[hidden]):has(#overlay-layer[hidden]) .footer-social {display:flex}')}));
-  await page.evaluate(()=>new Promise(resolve=>{const link=document.querySelector('link[href="./src/styles.css"]');link.onload=resolve;link.href='/src/styles.css?baseline=1'}));await page.evaluate(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));await page.waitForTimeout(300);assert.deepEqual(await page.evaluate(desktopState),after,'PC debe conservar geometría y estilos');await page.screenshot({path:output+'/pc-'+width+'-before.png'});await page.locator('[data-route="inventory"]').first().click();await page.locator('[data-live-item="espada"]').waitFor();
-  await page.evaluate(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));
-  const inventoryBefore=await page.evaluate(desktopState);
-  await page.route('**/src/preview-pages.css?baseline=1',r=>r.fulfill({contentType:'text/css',body:inventoryCss.split('/* Inventario móvil: un único')[0]}));
-  await page.evaluate(()=>new Promise(resolve=>{const link=document.querySelector('link[href="./src/preview-pages.css"]');link.onload=resolve;link.href='/src/preview-pages.css?baseline=1'}));
-  assert.ok(JSON.stringify(await page.evaluate(desktopState))===JSON.stringify(inventoryBefore),'El inventario de escritorio debe conservar todos sus estilos y dimensiones');
-  results.push({width,height,desktopGeometryAndStylesUnchanged:true,inventoryUnchanged:true});await context.close();
+  await page.evaluate(()=>new Promise(resolve=>{const link=document.querySelector('link[href="./src/styles.css"]');link.onload=resolve;link.href='/src/styles.css?baseline=1'}));await page.evaluate(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));await page.waitForTimeout(300);assert.ok(JSON.stringify(await page.evaluate(desktopState))===JSON.stringify(after),'La portada de PC debe conservar geometría y estilos');await page.screenshot({path:output+'/pc-'+width+'-before.png'});await page.locator('[data-route="inventory"]').first().click();await page.locator('[data-live-item="espada"]').waitFor();
+  await page.locator('[data-live-item="espada"]').waitFor();
+  const pinned=await page.locator('.pw04-inventory-balances').boundingBox();
+  await page.locator('.pw04-inventory-grid').evaluate(e=>e.scrollTop=e.scrollHeight);
+  assert.equal(await page.locator('.content-scroll').evaluate(e=>e.scrollTop),0);
+  assert.deepEqual(await page.locator('.pw04-inventory-balances').boundingBox(),pinned);
+  results.push({width,height,desktopHomeUnchanged:true,inventorySingleScroll:true});await context.close();
  }
  assert.deepEqual(errors,[]);await writeFile(output+'/results.json',JSON.stringify({localFixtures:true,physicalMobileTested:false,results,errors},null,2));console.log(JSON.stringify({output,cases:results.length,errors}));
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

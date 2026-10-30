@@ -206,3 +206,11 @@ test('inventario informa el motivo de apertura bloqueada sin ocultar cantidades 
   const auth=await login(),response=await request('/inventory',{cookie:auth.cookie});assert.equal(response.status,200);assert.equal(response.data.canOpenContainers,false);assert.equal(response.data.containerOpeningReason,'inventory_mismatch');assert.equal(response.data.inventory.pc,8);assert.ok(!JSON.stringify(response.data).includes('token'));
  },{games:{containerState:async()=>({available:false,reason:'inventory_mismatch'})}});
 });
+test('consulta de apertura exige sesión, limita parámetros y utiliza la identidad autenticada',()=>{
+ const calls=[];return use(async({login,request})=>{
+  const id='22345678-1234-4234-8234-123456789abc',path='/inventory/open/status?itemId=perri_cofres&id='+id;
+  assert.equal((await request(path)).status,401);const auth=await login();
+  assert.equal((await request(path+'&nick=Beta',{cookie:auth.cookie})).status,400);
+  const response=await request(path,{cookie:auth.cookie});assert.equal(response.status,200);assert.deepEqual(response.data,{status:'not_found'});assert.equal(calls[0].user.nick,'Alpha');assert.equal(calls[0].params.idempotencyKey,id);
+ },{games:{containerReceipt:async(user,params)=>{calls.push({user,params});return {status:'not_found'}}}});
+});

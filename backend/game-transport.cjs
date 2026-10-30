@@ -14,9 +14,9 @@ async function request(input,opts={}){
   sql='SELECT public.'+ident(parts[1])+'('+Object.entries(body??{}).map(([key,value])=>ident(key)+'=>'+param(value)).join(',')+') AS result';
  }else{
   const table=parts[0];if(!tables.has(table))throw Error('table_not_allowed');
-  // Modo de compatibilidad decidido en servidor y bajo bloqueo: cuenta sin NINGÚN
-  // registro auxiliar. El backend original soporta operar con sus contadores;
-  // no permitir que su sincronización opcional los sustituya por ceros.
+  // Apertura coordinada por el gateway bajo bloqueo: este consume la fila auxiliar
+  // pertinente y el legado conserva los contadores, sin sincronizaciones globales
+  // que borren unidades originales u otros tipos de cofres.
   if(table==='shop_inventory_chests'&&state.counterOnlyChests)throw Error('legacy_inventory_counter_mode');
   const filters=[];
   for(const [key,filter]of u.searchParams){if(['select','order','limit','on_conflict','offset'].includes(key))continue;

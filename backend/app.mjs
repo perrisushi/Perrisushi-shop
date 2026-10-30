@@ -44,7 +44,7 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
-   const known=['/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
+   const known=['/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
    if(!['GET','POST'].includes(req.method))fail(405,'method_not_allowed');
    if(!reads.take(clientIP))fail(429,'too_many_requests');
@@ -75,7 +75,11 @@ export function createBackend({repository,economy,games,publicOrigin='http://127
    if(!user)fail(401,'session_expired');
    if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const [inventory,readiness]=await Promise.all([repository.inventory(user.nick),games?.availability?games.availability(user):Promise.resolve(games?.availableFor?.(user)).then(available=>({available:available===true}))]);send(200,{...readiness,available:inventory!==null&&readiness.available===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))},{'X-CSRF-Token':csrfFor(user.token,csrfSecret)});return}
    // La identidad siempre deriva de la cookie; los parámetros privados ajenos se rechazan.
-   for(const field of url.searchParams.keys())if(!(route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:['limit','cursor']).includes(field))fail(400,'invalid_request');
+   for(const field of url.searchParams.keys())if(!(route==='/api/inventory/open/status'?['id','itemId']:route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:['limit','cursor']).includes(field))fail(400,'invalid_request');
+   if(route==='/api/inventory/open/status'){
+    if(req.method!=='GET')fail(405,'method_not_allowed');if(!games?.containerReceipt)fail(503,'games_not_configured');
+    send(200,await games.containerReceipt(user,{itemId:url.searchParams.get('itemId'),idempotencyKey:url.searchParams.get('id')}));return;
+   }
    if(req.method==='POST'){
     if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
     const body=await jsonBody(req,route==='/api/games/action'?1048576:4096);

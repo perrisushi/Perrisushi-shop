@@ -22,12 +22,9 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
  // Los contadores originales no se sustituyen por la ausencia de historial auxiliar.
  const chestStorage=async(client,nick)=>{
   if((await client.query("SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered")).rows[0]?.filtered)throw new BackendError(503,'operation_disabled');
-  const inventory=(await client.query('SELECT perri_cofres,perri_cofres_minijuego FROM public.shop_inventories WHERE nick=$1',[nick])).rows[0];
-  const rows=(await client.query("SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=now())::int quantity FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type",[nick])).rows;
+  const rows=(await client.query("SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=clock_timestamp())::int quantity,count(*) FILTER (WHERE status<>'opened' AND NOT (status='available' AND expires_at>=clock_timestamp()))::int unavailable FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type",[nick])).rows;
   const counts=Object.fromEntries(rows.filter(r=>r.quantity>0).map(r=>[r.chest_type,r.quantity]));
-  const counterOnly=rows.length===0;
-  const consistent=Boolean(inventory)&&(counterOnly||Number(inventory.perri_cofres??0)===(counts.perriCofres??0)&&Number(inventory.perri_cofres_minijuego??0)===(counts.perriCofresMinijuego??0));
-  return {counts,counterOnly,consistent};
+  return {counts,unavailable:Object.fromEntries(rows.map(r=>[r.chest_type,r.unavailable]))};
  };
  const runtime={configured:Boolean(enabled&&pool&&legacy&&sourceCompatible),async containerState(user){
   if(!runtime.configured||typeof legacy?.handleShopAction!=='function'){const reason=!enabled?'games_disabled':!pool?'database_not_configured':!sourceCompatible?'database_project_mismatch':'original_backend_missing';emit('container_unavailable',{reason});return {available:false,reason}}let client;
@@ -35,9 +32,22 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
    client=measuredClient(await timed('poolMs',()=>pool.connect()));if(!await sharedSession(client,user)){emit('container_unavailable',{reason:'session_not_shared'});return {available:false,reason:'session_not_shared'}}
    const catalog=await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1');if(!catalog.rows.length){emit('container_unavailable',{reason:'catalog_unavailable'});return {available:false,reason:'catalog_unavailable'}}
    const storage=await chestStorage(client,user.nick);
-   if(!storage.consistent)emit('container_inventory_mismatch');
-   return {available:storage.consistent,counts:storage.counts,reason:storage.consistent?'ready':'inventory_mismatch'};
+   return {available:true,counts:storage.counts,reason:'ready'};
   }catch(error){emit('container_read_failed',{failure:gameFailure(error)});return {available:false,reason:error.code==='42501'||error instanceof BackendError&&error.code==='operation_disabled'?'storage_permissions':error.code==='42P01'?'storage_schema_missing':['28P01','28000'].includes(error.code)?'database_credentials':'database_unavailable'}}finally{client?.release()}
+ },async containerReceipt(user,{idempotencyKey,itemId}={}){
+  const specs={perri_cofres:['publicShopOpenInventoryChest','chestType','perriCofres'],perri_cofres_minijuego:['publicShopOpenInventoryChest','chestType','perriCofresMinijuego'],bolsa_gemas:['publicShopOpenRewardContainer','itemKey','bolsaGemas'],bolsa_chatarra:['publicShopOpenRewardContainer','itemKey','bolsaChatarra'],bolsa_especial:['publicShopOpenRewardContainer','itemKey','bolsaEspecial'],cajita_armas:['publicShopOpenRewardContainer','itemKey','cajitaArmas']};
+  if(!Object.hasOwn(specs,itemId??'')||! /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(idempotencyKey??''))throw new BackendError(400,'invalid_request');
+  if(!runtime.configured)throw new BackendError(503,'games_not_configured');let client;
+  try{
+   client=measuredClient(await timed('poolMs',()=>pool.connect()));await client.query('BEGIN');await client.query("SELECT set_config('lock_timeout','5s',true),set_config('statement_timeout','10s',true)");
+   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('pw2:shared-games-economy',0))");
+   if(!await sharedSession(client,user))throw new BackendError(401,'session_expired');
+   const record=(await client.query('SELECT action,response FROM public.shop_operations WHERE operation_id=$1 AND nick=$2',['pw2:game:'+idempotencyKey.toLowerCase(),user.nick])).rows[0];
+   if(!record){await client.query('COMMIT');return {status:'not_found'}}
+   const [action,field,value]=specs[itemId],result=record.response?.result;
+   if(record.action!==action||result?.[field]!==value)throw new BackendError(409,'operation_conflict');
+   await client.query('COMMIT');return {status:'complete',rewards:result.rewardBundle?.rewards??(result.reward?[result.reward]:[])};
+  }catch(error){try{await client?.query('ROLLBACK')}catch{}if(error instanceof BackendError)throw error;emit('container_receipt_failed',{failure:gameFailure(error)});throw new BackendError(503,'games_unavailable')}finally{client?.release()}
  },async availability(user){
   const reject=reason=>{emit(reason);return {available:false,games:emptyGames(),reason}};
   if(!enabled)return reject('games_disabled');
@@ -75,17 +85,25 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
    const existing=recordOperation?(await client.query('SELECT nick,action,response FROM public.shop_operations WHERE operation_id=$1',[op])).rows[0]:null;
    if(existing){if(existing.nick!==user.nick||existing.action!==body.action||existing.response.fingerprint!==fingerprint)throw new BackendError(409,'operation_conflict');await client.query('COMMIT');return existing.response.result}
    // No crear cuentas ni inventarios al abrir un juego.
-   const inventory=(await client.query('SELECT nick FROM public.shop_inventories WHERE nick=$1 FOR UPDATE',[user.nick])).rows[0];
-   if(!inventory)throw new BackendError(409,'inventory_missing');
    const openingContainer=['publicShopOpenInventoryChest','publicShopOpenRewardContainer'].includes(body.action);
+   const inventory=(await client.query(openingContainer?'SELECT nick,perri_cofres,perri_cofres_minijuego FROM public.shop_inventories WHERE nick=$1 FOR UPDATE':'SELECT nick FROM public.shop_inventories WHERE nick=$1 FOR UPDATE',[user.nick])).rows[0];
+   if(!inventory)throw new BackendError(409,'inventory_missing');
    if(openingContainer&&!(await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1')).rows.length)throw new BackendError(503,'operation_disabled');
-   const chestState=openingContainer?await chestStorage(client,user.nick):null;
-   if(chestState&&!chestState.consistent)throw new BackendError(409,'inventory_mismatch');
+   let trackedChest=null;
+   if(body.action==='publicShopOpenInventoryChest'){
+    const storage=await chestStorage(client,user.nick),field=body.chestType==='perriCofres'?'perri_cofres':'perri_cofres_minijuego',quantity=Number(inventory[field]);
+    if(!Number.isSafeInteger(quantity)||quantity<=0)throw new BackendError(409,'item_not_owned');
+    trackedChest=(await client.query("SELECT chest_id FROM public.shop_inventory_chests WHERE nick=$1 AND chest_type=$2 AND status='available' AND expires_at>=clock_timestamp() ORDER BY expires_at,obtained_at,chest_id LIMIT 1 FOR UPDATE",[user.nick,body.chestType])).rows[0];
+    // Un historial parcial no invalida las unidades originales no representadas.
+    // Nunca reabrir unidades que sí constan como caducadas/revocadas.
+    if(!trackedChest&&(storage.unavailable[body.chestType]??0)>=quantity)throw new BackendError(409,'chest_unavailable');
+   }
    const scoped={...payload};for(const field of ['openId','operationId','chestOpenId'])if(Object.hasOwn(scoped,field))scoped[field]='pw2:inner:'+user.nick+':'+operationId;
-   const raw=await transport.withClient(client,()=>legacy.handleShopAction({...scoped,action:body.action,sessionToken:sessionKey(user.token)}),{shop_sessions:verified.session,shop_access:verified.access,preserveCatalog:openingContainer,counterOnlyChests:chestState?.counterOnly===true});
+   const raw=await transport.withClient(client,()=>legacy.handleShopAction({...scoped,action:body.action,sessionToken:sessionKey(user.token)}),{shop_sessions:verified.session,shop_access:verified.access,preserveCatalog:openingContainer,counterOnlyChests:openingContainer});
    const gear=new Set(['espada','espadaLv2','espadaLv3','espadaLegendaria','escudo','escudoMadera','escudoMetal','escudoLegendario','cuchillo','collar','cascoSushi','guantesSushi','pecheraSushi','pantalonesSushi','botasSushi','pinzaReal']);
    const result=JSON.parse(JSON.stringify(raw,(key,value)=>['sessionToken','code_hash','password_hash','token'].includes(key)?undefined:key==='defenderInventory'&&value?Object.fromEntries(Object.entries(value).filter(([field])=>gear.has(field))):value));
    if(!result?.ok){await client.query('ROLLBACK');return result??{ok:false,error:'game_failed'}}
+   if(trackedChest){const consumed=await client.query("UPDATE public.shop_inventory_chests SET status='opened',opened_at=now(),updated_at=now() WHERE chest_id=$1 AND nick=$2 AND status='available' RETURNING chest_id",[trackedChest.chest_id,user.nick]);if(consumed.rows.length!==1)throw new BackendError(409,'operation_conflict')}
    if(recordOperation)await client.query('INSERT INTO public.shop_operations(operation_id,nick,action,response,created_at) VALUES($1,$2,$3,$4,now())',[op,user.nick,body.action,JSON.stringify({fingerprint,result})]);
    await client.query('COMMIT');return result;
   }catch(error){try{await client?.query('ROLLBACK')}catch{}try{onError(error)}catch{}emit('game_action_failed',{action:body.action,failure:error instanceof BackendError?error.code:gameFailure(error)});if(error instanceof BackendError)throw error;throw new BackendError(503,'games_unavailable')}

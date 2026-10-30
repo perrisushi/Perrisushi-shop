@@ -1,3 +1,5 @@
+> Informe histórico: la validación global y el tratamiento de aperturas pendientes descritos aquí han sido sustituidos por la [reparación de Perricofres e inventario](../reparacion-perricofres-inventario/INFORME.md).
+
 # Botón de apertura: visibilidad y diagnóstico
 
 ## Confirmado con la captura de producción

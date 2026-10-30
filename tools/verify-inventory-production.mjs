@@ -31,7 +31,10 @@ try{
  }catch(error){return Response.json({code:error.code,message:error.message},{status:400})}finally{client.release()}};
  const repo=createRepository({url:process.env.SUPABASE_URL,key:'local',allowSessionWrites:true,fetchImpl});
  const economy=createEconomy({url:process.env.SUPABASE_URL,key:'local',enabled:true,rafflePrice:3500,raffleMax:3,fetchImpl});
- const games=createGames({pool,legacy,enabled:true,onError:e=>console.log('LOCAL GAME:',e.message)});
+ // Elegir un roll válido de las reglas originales para cubrir siempre el premio de Perrilogo adicional.
+ let firstRoll=true;
+ const testLegacy={...legacy,async handleShopAction(payload){if(payload.action!=='publicShopOpenInventoryChest'||!firstRoll)return legacy.handleShopAction(payload);firstRoll=false;const random=Math.random;Math.random=()=>0;try{return await legacy.handleShopAction(payload)}finally{Math.random=random}}};
+ const games=createGames({pool,legacy:testLegacy,enabled:true,onError:e=>console.log('LOCAL GAME:',e.message)});
  const freshBackend=()=>createBackend({repository:repo,economy,games,publicOrigin:'http://127.0.0.1:4192',sessionStore:'supabase',allowSessionWrites:true});
  const handler=freshBackend();
  api=http.createServer(handler);
@@ -39,64 +42,80 @@ try{
  await new Promise(r=>api.listen(4193,'127.0.0.1',r));await new Promise(r=>web.listen(4192,'127.0.0.1',r));
  browser=await chromium.launch({channel:'msedge',headless:true});await mkdir(output,{recursive:true});
  const results=[];
- // Regresión real: cuenta antigua con cantidades y sin filas en la tabla auxiliar.
- await db.query("update shop_inventories set perri_cofres=7,perri_cofres_minijuego=3,bolsa_gemas=2,bolsa_chatarra=2,bolsa_especial=2,cajita_armas=2 where nick='LocalB'");
- const legacyContext=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),legacyPage=await legacyContext.newPage();legacyPage.on('pageerror',e=>errors.push(e.message));
- await legacyPage.goto('http://127.0.0.1:4192/#inventory');await legacyPage.getByLabel('Usuario',{exact:true}).fill('LocalB');await legacyPage.getByLabel('Contraseña',{exact:true}).fill('local-e2e');await legacyPage.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await legacyPage.waitForFunction(()=>document.body.dataset.access==='ready');await legacyPage.goto('http://127.0.0.1:4192/#inventory');
- for(const id of ['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'])await legacyPage.locator('[data-live-item="'+id+'"]').waitFor();
- await legacyPage.evaluate(()=>Promise.all([...document.querySelectorAll('.pw04-inventory-grid img')].map(i=>i.decode())));
- await legacyPage.screenshot({path:output+'/legacy-inventory.png'});
- for(const id of ['bolsa_gemas','perri_cofres']){
-  await legacyPage.locator('[data-live-item="'+id+'"]').click();await legacyPage.locator('[data-open-container]').click();await legacyPage.locator('.container-rewards li').first().waitFor();await legacyPage.locator('.modal-close').click();
-  const row=(await db.query("select perri_cofres,perri_cofres_minijuego from shop_inventories where nick='LocalB'")).rows[0];assert.deepEqual(row,{perri_cofres:id==='bolsa_gemas'?7:6,perri_cofres_minijuego:3});
+ async function login(context,nick='LocalA'){
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('http://127.0.0.1:4192/#inventory');await page.getByLabel('Usuario',{exact:true}).fill(nick);await page.getByLabel('Contraseña',{exact:true}).fill('local-e2e');await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await page.waitForFunction(()=>document.body.dataset.access==='ready');await page.goto('http://127.0.0.1:4192/#inventory');await page.locator('[data-live-item="perri_cofres"]').waitFor();return page;
  }
- results.push({mode:'legacy-counters',mobile:true,sixContainersVisible:true,bagPreservedChests:true,chestConsumedOnce:true});
- // Una lectura de disponibilidad negativa no debe eliminar la acción real de apertura.
- const bagBeforeFalse=(await db.query("select bolsa_chatarra from shop_inventories where nick='LocalB'")).rows[0].bolsa_chatarra;
- await legacyPage.route('**/api/inventory',async route=>{const response=await route.fetch(),data=await response.json();await route.fulfill({response,json:{...data,canOpenContainers:false,containerOpeningReason:'unavailable'}})});
- await legacyPage.reload();await legacyPage.locator('[data-live-item="bolsa_chatarra"]').waitFor();await legacyPage.locator('[data-live-item="bolsa_chatarra"]').click();await legacyPage.locator('[data-open-container]').waitFor();
- await legacyPage.screenshot({path:output+'/opening-button-unavailable-flag.png'});
- await legacyPage.locator('[data-open-container]').click();await legacyPage.locator('.container-rewards li').first().waitFor();await legacyPage.locator('.modal-close').click();
- assert.equal((await db.query("select bolsa_chatarra from shop_inventories where nick='LocalB'")).rows[0].bolsa_chatarra,bagBeforeFalse-1);
- results.push({mode:'unavailable-flag',buttonVisible:true,realOpening:true});
- await legacyPage.unroute('**/api/inventory');
- await db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values(gen_random_uuid(),'LocalB','perriCofres',now()-interval '1 day')");
- await legacyPage.reload();await legacyPage.locator('[data-live-item="perri_cofres"]').waitFor();
- const deniedState=await legacyPage.evaluate(()=>fetch('/api/inventory').then(r=>r.json()));assert.equal(deniedState.canOpenContainers,false);assert.equal(deniedState.containerOpeningReason,'inventory_mismatch');
- const beforeDenied=(await db.query("select * from shop_inventories where nick='LocalB'")).rows;
- await legacyPage.locator('[data-live-item="perri_cofres"]').click();await legacyPage.locator('[data-open-container]').waitFor();
- const deniedResponse=legacyPage.waitForResponse(r=>r.url().endsWith('/api/inventory/open'));await legacyPage.locator('[data-open-container]').click();assert.equal((await deniedResponse).status(),409);await legacyPage.locator('.container-status').filter({hasText:'Tus objetos se han conservado'}).waitFor();
- assert.equal(await legacyPage.locator('.container-rewards').count(),0);assert.deepEqual((await db.query("select * from shop_inventories where nick='LocalB'")).rows,beforeDenied);
- await legacyPage.screenshot({path:output+'/opening-rejected-with-message.png'});results.push({mode:'blocked-opening',buttonVisible:true,serverRejected:true,inventoryUnchanged:true,errorVisible:true});await legacyContext.close();
- const items=['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'];
- for(const [width,height,mobile] of [[1440,1000,false],[1024,768,false],[320,568,true],[390,844,true],[430,932,true],[844,390,true]]){
-  // Cada escenario tiene su instancia aislada: conserva las cuotas reales sin acumular toda la batería en una sola cuenta/minuto.
+ async function inventoryRow(nick='LocalA'){return (await db.query('select * from shop_inventories where nick=$1',[nick])).rows[0]}
+ async function checkLayout(page,mobile){
+  const measure=()=>{
+   const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();
+   return {header:rect('.content-header'),balances:rect('.pw04-inventory-balances'),grid:rect('.pw04-inventory-grid'),outer:[document.documentElement,document.body,document.querySelector('.content-scroll'),document.querySelector('.pw04-inventory'),document.querySelector('.pw04-inventory-main')].map(e=>({height:e.clientHeight,scrollHeight:e.scrollHeight,top:e.scrollTop})),w:innerWidth,h:innerHeight};
+  };
+  const before=await page.evaluate(measure),grid=page.locator('.pw04-inventory-grid');
+  assert.ok(before.grid.y>=before.balances.bottom&&before.grid.bottom<=before.h+1,JSON.stringify(before));
+  assert.ok(before.outer.every(e=>e.scrollHeight<=e.height+1&&e.top===0),JSON.stringify(before.outer));
+  assert.ok(await grid.evaluate(e=>e.scrollWidth<=e.clientWidth+1));
+  const rowFit=await grid.evaluate(e=>{const s=getComputedStyle(e),first=e.querySelector('.pw04-inventory-slot').getBoundingClientRect(),gap=parseFloat(s.rowGap)||0,area=e.clientHeight-parseFloat(s.paddingTop)-parseFloat(s.paddingBottom);return (area+gap)/(first.height+gap)});assert.ok(Math.abs(rowFit-Math.round(rowFit))<.025,'Filas completas: '+rowFit);
+  const first=await page.locator('.pw04-inventory-slot').first().boundingBox();assert.ok(Math.abs(first.width-first.height)<1);assert.ok(first.height<=before.grid.height-10);
+  if(mobile){
+   const c=await page.context().newCDPSession(page),x=before.grid.x+before.grid.width/2,y=before.grid.bottom-15,end=before.grid.y+15;
+   await c.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(let i=1;i<=10;i++){await c.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+(end-y)*i/10}]});await page.waitForTimeout(16)}await c.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await c.detach();
+  }else{await page.mouse.move(before.grid.x+before.grid.width/2,before.grid.y+before.grid.height/2);await page.mouse.wheel(0,600)}
+  await page.waitForTimeout(220);assert.ok(await grid.evaluate(e=>e.scrollTop>0),'La cuadrícula debe responder al desplazamiento');
+  const after=await page.evaluate(measure);assert.deepEqual(after.header,before.header);assert.deepEqual(after.balances,before.balances);assert.ok(after.outer.every(e=>e.top===0));
+  await grid.evaluate(e=>new Promise(resolve=>{let last=e.scrollTop,stable=0;const check=()=>{const value=e.scrollTop;stable=value===last?stable+1:0;last=value;if(stable>=12)resolve();else requestAnimationFrame(check)};check()}));
+  const insideScroll=await grid.evaluate(e=>e.scrollTop);await page.mouse.move(before.balances.x+20,before.balances.y+10);await page.mouse.wheel(0,400);await page.waitForTimeout(150);assert.equal(await grid.evaluate(e=>e.scrollTop),insideScroll);
+  await page.locator('.content-scroll').evaluate(e=>e.scrollTop=10000);assert.equal(await page.locator('.content-scroll').evaluate(e=>e.scrollTop),0);
+  await grid.evaluate(e=>e.scrollTop=e.scrollHeight);const last=await page.locator('.pw04-inventory-slot').last().boundingBox();assert.ok(last.y>=before.grid.y&&last.y+last.height<=before.grid.bottom-3,'La última casilla debe verse completa');assert.ok(Math.abs(last.width-last.height)<1);
+  const imageFit=await page.locator('.pw04-inventory-slot img').evaluateAll(images=>images.every(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return r.width<=p.width&&r.height<=p.height}));assert.ok(imageFit);
+  await grid.evaluate(e=>e.scrollTop=0);await page.locator('[data-live-item="polvo_gema"]').click();await page.locator('.item-detail').waitFor();await page.keyboard.press('Escape');assert.deepEqual((await page.evaluate(measure)).balances,before.balances);
+  return {grid:before.grid,cell:first,oneScroll:true,squareCells:true,lastRowAccessible:true};
+ }
+ const integerColumns=(await db.query("select column_name from information_schema.columns where table_name='shop_inventories' and table_schema='public' and data_type='integer'")).rows.map(r=>r.column_name).filter(k=>!['pc','monedas','polvo_gema'].includes(k));
+ assert.ok(integerColumns.every(k=>/^[a-z_0-9]+$/.test(k)));
+ let firstConfirmedId;
+ const sizes=[[1920,1080,false],[1440,900,false],[1024,768,false],[800,900,false],[1100,620,false],[1000,550,false],[1200,400,false],[900,280,false],[320,568,true],[390,844,true],[430,932,true],[667,375,true],[844,390,true]];
+ for(const [width,height,mobile] of sizes){
   api.removeAllListeners('request');api.on('request',freshBackend());
-  await db.query("update shop_inventories set bolsa_gemas=1,bolsa_chatarra=1,bolsa_especial=1,cajita_armas=1 where nick='LocalA'");
+  await db.query('update shop_inventories set '+integerColumns.map(k=>'"'+k+'"='+(k==='perri_cofres'?21:1)).join(',')+" where nick='LocalA'");
   await db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values(gen_random_uuid(),'LocalA','perriCofres',now()+interval '1 day'),(gen_random_uuid(),'LocalA','perriCofresMinijuego',now()+interval '1 day')");
-  await db.query("update shop_inventories set perri_cofres=1,perri_cofres_minijuego=1 where nick='LocalA'");
-  const context=await browser.newContext({viewport:{width,height},hasTouch:mobile,isMobile:mobile}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:4192/#inventory');await page.getByLabel('Usuario',{exact:true}).fill('LocalA');await page.getByLabel('Contraseña',{exact:true}).fill('local-e2e');await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await page.waitForFunction(()=>document.body.dataset.access==='ready');await page.goto('http://127.0.0.1:4192/#inventory');await page.locator('[data-live-item="perri_cofres"]').waitFor();
-  await page.screenshot({path:output+'/'+width+'x'+height+'-inventory.png'});
-  for(const item of items){
-   const button=page.locator('[data-live-item="'+item+'"]');await button.click();await page.locator('[data-open-container]').waitFor();await page.screenshot({path:output+'/'+width+'x'+height+'-'+item+'-confirm.png'});
-   const response=page.waitForResponse(r=>r.url().endsWith('/api/inventory/open')&&r.request().method()==='POST');await page.locator('[data-open-container]').click();const result=await response;assert.equal(result.status(),200,await result.text());const data=await result.json();assert.ok(data.rewards.length>0);
-   await page.locator('.container-rewards li').first().waitFor();assert.equal(await page.locator('.container-rewards li').count(),data.rewards.length);assert.equal(await page.locator('[data-open-container]').count(),0);
-   await page.evaluate(()=>Promise.all([...document.querySelectorAll('.modal-card img')].map(i=>i.decode())));
-   const fit=await page.locator('.modal-card').evaluate(el=>({width:el.clientWidth,scrollWidth:el.scrollWidth,rect:el.getBoundingClientRect().toJSON(),h:innerHeight}));assert.ok(fit.scrollWidth<=fit.width+1&&fit.rect.y>=0&&fit.rect.bottom<=fit.h+1,JSON.stringify(fit));
-   if(mobile){const visible=await page.locator('.container-rewards').evaluate(el=>{const c=el.closest('.modal-card').getBoundingClientRect(),r=el.getBoundingClientRect(),hero=el.parentElement.querySelector('img').getBoundingClientRect(),head=el.closest('.modal-card').querySelector('.modal-head').getBoundingClientRect();return {bottom:r.bottom,limit:c.bottom-4,heroTop:hero.top,headerBottom:head.bottom}});assert.ok(visible.bottom<=visible.limit+1&&visible.heroTop>=visible.headerBottom-1,JSON.stringify(visible))}
-   await page.screenshot({path:output+'/'+width+'x'+height+'-'+item+'-rewards.png'});await page.locator('.modal-close').click();
-   const inventory=await page.evaluate(()=>fetch('/api/inventory').then(r=>r.json()));assert.ok(inventory.inventory[item]>=0);
+  const context=await browser.newContext({viewport:{width,height},hasTouch:mobile,isMobile:mobile}),page=await login(context);let posts=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith('/api/inventory/open')){posts++;if(!firstConfirmedId&&r.postDataJSON().itemId==='perri_cofres')firstConfirmedId=r.postDataJSON().idempotencyKey}});
+  const fit=await checkLayout(page,mobile);await page.screenshot({path:output+'/'+width+'x'+height+'-inventory.png'});
+  const before=await inventoryRow();await page.locator('[data-live-item="perri_cofres"]').click();await page.locator('[data-open-container]').waitFor();
+  await page.locator('[data-open-container]').evaluate(e=>{e.click();e.click()});await page.locator('.container-rewards li').first().waitFor();assert.equal((await inventoryRow()).perri_cofres,before.perri_cofres-1);assert.equal(posts,1);
+  await page.locator('[data-next-container]').click();await page.waitForFunction(()=>document.querySelector('.container-rewards')&&!document.querySelector('[aria-busy="true"]'));assert.equal((await inventoryRow()).perri_cofres,before.perri_cofres-2);assert.equal(posts,2);
+  await page.evaluate(()=>Promise.all([...document.querySelectorAll('.modal-card img')].map(i=>i.decode())));
+  const modal=await page.locator('.modal-card').evaluate(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,bottom:r.bottom,right:r.right,h:innerHeight,w:innerWidth,sw:e.scrollWidth,cw:e.clientWidth}});assert.ok(modal.y>=0&&modal.bottom<=modal.h+1&&modal.sw<=modal.cw+1,JSON.stringify(modal));
+  await page.screenshot({path:output+'/'+width+'x'+height+'-rewards.png'});await page.locator('.modal-close').click();
+  for(const item of ['perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas']){
+   const previous=await inventoryRow();await page.locator('[data-live-item="'+item+'"]').click();await page.locator('[data-open-container]').click();await page.locator('.container-rewards li').first().waitFor();assert.equal((await inventoryRow())[item],previous[item]-1);await page.locator('.modal-close').click();
   }
-  // Perder la respuesta después del COMMIT, recargar y recuperar el mismo recibo.
-  await db.query("update shop_inventories set bolsa_gemas=1 where nick='LocalA'");await page.reload();await page.locator('[data-live-item="bolsa_gemas"]').waitFor();
-  let lost=false;await page.route('**/api/inventory/open',async route=>{if(lost){await route.continue();return}lost=true;const response=await route.fetch();assert.equal(response.status(),200);await route.abort('failed')});
-  await page.locator('[data-live-item="bolsa_gemas"]').click();await page.locator('[data-open-container]').click();await page.locator('.container-status').filter({hasText:'No se pudo'}).waitFor();
-  const afterLoss=(await db.query("select polvo_gema from shop_inventories where nick='LocalA'")).rows[0].polvo_gema;
-  await page.reload();await page.locator('.inventory-recovery button').waitFor();await page.locator('.inventory-recovery button').click();await page.locator('[data-open-container]').click();await page.locator('.container-rewards li').waitFor();
-  assert.equal((await db.query("select polvo_gema from shop_inventories where nick='LocalA'")).rows[0].polvo_gema,afterLoss);
-  await page.locator('.modal-close').click();assert.equal(await page.locator('.inventory-recovery button').count(),0);
-  results.push({width,height,mobile,containers:6,realLocalBackend:true,lostResponseRecovered:true});await context.close();
+  if(width===320||width===667){
+   const beforeReceipt=await inventoryRow(),beforePosts=posts;
+   await page.evaluate(id=>sessionStorage.setItem('pw2:container:LocalA:perri_cofres',id),firstConfirmedId);await page.reload();await page.locator('[data-live-item="perri_cofres"]').click();await page.locator('[data-open-container]').click();await page.locator('.container-rewards li').first().waitFor();
+   assert.equal(await page.locator('.container-rewards li').count(),3);assert.equal(posts,beforePosts);assert.deepEqual(await inventoryRow(),beforeReceipt);
+   const complete=await page.locator('.modal-card').evaluate(e=>{const r=e.getBoundingClientRect(),list=e.querySelector('.container-rewards').getBoundingClientRect(),button=e.querySelector('[data-next-container]').getBoundingClientRect(),hero=e.querySelector('.container-detail>img').getBoundingClientRect(),head=e.querySelector('.modal-head').getBoundingClientRect();return list.bottom<=r.bottom-4&&button.bottom<=r.bottom-4&&hero.top>=head.bottom});assert.ok(complete,'Tres premios y Abrir otro completos');
+   await page.screenshot({path:output+'/'+width+'x'+height+'-three-rewards.png'});await page.locator('.modal-close').click();
+  }
+  // COMMIT correcto; se pierde POST y también la primera consulta: pendiente real recuperable tras recarga.
+  await db.query("update shop_inventories set bolsa_gemas=1 where nick='LocalA'");await page.reload();await page.locator('[data-live-item="bolsa_gemas"]').waitFor();let lost=false;
+  await page.route('**/api/inventory/open',async route=>{if(lost){await route.continue();return}lost=true;const r=await route.fetch();assert.equal(r.status(),200);await route.abort('failed')});
+  await page.route('**/api/inventory/open/status?**',route=>route.abort('failed'));
+  await page.locator('[data-live-item="bolsa_gemas"]').click();await page.locator('[data-open-container]').click();await page.locator('[data-open-container]').filter({hasText:'Consultar apertura'}).waitFor();await page.waitForFunction(()=>!document.querySelector('[aria-busy="true"]'));
+  const afterLoss=await inventoryRow(),postCount=posts;await page.unroute('**/api/inventory/open/status?**');await page.reload();await page.locator('.inventory-recovery button').click();await page.locator('[data-open-container]').click();await page.locator('.container-rewards li').first().waitFor();assert.equal(posts,postCount);assert.deepEqual(await inventoryRow(),afterLoss);await page.locator('.modal-close').click();
+  results.push({width,height,mobile,fit,realLocalBackend:true,doubleClickOneConsumption:true,openAnother:true,sixContainers:true,pendingRecoveredByGet:true});await context.close();
  }
+ // Rechazo definitivo: no crea un estado pendiente ni cambia Abrir por Consultar.
+ api.removeAllListeners('request');api.on('request',freshBackend());await db.query("update shop_inventories set perri_cofres=1 where nick='LocalB'");await db.query("insert into shop_inventory_chests(chest_id,nick,chest_type,expires_at) values(gen_random_uuid(),'LocalB','perriCofres',now()-interval '1 day')");
+ const rejectedContext=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),rejected=await login(rejectedContext,'LocalB');const beforeRejected=await inventoryRow('LocalB');
+ await rejected.locator('[data-live-item="perri_cofres"]').click();await rejected.locator('[data-open-container]').click();await rejected.locator('.container-status').filter({hasText:'vigentes'}).waitFor();assert.equal(await rejected.locator('[data-open-container]').textContent(),'Abrir');assert.equal(await rejected.evaluate(()=>sessionStorage.getItem('pw2:container:LocalB:perri_cofres')),null);assert.deepEqual(await inventoryRow('LocalB'),beforeRejected);await rejected.locator('.modal-close').click();
+ // Recuperar un identificador dejado por la versión anterior tras un rechazo ya confirmado.
+ const oldId='12345678-1234-4234-8234-123456789abc';await rejected.evaluate(id=>sessionStorage.setItem('pw2:container:LocalB:perri_cofres',id),oldId);await rejected.reload();await rejected.locator('[data-live-item="perri_cofres"]').click();await rejected.locator('[data-open-container]').click();await rejected.locator('.container-status').filter({hasText:'intentarlo de nuevo'}).waitFor();assert.equal(await rejected.locator('[data-open-container]').textContent(),'Abrir');assert.deepEqual(await inventoryRow('LocalB'),beforeRejected);await rejectedContext.close();results.push({mode:'rejected-and-old-pending',noConsumption:true,buttonRestored:true});
+ // Una petición que nunca llegó al servidor consulta primero y reutiliza el MISMO UUID al reintentar.
+ api.removeAllListeners('request');api.on('request',freshBackend());await db.query("update shop_inventories set bolsa_gemas=1 where nick='LocalA'");const retryContext=await browser.newContext({viewport:{width:1024,height:768}}),retry=await login(retryContext);let firstId,secondId,abort=true;
+ await retry.route('**/api/inventory/open',async route=>{const body=route.request().postDataJSON();if(abort){firstId=body.idempotencyKey;abort=false;await route.abort('failed')}else{secondId=body.idempotencyKey;await route.continue()}});
+ await retry.locator('[data-live-item="bolsa_gemas"]').click();await retry.locator('[data-open-container]').click();await retry.locator('.container-status').filter({hasText:'intentarlo de nuevo'}).waitFor();assert.equal(await retry.locator('[data-open-container]').textContent(),'Abrir');await retry.locator('[data-open-container]').click();await retry.locator('.container-rewards li').first().waitFor();assert.equal(secondId,firstId);assert.equal((await inventoryRow()).bolsa_gemas,0);await retryContext.close();results.push({mode:'not-found-retry',sameUuid:true,consumedOnce:true});
  assert.deepEqual(errors,[]);await writeFile(output+'/results.json',JSON.stringify({localOnly:true,physicalMobile:false,results,errors},null,2));console.log(JSON.stringify({output,cases:results.length,errors}));
+
 }finally{await browser?.close();web?.closeAllConnections();api?.closeAllConnections();if(web)await new Promise(r=>web.close(r));if(api)await new Promise(r=>api.close(r));await db.close()}

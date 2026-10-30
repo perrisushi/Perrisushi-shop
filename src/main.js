@@ -7,6 +7,7 @@ const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expire
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
 let openingGame=false,gameLaunchEpoch=0;
 const containerOperations=new Map();
+let inventoryObserver=null;
 const openableContainers=['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'];
 const remoteStates={};
 
@@ -97,6 +98,23 @@ function usersView() {
   return shellView('users', renderLiveUsers());
 }
 
+function fitInventoryGrid(){
+ inventoryObserver?.disconnect();inventoryObserver=null;
+ const main=stage.querySelector('.pw04-inventory-main'),grid=main?.querySelector('.pw04-inventory-grid');if(!main||!grid)return;
+ const fit=()=>{
+  if(!main.isConnected)return;const css=getComputedStyle(grid),number=key=>parseFloat(css.getPropertyValue(key))||0;
+  const columns=Number(css.getPropertyValue('--inventory-columns'))||6,gap=number('column-gap');
+  const borderX=number('border-left-width')+number('border-right-width'),borderY=number('border-top-width')+number('border-bottom-width');
+  const padX=number('padding-left')+number('padding-right')+borderX,padY=number('padding-top')+number('padding-bottom')+borderY;
+  const parentCss=getComputedStyle(main),parentPadY=parseFloat(parentCss.paddingTop)+parseFloat(parentCss.paddingBottom);
+  const gutter=Math.max(0,grid.offsetWidth-grid.clientWidth-borderX),height=main.clientHeight-parentPadY-padY;
+  const ideal=(main.clientWidth-padX-gutter-(columns-1)*gap)/columns;if(height<=0||ideal<=0)return;
+  const rows=Math.max(1,Math.ceil((height+gap)/(ideal+gap))),cell=Math.floor(Math.max(1,Math.min(ideal,(height-(rows-1)*gap)/rows))*64)/64;
+  grid.style.width=(columns*cell+(columns-1)*gap+padX+gutter)+'px';grid.style.height=(rows*cell+(rows-1)*gap+padY)+'px';
+ };
+ inventoryObserver=new ResizeObserver(fit);inventoryObserver.observe(main);fit();
+}
+
 function inventoryView() {
   const recoveries=openableContainers.filter(id=>pendingContainer(id)&&!(dataState.inventory.inventory?.[id]>0));
   const links=recoveries.length?`<div class="inventory-recovery">${recoveries.map(id=>`<button type="button" class="textured-button" data-live-item="${id}">Consultar apertura: ${escapeText(itemDetails(id).name)}</button>`).join('')}</div>`:'';
@@ -126,6 +144,7 @@ function render() {
   document.body.dataset.access='ready';
   const route = normalizeRoute(location.hash);
   stage.innerHTML = views[route]();
+  fitInventoryGrid();
   stage.classList.toggle('show-home', route === 'home');
   document.title = `${routeTitles[route]} | Perrisushi World`;
   closeMenu();
@@ -144,39 +163,70 @@ const gameRoutes={PerriDuelos:'/perriduelos-app/index.html',PerriPet:'/perripet-
 const economicOperations=new Map();let economicReceipt=null;
 function gameMarkup(name,pending=false){return `<div class="modal-head"><h2 id="modal-title">${escapeText(name)}</h2><div class="game-window-actions"><button type="button" data-action="game-fullscreen" aria-label="Pantalla completa" aria-pressed="false">⛶</button><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div></div>${pending?'<div class="game-opening" role="status">Abriendo juego…</div>':`<iframe class="original-game" src="${gameRoutes[name]}" title="${escapeText(name)}" sandbox="allow-scripts allow-same-origin" allow="autoplay; fullscreen"></iframe>`}<p class="game-rotate-hint" role="status">Gira el móvil para jugar en horizontal.</p>`}
 function containerStorageKey(id){return 'pw2:container:'+session?.nick+':'+id}
-function pendingContainer(id){try{const value=sessionStorage.getItem(containerStorageKey(id));return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value??'')?value:null}catch{return null}}
+function storedContainer(id){
+ try{const raw=sessionStorage.getItem(containerStorageKey(id));if(!raw)return null;
+  const value=raw.startsWith('{')?JSON.parse(raw):{id:raw,phase:'unknown'};
+  return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value.id??'')&&['unknown','retry','blocked'].includes(value.phase)?value:null;
+ }catch{return null}
+}
+function pendingContainer(id){const value=storedContainer(id);return value?.phase==='unknown'?value.id:null}
+function storeContainer(id,op){try{if(['unknown','retry','blocked'].includes(op.phase))sessionStorage.setItem(containerStorageKey(id),JSON.stringify({id:op.id,phase:op.phase}));else sessionStorage.removeItem(containerStorageKey(id))}catch{}}
 function containerArt(id,opened=false){
  if(id==='perri_cofres')return '/assets/perricofre1-'+(opened?'abierto':'cerrado')+'.png';
  if(id==='perri_cofres_minijuego')return '/assets/perricofres-minijuego-'+(opened?'abierto':'cerrado')+'.png';
  return itemDetails(id).image;
 }
 function inventoryItemMarkup(id){
- const item=itemDetails(id),quantity=dataState.inventory.inventory?.[id]??0,op=containerOperations.get(id),rewards=op?.result?.rewards;
- const canOpen=openableContainers.includes(id)&&(quantity>0||pendingContainer(id));
+ const item=itemDetails(id),quantity=dataState.inventory.inventory?.[id]??0,op=containerOperations.get(id)??(storedContainer(id)?.phase==='blocked'?{phase:'blocked',error:'No se pudo recuperar esta apertura. Revisa tu historial.'}:null),rewards=op?.result?.rewards;
+ const canOpen=openableContainers.includes(id)&&(quantity>0||pendingContainer(id))&&op?.phase!=='blocked';
  return `<div class="modal-head"><h2 id="modal-title">${escapeText(rewards?'Recompensas obtenidas':item.name)}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>
  <div class="item-detail ${openableContainers.includes(id)?'container-detail':''}"><img src="${escapeText(openableContainers.includes(id)?containerArt(id,Boolean(rewards)):item.image)}" alt="${escapeText(item.name)}"/>
  ${rewards?`<p class="reward-confirmation">${escapeText(item.name)} · Apertura completada</p><ul class="container-rewards">${rewards.map(reward=>{
   const key=String(reward.kind==='rpgItem'?'cajitaArmas':reward.kind??'').replace(/[A-Z]/g,c=>'_'+c.toLowerCase()),image=reward.kind==='logo'?ASSETS+'logo-'+logoId(reward.logoId)+'.webp':itemDetails(key).image;
   return `<li><img src="${escapeText(image)}" alt=""/><div><strong>${escapeText(reward.label)}</strong>${reward.kind==='rpgItem'?'<small>Guardado en el inventario de PerriRPG</small>':''}</div></li>`;
- }).join('')}</ul>`:`<p class="item-quantity">Cantidad: <strong>${escapeText(quantity)}</strong></p>${item.description?'<p>'+escapeText(item.description)+'</p>':''}${canOpen?`${pendingContainer(id)?'<p class="container-consumption">Consulta el resultado de tu apertura anterior.</p>':''}<button type="button" class="textured-button container-open" data-open-container="${id}" ${op?.busy?'disabled aria-busy="true"':''}>${op?.busy?'Abriendo…':pendingContainer(id)?'Consultar apertura':'Abrir'}</button>`:''}`}
+ }).join('')}</ul>${quantity>0?`<button type="button" class="textured-button container-open" data-next-container="${id}">Abrir otro</button>`:''}`:`<p class="item-quantity">Cantidad: <strong>${escapeText(quantity)}</strong></p>${item.description?'<p>'+escapeText(item.description)+'</p>':''}${canOpen?`${pendingContainer(id)?'<p class="container-consumption">Consulta el resultado de tu apertura anterior.</p>':''}<button type="button" class="textured-button container-open" data-open-container="${id}" ${op?.busy?'disabled aria-busy="true"':''}>${op?.busy?op.phase==='unknown'?'Consultando…':'Abriendo…':pendingContainer(id)?'Consultar apertura':'Abrir'}</button>`:''}`}
  <p class="container-status" role="status">${escapeText(op?.error??'')}</p></div>`;
+}
+function paintContainer(id){
+ if(modalKind!=='item:'+id||overlay.hidden)return;
+ const card=overlay.querySelector('.modal-card');card.innerHTML=inventoryItemMarkup(id);card.scrollTop=0;
+ card.querySelector('.modal-close')?.focus({preventScroll:true});
+}
+async function confirmContainer(id,op,result,generation){
+ if(generation!==sessionEpoch)return;
+ op.result={rewards:result.rewards};op.phase='complete';op.busy=false;op.error='';storeContainer(id,op);
+ api.clearCache();await loadCurrentRoute(normalizeRoute(location.hash));
+ try{const profile=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...profile};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:profile.profile?.selectedLogoAssetId})}catch{}
+ if(generation===sessionEpoch)paintContainer(id);
+}
+async function recoverContainer(id,op,generation){
+ op.phase='unknown';op.busy=true;storeContainer(id,op);paintContainer(id);
+ try{
+  const result=await api.getContainerOpening(id,op.id);if(generation!==sessionEpoch)return;
+  if(result.status==='complete'){await confirmContainer(id,op,result,generation);return}
+  if(result.status!=='not_found')throw Error('Invalid opening status');
+  // Conservar el UUID para un reintento: una petición retrasada no puede cobrar dos veces.
+  op.phase='retry';op.error='No se pudo completar la apertura. Puedes intentarlo de nuevo.';
+ }catch(error){if(generation!==sessionEpoch)return;
+  if(error.code==='operation_conflict'){op.phase='blocked';op.error='No se pudo recuperar esta apertura. Revisa tu historial.'}
+  else{errorState(error);op.error='No se pudo comprobar el resultado. Consulta la apertura antes de volver a abrir.'}
+ }
+ if(generation!==sessionEpoch)return;op.busy=false;storeContainer(id,op);paintContainer(id);
 }
 async function openInventoryContainer(id,button){
  if(!session||!openableContainers.includes(id)||containerOperations.get(id)?.busy)return;
- const generation=sessionEpoch,storage=containerStorageKey(id),op=containerOperations.get(id)??{id:pendingContainer(id)??crypto.randomUUID()};
- op.busy=true;op.error='';containerOperations.set(id,op);try{sessionStorage.setItem(storage,op.id)}catch{}
- button.disabled=true;button.textContent='Abriendo…';button.setAttribute('aria-busy','true');
- const paint=()=>{if(modalKind==='item:'+id&&!overlay.hidden){overlay.querySelector('.modal-card').innerHTML=inventoryItemMarkup(id);overlay.querySelector('.modal-card').scrollTop=0;overlay.querySelector(op.result?'.modal-close':'[data-open-container],.modal-close')?.focus({preventScroll:true})}};
- try{
-  const result=await api.openContainer(id,op.id);if(generation!==sessionEpoch)return;
-  op.result=result;op.busy=false;try{sessionStorage.removeItem(storage)}catch{}
-  api.clearCache();await loadCurrentRoute(normalizeRoute(location.hash));
-  try{const profile=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...profile};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:profile.profile?.selectedLogoAssetId})}catch{/* La recompensa confirmada conserva su recibo aunque falle una lectura posterior. */}
-  if(generation!==sessionEpoch)return;paint();
- }catch(error){if(generation!==sessionEpoch)return;op.busy=false;
-  if(['item_not_owned','operation_disabled','invalid_request'].includes(error.code)){try{sessionStorage.removeItem(storage)}catch{}containerOperations.delete(id)}
-  errorState(error);op.error=error.code==='item_not_owned'?'No tienes unidades disponibles para abrir.':message({error:error.code});
-  if(!containerOperations.has(id))containerOperations.set(id,op);paint();
+ const generation=sessionEpoch,saved=storedContainer(id),previous=containerOperations.get(id);
+ const op=previous??{id:saved?.id,phase:saved?.phase};containerOperations.set(id,op);
+ if(saved?.phase==='unknown'||op.phase==='unknown'){op.id=saved?.id??op.id;await recoverContainer(id,op,generation);return}
+ if(op.phase==='blocked')return;
+ op.id=saved?.id??(op.phase==='retry'?op.id:null)??crypto.randomUUID();op.phase='opening';op.busy=true;op.error='';
+ // Guardar como indeterminado antes de enviar; una recarga solo consulta este UUID.
+ storeContainer(id,{id:op.id,phase:'unknown'});button.disabled=true;button.textContent='Abriendo…';button.setAttribute('aria-busy','true');
+ try{const result=await api.openContainer(id,op.id);if(generation!==sessionEpoch)return;await confirmContainer(id,op,result,generation)}
+ catch(error){if(generation!==sessionEpoch)return;
+  if(error.status>=400&&error.status<500&&error.status!==408&&error.code!=='operation_conflict'){
+   op.busy=false;op.phase='rejected';storeContainer(id,op);errorState(error);op.error=message({error:error.code});paintContainer(id);
+  }else await recoverContainer(id,op,generation);
  }
 }
 function modalMarkup(type) {
@@ -253,6 +303,7 @@ document.addEventListener('click', e => {
   const note=e.target.closest('[data-read-note]');if(note&&!note.disabled){void savePersonalChange('notification',note.dataset.readNote,note);return}
   const liveAlbum=e.target.closest('[data-live-album]')?.dataset.liveAlbum;
   if(liveAlbum){overlay.querySelectorAll('[data-owned]').forEach(el=>el.hidden=el.dataset.owned!==String(liveAlbum==='found'));overlay.querySelectorAll('[data-live-album]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.liveAlbum===liveAlbum)));return}
+  const nextOpening=e.target.closest('[data-next-container]');if(nextOpening){const id=nextOpening.dataset.nextContainer;if(containerOperations.get(id)?.busy)return;containerOperations.delete(id);void openInventoryContainer(id,nextOpening);return}
   const opening=e.target.closest('[data-open-container]');if(opening){void openInventoryContainer(opening.dataset.openContainer,opening);return}
   const item=e.target.closest('[data-live-item]')?.dataset.liveItem;
   if(item&&(Object.hasOwn(dataState.inventory.inventory??{},item)||openableContainers.includes(item)&&pendingContainer(item))){if(containerOperations.get(item)?.result)containerOperations.delete(item);openModal('item:'+item);return}
@@ -295,8 +346,9 @@ function showLogin(error){
  const status=overlay.querySelector('#login-status');status.textContent=error?message({error}):sessionState.status==='error'?message(sessionState):'';
  document.title='Entrar | Perrisushi World';
 }
-function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]()}
+function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitInventoryGrid()}
 function resetPrivateState(){
+  inventoryObserver?.disconnect();inventoryObserver=null;
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
   session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
