@@ -1,0 +1,1328 @@
+{
+  "localOnly": true,
+  "visualFixtures": true,
+  "physicalMobile": false,
+  "results": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "mobile": false,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 784.390625,
+        "y": 160.546875,
+        "width": 351.21875,
+        "height": 219.1875,
+        "top": 160.546875,
+        "right": 1135.609375,
+        "bottom": 379.734375,
+        "left": 784.390625
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "mobile": false,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 784.390625,
+        "y": 160.546875,
+        "width": 351.21875,
+        "height": 338.5,
+        "top": 160.546875,
+        "right": 1135.609375,
+        "bottom": 499.046875,
+        "left": 784.390625
+      },
+      "visibleRows": 1.003690036900369,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "mobile": false,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 510,
+        "y": 160.546875,
+        "width": 900,
+        "height": 338.5,
+        "top": 160.546875,
+        "right": 1410,
+        "bottom": 499.046875,
+        "left": 510
+      },
+      "visibleRows": 1.003690036900369,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "mobile": false,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 510,
+        "y": 160.546875,
+        "width": 900,
+        "height": 609.5,
+        "top": 160.546875,
+        "right": 1410,
+        "bottom": 770.046875,
+        "left": 510
+      },
+      "visibleRows": 3.003690036900369,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "mobile": false,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 515.25,
+        "y": 160.546875,
+        "width": 889.5,
+        "height": 737.8125,
+        "top": 160.546875,
+        "right": 1404.75,
+        "bottom": 898.359375,
+        "left": 515.25
+      },
+      "visibleRows": 4,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "mobile": false,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 515.25,
+        "y": 160.546875,
+        "width": 889.5,
+        "height": 737.8125,
+        "top": 160.546875,
+        "right": 1404.75,
+        "bottom": 898.359375,
+        "left": 515.25
+      },
+      "visibleRows": 4,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 544.390625,
+        "y": 149,
+        "width": 351.21875,
+        "height": 219.1875,
+        "top": 149,
+        "right": 895.609375,
+        "bottom": 368.1875,
+        "left": 544.390625
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 544.390625,
+        "y": 149,
+        "width": 351.21875,
+        "height": 338.5,
+        "top": 149,
+        "right": 895.609375,
+        "bottom": 487.5,
+        "left": 544.390625
+      },
+      "visibleRows": 1.003690036900369,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 270,
+        "y": 149,
+        "width": 900,
+        "height": 338.5,
+        "top": 149,
+        "right": 1170,
+        "bottom": 487.5,
+        "left": 270
+      },
+      "visibleRows": 1.003690036900369,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 301.5,
+        "y": 149,
+        "width": 837,
+        "height": 577.984375,
+        "top": 149,
+        "right": 1138.5,
+        "bottom": 726.984375,
+        "left": 301.5
+      },
+      "visibleRows": 3,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 301.5,
+        "y": 149,
+        "width": 837,
+        "height": 577.984375,
+        "top": 149,
+        "right": 1138.5,
+        "bottom": 726.984375,
+        "left": 301.5
+      },
+      "visibleRows": 3,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 301.5,
+        "y": 149,
+        "width": 837,
+        "height": 577.984375,
+        "top": 149,
+        "right": 1138.5,
+        "bottom": 726.984375,
+        "left": 301.5
+      },
+      "visibleRows": 3,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 800,
+      "height": 900,
+      "mobile": false,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 242.5,
+        "y": 271.546875,
+        "width": 315,
+        "height": 219.1875,
+        "top": 271.546875,
+        "right": 557.5,
+        "bottom": 490.734375,
+        "left": 242.5
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 800,
+      "height": 900,
+      "mobile": false,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 242.5,
+        "y": 271.546875,
+        "width": 315,
+        "height": 307.15625,
+        "top": 271.546875,
+        "right": 557.5,
+        "bottom": 578.703125,
+        "left": 242.5
+      },
+      "visibleRows": 0.9984998499849985,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 800,
+      "height": 900,
+      "mobile": false,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 44.03125,
+        "y": 271.546875,
+        "width": 711.9375,
+        "height": 307.15625,
+        "top": 271.546875,
+        "right": 755.96875,
+        "bottom": 578.703125,
+        "left": 44.03125
+      },
+      "visibleRows": 0.9984998499849985,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 800,
+      "height": 900,
+      "mobile": false,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 161.5,
+        "y": 271.546875,
+        "width": 477,
+        "height": 332.890625,
+        "top": 271.546875,
+        "right": 638.5,
+        "bottom": 604.4375,
+        "left": 161.5
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 800,
+      "height": 900,
+      "mobile": false,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 161.5,
+        "y": 271.546875,
+        "width": 477,
+        "height": 332.890625,
+        "top": 271.546875,
+        "right": 638.5,
+        "bottom": 604.4375,
+        "left": 161.5
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 800,
+      "height": 900,
+      "mobile": false,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 161.5,
+        "y": 271.546875,
+        "width": 477,
+        "height": 332.890625,
+        "top": 271.546875,
+        "right": 638.5,
+        "bottom": 604.4375,
+        "left": 161.5
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 1000,
+      "height": 550,
+      "mobile": false,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 346.5,
+        "y": 101,
+        "width": 307,
+        "height": 181.1875,
+        "top": 101,
+        "right": 653.5,
+        "bottom": 282.1875,
+        "left": 346.5
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 1000,
+      "height": 550,
+      "mobile": false,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 346.5,
+        "y": 101,
+        "width": 307,
+        "height": 252.828125,
+        "top": 101,
+        "right": 653.5,
+        "bottom": 353.828125,
+        "left": 346.5
+      },
+      "visibleRows": 1.0019569471624266,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 1000,
+      "height": 550,
+      "mobile": false,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 197.015625,
+        "y": 101,
+        "width": 605.96875,
+        "height": 252.828125,
+        "top": 101,
+        "right": 802.984375,
+        "bottom": 353.828125,
+        "left": 197.015625
+      },
+      "visibleRows": 1.0019569471624266,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1000,
+      "height": 550,
+      "mobile": false,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 209.53125,
+        "y": 101,
+        "width": 580.9375,
+        "height": 415.96875,
+        "top": 101,
+        "right": 790.46875,
+        "bottom": 516.96875,
+        "left": 209.53125
+      },
+      "visibleRows": 3.000373552484124,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1000,
+      "height": 550,
+      "mobile": false,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 209.53125,
+        "y": 101,
+        "width": 580.9375,
+        "height": 415.96875,
+        "top": 101,
+        "right": 790.46875,
+        "bottom": 516.96875,
+        "left": 209.53125
+      },
+      "visibleRows": 3.000373552484124,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 1000,
+      "height": 550,
+      "mobile": false,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 209.53125,
+        "y": 101,
+        "width": 580.9375,
+        "height": 415.96875,
+        "top": 101,
+        "right": 790.46875,
+        "bottom": 516.96875,
+        "left": 209.53125
+      },
+      "visibleRows": 3.000373552484124,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 1200,
+      "height": 400,
+      "mobile": false,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 447.5,
+        "y": 58,
+        "width": 305,
+        "height": 179.1875,
+        "top": 58,
+        "right": 752.5,
+        "bottom": 237.1875,
+        "left": 447.5
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 1200,
+      "height": 400,
+      "mobile": false,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 447.5,
+        "y": 58,
+        "width": 305,
+        "height": 300.15625,
+        "top": 58,
+        "right": 752.5,
+        "bottom": 358.15625,
+        "left": 447.5
+      },
+      "visibleRows": 0.9988607883344726,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 1200,
+      "height": 400,
+      "mobile": false,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 150.03125,
+        "y": 58,
+        "width": 899.9375,
+        "height": 300.15625,
+        "top": 58,
+        "right": 1049.96875,
+        "bottom": 358.15625,
+        "left": 150.03125
+      },
+      "visibleRows": 0.9988607883344726,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 1200,
+      "height": 400,
+      "mobile": false,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 323,
+        "y": 58,
+        "width": 554,
+        "height": 322,
+        "top": 58,
+        "right": 877,
+        "bottom": 380,
+        "left": 323
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 1200,
+      "height": 400,
+      "mobile": false,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 323,
+        "y": 58,
+        "width": 554,
+        "height": 322,
+        "top": 58,
+        "right": 877,
+        "bottom": 380,
+        "left": 323
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 1200,
+      "height": 400,
+      "mobile": false,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 323,
+        "y": 58,
+        "width": 554,
+        "height": 322,
+        "top": 58,
+        "right": 877,
+        "bottom": 380,
+        "left": 323
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 900,
+      "height": 280,
+      "mobile": false,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 320,
+        "y": 52,
+        "width": 260,
+        "height": 145.1875,
+        "top": 52,
+        "right": 580,
+        "bottom": 197.1875,
+        "left": 320
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 900,
+      "height": 280,
+      "mobile": false,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 320,
+        "y": 52,
+        "width": 260,
+        "height": 216,
+        "top": 52,
+        "right": 580,
+        "bottom": 268,
+        "left": 320
+      },
+      "visibleRows": 1,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 900,
+      "height": 280,
+      "mobile": false,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 165.5,
+        "y": 52,
+        "width": 569,
+        "height": 216,
+        "top": 52,
+        "right": 734.5,
+        "bottom": 268,
+        "left": 165.5
+      },
+      "visibleRows": 1,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 900,
+      "height": 280,
+      "mobile": false,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 165.5,
+        "y": 52,
+        "width": 569,
+        "height": 216,
+        "top": 52,
+        "right": 734.5,
+        "bottom": 268,
+        "left": 165.5
+      },
+      "visibleRows": 1,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 900,
+      "height": 280,
+      "mobile": false,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 165.5,
+        "y": 52,
+        "width": 569,
+        "height": 216,
+        "top": 52,
+        "right": 734.5,
+        "bottom": 268,
+        "left": 165.5
+      },
+      "visibleRows": 1,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 900,
+      "height": 280,
+      "mobile": false,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 165.5,
+        "y": 52,
+        "width": 569,
+        "height": 216,
+        "top": 52,
+        "right": 734.5,
+        "bottom": 268,
+        "left": 165.5
+      },
+      "visibleRows": 1,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "mobile": true,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 300,
+        "height": 238.1875,
+        "top": 104,
+        "right": 310,
+        "bottom": 342.1875,
+        "left": 10
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "mobile": true,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 300,
+        "height": 302.65625,
+        "top": 104,
+        "right": 310,
+        "bottom": 406.65625,
+        "left": 10
+      },
+      "visibleRows": 1.0043702820818434,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "mobile": true,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 300,
+        "height": 381.3125,
+        "top": 104,
+        "right": 310,
+        "bottom": 485.3125,
+        "left": 10
+      },
+      "visibleRows": 1.9960270162892333,
+      "columns": 3,
+      "scroll": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "mobile": true,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 300,
+        "height": 440,
+        "top": 104,
+        "right": 310,
+        "bottom": 544,
+        "left": 10
+      },
+      "visibleRows": 3,
+      "columns": 3,
+      "scroll": true
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "mobile": true,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 300,
+        "height": 440,
+        "top": 104,
+        "right": 310,
+        "bottom": 544,
+        "left": 10
+      },
+      "visibleRows": 3,
+      "columns": 3,
+      "scroll": true
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "mobile": true,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 300,
+        "height": 440,
+        "top": 104,
+        "right": 310,
+        "bottom": 544,
+        "left": 10
+      },
+      "visibleRows": 3,
+      "columns": 3,
+      "scroll": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 38.5,
+        "y": 104,
+        "width": 313,
+        "height": 197.1875,
+        "top": 104,
+        "right": 351.5,
+        "bottom": 301.1875,
+        "left": 38.5
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 38.5,
+        "y": 104,
+        "width": 313,
+        "height": 259.5,
+        "top": 104,
+        "right": 351.5,
+        "bottom": 363.5,
+        "left": 38.5
+      },
+      "visibleRows": 1.0065359477124183,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 370,
+        "height": 336,
+        "top": 104,
+        "right": 380,
+        "bottom": 440,
+        "left": 10
+      },
+      "visibleRows": 2,
+      "columns": 4,
+      "scroll": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 370,
+        "height": 489,
+        "top": 104,
+        "right": 380,
+        "bottom": 593,
+        "left": 10
+      },
+      "visibleRows": 4,
+      "columns": 4,
+      "scroll": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 370,
+        "height": 642,
+        "top": 104,
+        "right": 380,
+        "bottom": 746,
+        "left": 10
+      },
+      "visibleRows": 6,
+      "columns": 4,
+      "scroll": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 10.71875,
+        "y": 104,
+        "width": 368.5625,
+        "height": 715.984375,
+        "top": 104,
+        "right": 379.28125,
+        "bottom": 819.984375,
+        "left": 10.71875
+      },
+      "visibleRows": 7.000205212394829,
+      "columns": 4,
+      "scroll": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 58.5,
+        "y": 104,
+        "width": 313,
+        "height": 197.1875,
+        "top": 104,
+        "right": 371.5,
+        "bottom": 301.1875,
+        "left": 58.5
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 58.5,
+        "y": 104,
+        "width": 313,
+        "height": 269.5,
+        "top": 104,
+        "right": 371.5,
+        "bottom": 373.5,
+        "left": 58.5
+      },
+      "visibleRows": 1.0057803468208093,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 410,
+        "height": 356,
+        "top": 104,
+        "right": 420,
+        "bottom": 460,
+        "left": 10
+      },
+      "visibleRows": 2,
+      "columns": 4,
+      "scroll": false
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 410,
+        "height": 529,
+        "top": 104,
+        "right": 420,
+        "bottom": 633,
+        "left": 10
+      },
+      "visibleRows": 4,
+      "columns": 4,
+      "scroll": false
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 10,
+        "y": 104,
+        "width": 410,
+        "height": 702,
+        "top": 104,
+        "right": 420,
+        "bottom": 806,
+        "left": 10
+      },
+      "visibleRows": 6,
+      "columns": 4,
+      "scroll": false
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 27.75,
+        "y": 104,
+        "width": 374.5,
+        "height": 804,
+        "top": 104,
+        "right": 402.25,
+        "bottom": 908,
+        "left": 27.75
+      },
+      "visibleRows": 8,
+      "columns": 4,
+      "scroll": true
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "mobile": true,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 177,
+        "y": 58,
+        "width": 313,
+        "height": 180.1875,
+        "top": 58,
+        "right": 490,
+        "bottom": 238.1875,
+        "left": 177
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "mobile": true,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 177,
+        "y": 58,
+        "width": 313,
+        "height": 242.328125,
+        "top": 58,
+        "right": 490,
+        "bottom": 300.328125,
+        "left": 177
+      },
+      "visibleRows": 0.9958108916816277,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "mobile": true,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 63.515625,
+        "y": 58,
+        "width": 539.96875,
+        "height": 242.328125,
+        "top": 58,
+        "right": 603.484375,
+        "bottom": 300.328125,
+        "left": 63.515625
+      },
+      "visibleRows": 0.9958108916816277,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "mobile": true,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 96,
+        "y": 58,
+        "width": 475,
+        "height": 299,
+        "top": 58,
+        "right": 571,
+        "bottom": 357,
+        "left": 96
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "mobile": true,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 96,
+        "y": 58,
+        "width": 475,
+        "height": 299,
+        "top": 58,
+        "right": 571,
+        "bottom": 357,
+        "left": 96
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "mobile": true,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 96,
+        "y": 58,
+        "width": 475,
+        "height": 299,
+        "top": 58,
+        "right": 571,
+        "bottom": 357,
+        "left": 96
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "objects": 0,
+      "slots": 0,
+      "panel": {
+        "x": 269.5,
+        "y": 58,
+        "width": 305,
+        "height": 179.1875,
+        "top": 58,
+        "right": 574.5,
+        "bottom": 237.1875,
+        "left": 269.5
+      },
+      "visibleRows": 0,
+      "columns": 0,
+      "scroll": false
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "objects": 1,
+      "slots": 1,
+      "panel": {
+        "x": 269.5,
+        "y": 58,
+        "width": 305,
+        "height": 242.65625,
+        "top": 58,
+        "right": 574.5,
+        "bottom": 300.65625,
+        "left": 269.5
+      },
+      "visibleRows": 1.0043154178109062,
+      "columns": 1,
+      "scroll": false
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "objects": 6,
+      "slots": 6,
+      "panel": {
+        "x": 152.03125,
+        "y": 58,
+        "width": 539.9375,
+        "height": 242.65625,
+        "top": 58,
+        "right": 691.96875,
+        "bottom": 300.65625,
+        "left": 152.03125
+      },
+      "visibleRows": 1.0043154178109062,
+      "columns": 6,
+      "scroll": false
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "objects": 14,
+      "slots": 14,
+      "panel": {
+        "x": 167.5,
+        "y": 58,
+        "width": 509,
+        "height": 312,
+        "top": 58,
+        "right": 676.5,
+        "bottom": 370,
+        "left": 167.5
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "objects": 24,
+      "slots": 24,
+      "panel": {
+        "x": 167.5,
+        "y": 58,
+        "width": 509,
+        "height": 312,
+        "top": 58,
+        "right": 676.5,
+        "bottom": 370,
+        "left": 167.5
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "objects": 57,
+      "slots": 57,
+      "panel": {
+        "x": 167.5,
+        "y": 58,
+        "width": 509,
+        "height": 312,
+        "top": 58,
+        "right": 676.5,
+        "bottom": 370,
+        "left": 167.5
+      },
+      "visibleRows": 2,
+      "columns": 6,
+      "scroll": true
+    }
+  ],
+  "errors": []
+}

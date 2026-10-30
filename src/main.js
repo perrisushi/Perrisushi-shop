@@ -100,25 +100,44 @@ function usersView() {
 
 function fitInventoryGrid(){
  inventoryObserver?.disconnect();inventoryObserver=null;
- const main=stage.querySelector('.pw04-inventory-main'),grid=main?.querySelector('.pw04-inventory-grid');if(!main||!grid)return;
+ const board=stage.querySelector('.content-board:has(.pw04-inventory)'),panel=board?.querySelector('.pw04-inventory'),main=panel?.querySelector('.pw04-inventory-main'),grid=main?.querySelector('.pw04-inventory-grid');if(!grid)return;
  const fit=()=>{
-  if(!main.isConnected)return;const css=getComputedStyle(grid),number=key=>parseFloat(css.getPropertyValue(key))||0;
-  const columns=Number(css.getPropertyValue('--inventory-columns'))||6,gap=number('column-gap');
-  const borderX=number('border-left-width')+number('border-right-width'),borderY=number('border-top-width')+number('border-bottom-width');
-  const padX=number('padding-left')+number('padding-right')+borderX,padY=number('padding-top')+number('padding-bottom')+borderY;
-  const parentCss=getComputedStyle(main),parentPadY=parseFloat(parentCss.paddingTop)+parseFloat(parentCss.paddingBottom);
-  const gutter=Math.max(0,grid.offsetWidth-grid.clientWidth-borderX),height=main.clientHeight-parentPadY-padY;
-  const ideal=(main.clientWidth-padX-gutter-(columns-1)*gap)/columns;if(height<=0||ideal<=0)return;
-  const rows=Math.max(1,Math.ceil((height+gap)/(ideal+gap))),cell=Math.floor(Math.max(1,Math.min(ideal,(height-(rows-1)*gap)/rows))*64)/64;
-  grid.style.width=(columns*cell+(columns-1)*gap+padX+gutter)+'px';grid.style.height=(rows*cell+(rows-1)*gap+padY)+'px';
+  if(!main.isConnected)return;
+  const style=e=>getComputedStyle(e),value=(css,key)=>parseFloat(css.getPropertyValue(key))||0;
+  const horizontal=css=>value(css,'padding-left')+value(css,'padding-right')+value(css,'border-left-width')+value(css,'border-right-width');
+  const vertical=css=>value(css,'padding-top')+value(css,'padding-bottom')+value(css,'border-top-width')+value(css,'border-bottom-width');
+  const header=board.querySelector('.content-header'),scroll=board.querySelector('.content-scroll'),balances=panel.querySelector('.pw04-inventory-balances');
+  const boardCss=style(board),scrollCss=style(scroll),mainCss=style(main),headerCss=style(header),balanceCss=style(balances);
+  const hostCss=style(stage),hostWidth=stage.clientWidth-value(hostCss,'padding-left')-value(hostCss,'padding-right'),hostHeight=stage.clientHeight-value(hostCss,'padding-top')-value(hostCss,'padding-bottom');
+  const maxWidth=Math.min(hostWidth,value(boardCss,'--inventory-panel-max')||900),insetX=horizontal(boardCss)+horizontal(scrollCss)+horizontal(style(panel))+horizontal(mainCss);
+  const availableWidth=Math.max(1,maxWidth-insetX),capacity=availableWidth<300?3:availableWidth<400?4:6,count=grid.children.length,columns=Math.min(count||1,capacity);
+  grid.style.setProperty('--inventory-columns',String(columns));grid.style.setProperty('--inventory-gap',innerHeight<=360?'6px':capacity<6?'6px':'8px');grid.style.setProperty('--inventory-pad',innerHeight<=360?'6px':capacity<6?'8px':'12px');
+  const css=style(grid),gap=value(css,'column-gap'),borderX=value(css,'border-left-width')+value(css,'border-right-width'),padX=horizontal(css),padY=vertical(css);
+  const gutter=Math.max(0,grid.offsetWidth-grid.clientWidth-borderX),ideal=(availableWidth-padX-gutter-(capacity-1)*gap)/capacity;
+  const childrenWidth=e=>[...e.children].reduce((sum,child)=>sum+child.getBoundingClientRect().width,0);
+  const headerNeed=childrenWidth(header)+Math.max(0,header.children.length-1)*value(headerCss,'column-gap')+horizontal(headerCss)+horizontal(boardCss);
+  const balanceNeed=childrenWidth(balances)+Math.max(0,balances.children.length-1)*value(balanceCss,'column-gap')+insetX;
+  const minWidth=Math.min(maxWidth,Math.max(headerNeed,balanceNeed,260));
+  // El ancho preferido de una casilla depende del espacio máximo, no de un panel ya reducido.
+  const preferredGridWidth=columns*Math.max(1,ideal)+(columns-1)*gap+padX+gutter;
+  board.style.width=Math.min(maxWidth,Math.max(minWidth,preferredGridWidth+insetX))+'px';
+  if(!count){grid.style.removeProperty('width');grid.style.removeProperty('height');return}
+  const outside=[...panel.children].filter(e=>e!==main&&!e.hidden).reduce((sum,e)=>{const c=style(e);return sum+e.getBoundingClientRect().height+value(c,'margin-top')+value(c,'margin-bottom')},0);
+  const height=hostHeight-vertical(boardCss)-header.getBoundingClientRect().height-vertical(scrollCss)-vertical(style(panel))-outside-vertical(mainCss)-padY;
+  if(height<=0||ideal<=0)return;
+  const actualRows=Math.ceil(count/columns),visibleRows=Math.min(actualRows,Math.max(1,Math.ceil((height+gap)/(ideal+gap))));
+  const cell=Math.floor(Math.max(1,Math.min(ideal,(height-(visibleRows-1)*gap)/visibleRows))*64)/64;
+  const gridWidth=columns*cell+(columns-1)*gap+padX+gutter;
+  board.style.width=Math.min(maxWidth,Math.max(minWidth,gridWidth+insetX))+'px';
+  grid.style.width=gridWidth+'px';grid.style.height=(visibleRows*cell+(visibleRows-1)*gap+padY)+'px';
  };
- inventoryObserver=new ResizeObserver(fit);inventoryObserver.observe(main);fit();
+ inventoryObserver=new ResizeObserver(fit);inventoryObserver.observe(stage);fit();
 }
 
 function inventoryView() {
   const recoveries=openableContainers.filter(id=>pendingContainer(id)&&!(dataState.inventory.inventory?.[id]>0));
   const links=recoveries.length?`<div class="inventory-recovery">${recoveries.map(id=>`<button type="button" class="textured-button" data-live-item="${id}">Consultar apertura: ${escapeText(itemDetails(id).name)}</button>`).join('')}</div>`:'';
-  return shellView('inventory',renderLiveInventory().replace('<div class="pw04-inventory-main">',links+'<div class="pw04-inventory-main">'));
+  return shellView('inventory',renderLiveInventory().replace('<div class="pw04-inventory-main"',links+'<div class="pw04-inventory-main"'));
 }
 
 function gamesView() {

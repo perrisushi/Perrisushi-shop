@@ -74,22 +74,22 @@ button.pw04-inventory-slot:hover{filter:brightness(1.25)}
 /* Inventario: un único scroll y una altura útil definida en todos los tamaños. */
 html:has(.pw04-inventory),body:has(.pw04-inventory) {height:100%;min-height:0;overflow:hidden}
 .app-frame:has(.pw04-inventory) {height:100dvh;min-height:0;overflow:hidden}
-.content-board:has(.pw04-inventory) {height:100%;min-height:0;max-height:100%}
-.content-board:has(.pw04-inventory) .content-scroll {display:flex;flex-direction:column;min-height:0;overflow:clip}
-.pw04-inventory {display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
+.content-board:has(.pw04-inventory) {--inventory-panel-max:900px;height:auto;min-height:0;max-height:100%;max-width:100%;align-self:start}
+.content-board:has(.pw04-inventory) .content-scroll {display:flex;flex:0 1 auto;flex-direction:column;min-height:0;overflow:clip}
+.pw04-inventory {display:flex;flex-direction:column;flex:0 1 auto;min-height:0;min-width:0}
 .pw04-inventory-balances {flex:none;margin-top:0}
-.pw04-inventory-main {display:flex;flex:1;min-height:0;min-width:0;overflow:clip;container:inventory-space / size;justify-content:center}
+.pw04-inventory-main {display:flex;flex:0 1 auto;min-height:0;min-width:0;overflow:clip;container:inventory-space / inline-size;justify-content:center}
 .pw04-inventory-grid {
  --inventory-columns:6;--inventory-gap:8px;--inventory-pad:12px;
- flex:none;min-height:0;height:100%;max-height:none;max-width:100%;
- width:min(100%,calc(var(--inventory-columns) * max(1px,100cqh - 2 * var(--inventory-pad) - 10px) + (var(--inventory-columns) - 1) * var(--inventory-gap) + 2 * var(--inventory-pad) + 10px));
+ flex:none;min-height:0;height:auto;max-height:none;max-width:100%;
+ width:100%;
  grid-template-columns:repeat(var(--inventory-columns),minmax(0,1fr));gap:var(--inventory-gap);padding:var(--inventory-pad);
  overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;align-content:start;grid-auto-rows:max-content;overscroll-behavior:contain;
 }
 @container inventory-space (max-width:399px){.pw04-inventory-grid {--inventory-columns:4;--inventory-gap:6px;--inventory-pad:8px}}
 @container inventory-space (max-width:299px){.pw04-inventory-grid {--inventory-columns:3}}
 @media(min-width:701px) and (min-height:501px){
- .stage-content:has(.pw04-inventory) {position:absolute;inset:max(136px,14%) 4% max(124px,14%);height:auto;min-height:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center}
+ .stage-content:has(.pw04-inventory) {position:absolute;inset:max(136px,14%) 4% max(160px,16%);height:auto;min-height:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center}
  .content-board:has(.pw04-inventory) {width:min(100%,900px)}
 }
 @media(min-width:701px) and (max-height:620px){
@@ -177,3 +177,8 @@ html:has(.pw04-inventory),body:has(.pw04-inventory) {height:100%;min-height:0;ov
 .pw04-inventory-main {padding-block:8px}
 .pw04-inventory-grid {padding-block:0}
 .pw04-inventory-slot:focus-visible {outline:2px solid var(--focus);outline-offset:-2px}
+
+@media(max-width:700px), (pointer:coarse) and (max-height:500px){
+ .content-board:has(.pw04-inventory) {--inventory-panel-max:540px}
+}
+.content-board:has(.pw04-inventory) .content-header {flex:none}
