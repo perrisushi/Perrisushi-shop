@@ -45,11 +45,11 @@ try {
   await page.waitForTimeout(250);
   const hidden=(await f.db.query('SELECT read_at FROM shop_notifications WHERE id=$1',[notificationId(5)])).rows[0];assert.equal(hidden.read_at,null,'No marcar entradas fuera de pantalla');
   // Desplazamiento del panel: solo se marcan las tarjetas que llegan a verse.
-  for(let i=0;i<200;i++) {const bottom=await page.getByRole('dialog').evaluate(el=>{el.scrollTop+=Math.max(24,(el.clientHeight-el.querySelector('.modal-head').clientHeight)*.65);return el.scrollTop+el.clientHeight>=el.scrollHeight-1});await page.waitForTimeout(180);if(bottom)break}
+  for(let i=0;i<200;i++) {const bottom=await page.locator('.notification-list').evaluate(el=>{el.scrollTop+=Math.max(24,el.clientHeight*.65);return el.scrollTop+el.clientHeight>=el.scrollHeight-1});await page.waitForTimeout(180);if(bottom)break}
   await wait(async()=>Boolean((await f.db.query('SELECT read_at FROM shop_notifications WHERE id=$1',[notificationId(5)])).rows[0].read_at));
   await page.getByRole('button',{name:'Cargar más'}).click();
   await page.getByRole('heading',{name:'Aviso 2',exact:true}).waitFor();assert.equal(await page.locator('.notification-entry').count(),23);
-  for(let i=0;i<100;i++){const bottom=await page.getByRole('dialog').evaluate(el=>{el.scrollTop+=Math.max(24,(el.clientHeight-el.querySelector('.modal-head').clientHeight)*.65);return el.scrollTop+el.clientHeight>=el.scrollHeight-1});await page.waitForTimeout(180);if(bottom)break}
+  for(let i=0;i<100;i++){const bottom=await page.locator('.notification-list').evaluate(el=>{el.scrollTop+=Math.max(24,el.clientHeight*.65);return el.scrollTop+el.clientHeight>=el.scrollHeight-1});await page.waitForTimeout(180);if(bottom)break}
   await wait(async()=>Number((await f.db.query('SELECT count(*) FROM shop_notifications WHERE read_at IS NULL')).rows[0].count)===0);
   assert.equal(await page.locator('.notification-entry').evaluateAll(els=>new Set(els.map(e=>e.querySelector('h3').textContent)).size),23);
   await page.locator('.modal-close').click();await wait(async()=>await page.locator('.has-unread').count()===0);

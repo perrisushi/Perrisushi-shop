@@ -411,3 +411,21 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 .notification-cards-ready .notification-graphic {display:grid;justify-items:center;gap:4px;width:52px;flex:none;padding:5px;border:1px solid #bc8e4e;border-radius:7px;background:linear-gradient(#5b301b,#301c13);box-shadow:inset 0 0 6px #0005}
 .notification-graphic img {display:block;width:40px;height:40px;object-fit:contain}
 .notification-amount {font:bold 11px/1.2 system-ui;color:#ffe3a7;max-width:100%;overflow-wrap:anywhere}
+/* Cabecera fija: el único contenedor desplazable es la lista interior. */
+.modal-card.notification-cards-ready {display:flex;flex-direction:column;overflow:hidden}
+.notification-cards-ready > .modal-head,.notification-cards-ready > .notification-status {flex:none}
+.notification-cards-ready .notification-list {flex:1;min-height:0;align-content:start;grid-auto-rows:max-content;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#95612f #e4bd87;padding-right:3px}
+.notification-list::-webkit-scrollbar {width:8px}
+.notification-list::-webkit-scrollbar-track {background:#e4bd87;border-radius:8px;box-shadow:inset 0 0 0 1px #b78a5355}
+.notification-list::-webkit-scrollbar-thumb {background:linear-gradient(#ba8846,#70421f);border:2px solid #e4bd87;border-radius:8px}
+.notification-list::-webkit-scrollbar-thumb:hover {background:#70421f}
+.notification-list:focus-visible {outline:2px solid #94602e;outline-offset:-2px;border-radius:5px}
+/* Un aviso conserva todo su contenido y cabe sin agrandar el panel. */
+.notification-cards-ready .notification-list:has(> .notification-entry:only-child) {padding-top:6px;padding-bottom:0;padding-right:0}
+.notification-cards-ready .notification-entry:only-child {padding:8px;gap:10px}
+.notification-cards-ready .notification-entry:only-child .notification-graphic {width:42px;padding:3px;gap:2px}
+.notification-entry:only-child .notification-graphic img {width:30px;height:30px}
+.notification-entry:only-child .notification-amount {font-size:10px;line-height:12px}
+.notification-cards-ready .notification-entry:only-child h3 {font-size:15px;line-height:1.3;margin-bottom:4px}
+.notification-cards-ready .notification-entry:only-child p {font-size:13px;line-height:1.35;margin-bottom:6px}
+.notification-cards-ready .notification-entry:only-child time {font-size:10px;line-height:1.3}

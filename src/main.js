@@ -23,8 +23,8 @@ document.addEventListener('visibilitychange',refreshNotifications);
 window.addEventListener('focus',refreshNotifications);
 function notificationVisible(element){
  if(modalKind!=='notifications'||!element.isConnected||overlay.hidden||document.visibilityState!=='visible')return false;
- const r=element.getBoundingClientRect(),card=overlay.querySelector('.modal-card'),b=card.getBoundingClientRect(),header=card.querySelector('.modal-head').getBoundingClientRect();
- return r.bottom>Math.max(b.top,header.bottom)&&r.top<Math.min(b.bottom,innerHeight);
+ const r=element.getBoundingClientRect(),list=overlay.querySelector('.notification-list'),b=list.getBoundingClientRect();
+ return r.bottom>b.top&&r.top<Math.min(b.bottom,innerHeight);
 }
 function scheduleNotificationRead(){
  clearTimeout(notificationReadTimer);const epoch=notificationModalEpoch;
@@ -36,9 +36,9 @@ function scheduleNotificationRead(){
 function observeNotificationCards(){
  notificationObserver?.disconnect();clearTimeout(notificationReadTimer);
  if(modalKind!=='notifications'||document.visibilityState!=='visible')return;
- const card=overlay.querySelector('.modal-card');
- card.removeEventListener('scroll',scheduleNotificationRead);card.addEventListener('scroll',scheduleNotificationRead,{passive:true});
- notificationObserver=new IntersectionObserver(scheduleNotificationRead,{root:card,threshold:0});
+ const list=overlay.querySelector('.notification-list');if(!list)return;
+ list.removeEventListener('scroll',scheduleNotificationRead);list.addEventListener('scroll',scheduleNotificationRead,{passive:true});
+ notificationObserver=new IntersectionObserver(scheduleNotificationRead,{root:list,threshold:0});
  overlay.querySelectorAll('[data-notification-id]').forEach(el=>notificationObserver.observe(el));
  scheduleNotificationRead();
 }
@@ -293,7 +293,7 @@ function modalMarkup(type) {
 
   if(type==='notifications'||type==='notification-history'){
     const state=remoteStates[type]??{status:'loading'},unread=type==='notifications';
-    return `<div class="modal-head"><h2 id="modal-title">${unread?'Notificaciones nuevas':'Historial de notificaciones'}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`<div class="notification-list">${(state.items??[]).map(item=>notificationCard(item,unread)).join('')||`<p class="notification-empty">${unread?'No tienes notificaciones nuevas.':'Todavía no hay notificaciones revisadas.'}</p>`}</div>${pager(state.nextCursor,type)}`:stateNotice(state)}${unread?'<p class="notification-status" role="status"></p>':''}`;
+    return `<div class="modal-head"><h2 id="modal-title">${unread?'Notificaciones nuevas':'Historial de notificaciones'}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`<div class="notification-list" role="region" aria-label="Listado de notificaciones" tabindex="-1">${(state.items??[]).map(item=>notificationCard(item,unread)).join('')||`<p class="notification-empty">${unread?'No tienes notificaciones nuevas.':'Todavía no hay notificaciones revisadas.'}</p>`}${pager(state.nextCursor,type)}</div>`:stateNotice(state)}${unread?'<p class="notification-status" role="status"></p>':''}`;
   }
   if(type==='history'){
     const state=remoteStates[type]??{status:'loading'};
@@ -388,7 +388,7 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {if(modalKind?.startsWith('game:')&&(gameWindow.isFullscreen()||gameWindow.recentlyExited())){if(gameWindow.isFullscreen())void gameWindow.toggle();return}if(!overlay.hidden) closeModal();else if (!sessionOptions.hidden) { closeMenu(); menuToggle.focus(); }}
   if (e.key === 'Tab' && !overlay.hidden) {
-    const focusables = [...overlay.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]')].filter(el => el.getClientRects().length);
+    const focusables = [...overlay.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href],.notification-list[tabindex="0"]')].filter(el => el.getClientRects().length);
     if (!focusables.length) return;
     const first = focusables[0], last = focusables[focusables.length-1];
     if (e.shiftKey && document.activeElement === first) {e.preventDefault();last.focus();}
@@ -452,12 +452,12 @@ async function loadCurrentRoute(route){
 }
 function fitNotificationPanel(){
  if(!['notifications','notification-history'].includes(modalKind)||remoteStates[modalKind]?.status!=='ready')return;
- const card=overlay.querySelector('.modal-card');if(!card)return;const scroll=card.scrollTop;
+ const card=overlay.querySelector('.modal-card');if(!card)return;const list=card.querySelector('.notification-list'),scroll=list?.scrollTop??0;
  card.classList.remove('notification-cards-ready');card.style.height='';
- card.style.height=card.getBoundingClientRect().height+'px';card.classList.add('notification-cards-ready');card.scrollTop=scroll;
+ card.style.height=card.getBoundingClientRect().height+'px';card.classList.add('notification-cards-ready');if(list){list.scrollTop=scroll;list.tabIndex=list.scrollHeight>list.clientHeight+1?0:-1;}
 }
 window.addEventListener('resize',()=>{fitNotificationPanel();if(modalKind==='notifications')scheduleNotificationRead()});
-function paintRemote(kind){if(modalKind!==kind)return;const card=overlay.querySelector('.modal-card'),scroll=card.scrollTop;card.classList.remove('notification-cards-ready');card.style.height='';card.innerHTML=modalMarkup(kind);fitNotificationPanel();card.querySelector('.modal-close').focus({preventScroll:true});card.scrollTop=scroll;if(kind==='notifications')observeNotificationCards()}
+function paintRemote(kind){if(modalKind!==kind)return;const card=overlay.querySelector('.modal-card'),scroll=card.querySelector('.notification-list')?.scrollTop??card.scrollTop;card.classList.remove('notification-cards-ready');card.style.height='';card.innerHTML=modalMarkup(kind);fitNotificationPanel();card.querySelector('.modal-close').focus({preventScroll:true});const list=card.querySelector('.notification-list');if(list)list.scrollTop=scroll;else card.scrollTop=scroll;if(kind==='notifications')observeNotificationCards()}
 async function openRemoteModal(kind){remoteStates[kind]=session?{status:'loading'}:sessionState.status==='error'?sessionState:{status:'signedOut'};openModal(kind);if(!session)return;const generation=sessionEpoch,modalEpoch=notificationModalEpoch;
  try{const result=await (kind==='history'?api.getHistory():api.getNotifications({state:kind==='notifications'?'unread':'read'}));if(generation!==sessionEpoch||modalEpoch!==notificationModalEpoch)return;remoteStates[kind]={status:'ready',...result,items:kind==='history'?result.items:mergeNotifications([],result.items)}}
  catch(error){if(generation!==sessionEpoch||modalEpoch!==notificationModalEpoch)return;remoteStates[kind]=errorState(error);syncIdentity();paintStage()}
