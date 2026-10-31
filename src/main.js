@@ -490,7 +490,7 @@ function accessMarkup(){
  <label class="access-accept"><input name="acceptedTerms" type="checkbox" required /> He leído la Política de Privacidad y acepto las Condiciones del Servicio.</label>
  ${legalLinks()}</div><button type="submit" class="textured-button modal-primary">Crear cuenta</button></form>`:'<p>El registro no está disponible en este momento. Si ya tienes cuenta, entra con tu usuario y contraseña.</p>'}
  <button type="button" class="textured-button access-cancel" data-action="google-cancel">Cancelar y volver al acceso</button><p id="login-status" role="status"></p>`;
- return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div><p class="access-legal">Comunidad con minijuegos y participaciones para sorteos en Twitch.</p>
+ return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div>
   <form id="traditional-login"><div class="login-fields"><label>Usuario<input name="nick" type="text" required maxlength="80" autocomplete="username" /></label>
   <label>Contraseña<input name="password" type="password" required maxlength="1024" autocomplete="current-password" /></label></div>
   <button type="submit" class="textured-button modal-primary">Iniciar sesión</button><p id="login-status" role="status"></p></form>
