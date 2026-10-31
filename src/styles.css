@@ -360,3 +360,5 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 .access-register-content>p:first-child {margin:12px 0}
 
 #login-status:empty,#google-link-status:empty {display:none}
+
+.stage-indicator a {color:inherit;pointer-events:auto;font-size:10px;text-underline-offset:2px}

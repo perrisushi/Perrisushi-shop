@@ -1,3 +1,5 @@
+/privacidad /privacidad.html 200
+/privacidad/ /privacidad.html 200
 /perricasillas /games/original/index-production.html 200
 /perricasillas/ /games/original/index-production.html 200
 /perriduelos-app/* /games/original/perriduelos-app/:splat 200

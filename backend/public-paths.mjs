@@ -1,5 +1,6 @@
-export const publicPattern=/^\/(?:index\.html|src\/(?:main|routes|game-bridge|game-window|game-presentation|casillas-host)\.js|src\/services\/(?:api-client|live-ui|help-content)\.js|src\/(?:styles|desktop-layout-fix|preview-pages|game-window|game-presentation)\.css|public\/assets\/[\w-]+\.(?:webp|mp3))$/;
+export const publicPattern=/^\/(?:index\.html|privacidad\.html|src\/(?:main|routes|game-bridge|game-window|game-presentation|casillas-host)\.js|src\/services\/(?:api-client|live-ui|help-content)\.js|src\/(?:styles|desktop-layout-fix|preview-pages|game-window|game-presentation)\.css|public\/assets\/[\w-]+\.(?:webp|mp3))$/;
 export function gamePath(path){
+ if(path==='/privacidad'||path==='/privacidad/')return '/privacidad.html';
  if(path==='/musica-web.mp3')return '/public/assets/musica-web.mp3';
  if(path==='/perricasillas'||path==='/perricasillas/')return '/games/original/index-production.html';
  if(path==='/perrirpg.html'||path==='/perrirpg.js'||path==='/perrirpg.css'||path==='/ui-layout-editor.js'||path==='/ui-layout-editor.css'||path==='/home-layout.css')return '/games/original'+path;

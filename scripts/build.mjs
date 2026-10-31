@@ -2,7 +2,7 @@ import {mkdir,copyFile,readdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {gameHtml} from '../backend/public-paths.mjs';
 const root=resolve(import.meta.dirname,'..');
-const files=['index.html','_redirects','_headers','src/main.js','src/routes.js','src/styles.css','src/desktop-layout-fix.css','src/preview-pages.css','src/services/api-client.js','src/services/live-ui.js','src/services/help-content.js','src/game-bridge.js','src/casillas-host.js','games/manifest.json'];
+const files=['index.html','privacidad.html','_redirects','_headers','src/main.js','src/routes.js','src/styles.css','src/desktop-layout-fix.css','src/preview-pages.css','src/services/api-client.js','src/services/live-ui.js','src/services/help-content.js','src/game-bridge.js','src/casillas-host.js','games/manifest.json'];
 const {readFile}=await import('node:fs/promises');
 files.push('src/game-window.js','src/game-window.css','src/game-presentation.js','src/game-presentation.css');
 files.push(...JSON.parse(await readFile(resolve(root,'games/manifest.json'),'utf8')).files.map(f=>f.path));

@@ -481,7 +481,7 @@ function googleErrorNotice(){
  return messages[googleNotice]??'';
 }
 function legalLinks(){
- return googleConfig.legalPublished?'<p class="access-legal"><a href="/api/legal/privacy" target="_blank" rel="noopener">Política de Privacidad</a> · <a href="/api/legal/terms" target="_blank" rel="noopener">Condiciones del Servicio</a></p>':'';
+ return '<p class="access-legal"><a href="/privacidad" target="_blank" rel="noopener">Política de Privacidad</a>'+ (googleConfig.legalPublished?' · <a href="/api/legal/terms" target="_blank" rel="noopener">Condiciones del Servicio</a>':'')+'</p>';
 }
 function accessMarkup(){
  if(googlePending)return `<div class="modal-head"><h2 id="modal-title">Crear cuenta</h2></div>
