@@ -429,3 +429,6 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 .notification-cards-ready .notification-entry:only-child h3 {font-size:15px;line-height:1.3;margin-bottom:4px}
 .notification-cards-ready .notification-entry:only-child p {font-size:13px;line-height:1.35;margin-bottom:6px}
 .notification-cards-ready .notification-entry:only-child time {font-size:10px;line-height:1.3}
+/* Estado vacío: sin relleno adicional que provoque un desbordamiento artificial. */
+.notification-cards-ready .notification-list:has(> .notification-empty:only-child) {display:block;padding:0}
+.notification-cards-ready .notification-empty {margin:12px 0 0}
