@@ -13,7 +13,8 @@ import {createFrontendServer} from '../dev-server.mjs';
 import {digest} from '../backend/security.mjs';
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE??'C:/Users/borja/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const privateMode=process.env.PW2_QA_PRIVATE==='true';
-const base='http://127.0.0.1:4199',output=process.env.PW2_QA_DIR??process.env.TEMP+'/perriweb-google-qa'+(privateMode?'-private':'');
+const rootReturn=process.env.PW2_QA_ROOT_RETURN==='true';
+const base='http://127.0.0.1:4199',output=process.env.PW2_QA_DIR??process.env.TEMP+'/perriweb-google-qa'+(privateMode?'-private':'')+(rootReturn?'-root':'');
 const db=new PGlite(),errors=[],results=[];
 let backend,frontend,browser,qaClock=Date.now();
 try{
@@ -56,7 +57,7 @@ try{
   qaClock+=16*60_000;
   const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+'/api/auth/google/callback?code=local-code'},body:''}));
+  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+(rootReturn?'/?code=local-code':'/api/auth/google/callback?code=local-code')},body:''}));
   async function shot(name){
    const data=await page.evaluate(()=>{
     const card=document.querySelector('.modal-card'),b=card.getBoundingClientRect();
@@ -110,7 +111,7 @@ try{
   qaClock+=16*60_000;
   const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+'/api/auth/google/callback?code=local-code'},body:''}));
+  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+(rootReturn?'/?code=local-code':'/api/auth/google/callback?code=local-code')},body:''}));
   chosen=B;await page.goto(base);await (size.width<701?page.locator('[data-action=google-login]').tap():page.locator('[data-action=google-login]').click());await page.locator('#google-register').waitFor();
   assert.equal((await db.query("SELECT 1 FROM shop_players WHERE nick=$1",['Nuevo'+size.width])).rows.length,0);
   await page.screenshot({path:output+'/'+size.width+'x'+size.height+'-register.png'});
@@ -153,7 +154,7 @@ try{
   qaClock+=16*60_000;
   const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+'/api/auth/google/callback?code=local-code'},body:''}));
+  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+(rootReturn?'/?code=local-code':'/api/auth/google/callback?code=local-code')},body:''}));
   const inventoryBefore=await one('shop_inventories','OldNick');
   chosen=B;await page.goto(base);await page.locator('[data-action=google-login]').click();
   await page.getByRole('status').filter({hasText:'Esta cuenta de Google no tiene el acceso habilitado.'}).waitFor();
@@ -171,6 +172,26 @@ try{
   const box=await page.locator('.modal-card').boundingBox();assert.ok(box.y>=0&&box.y+box.height<=size.height+1);
   await page.screenshot({path:output+'/'+size.width+'x'+size.height+'-private-rejection.png'});
   results.push({size,state:'private-rejection-no-registration-no-public-legals'});
+  await context.close();
+ }
+ if(privateMode){
+  qaClock+=16*60_000;
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+(rootReturn?'/?code=local-code':'/api/auth/google/callback?code=local-code')},body:''}));
+  await context.route('**/api/session',route=>route.fulfill({status:200,contentType:'application/json',body:'{"authenticated":false}'}));
+  chosen=A;await page.goto(base);await page.locator('[data-action=google-login]').tap();
+  await page.getByRole('status').filter({hasText:'Google ha respondido, pero no se pudo recuperar la sesión.'}).waitFor();
+  assert.equal(await page.locator('#traditional-login').count(),1);
+  assert.equal(new URL(page.url()).searchParams.has('code'),false);
+  await page.screenshot({path:output+'/390x844-session-missing-visible.png'});
+  results.push({size:{width:390,height:844},state:'missing-session-displays-error'});
+  await context.unroute('**/api/session');await page.reload();await page.locator('body[data-access=ready]').waitFor();
+  await page.goto(base+'/?google=google_not_allowed#profile');
+  await page.getByRole('heading',{name:'Acceso con Google',exact:true}).waitFor();
+  await page.getByRole('status').filter({hasText:'Esta cuenta de Google no tiene el acceso habilitado.'}).waitFor();
+  assert.equal(await page.locator('.identity-chip strong').innerText(),'OldNick');
+  results.push({size:{width:390,height:844},state:'link-error-visible-with-existing-session'});
   await context.close();
  }
  assert.deepEqual(errors,[]);

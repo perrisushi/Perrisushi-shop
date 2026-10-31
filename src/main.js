@@ -1,6 +1,6 @@
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createGameWindow,mobileGameView} from './game-window.js';
-import {createApiClient} from './services/api-client.js';
+import {createApiClient,oauthCallbackPath} from './services/api-client.js';
 import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,bindPageEvents} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
@@ -271,6 +271,7 @@ function modalMarkup(type) {
   if (type === 'assistance') return `<div class="modal-head"><h2 id="modal-title">Asistencia</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">Si necesitas ayuda con la tienda, puedes escribir a Perrisushi por Twitch. También publicamos avisos y novedades en YouTube.</p><a class="support-link textured-button" href="https://www.twitch.tv/perrisushi" target="_blank" rel="noopener noreferrer">Abrir Twitch</a>`;
   if (type === 'logout') return `<div class="modal-head"><h2 id="modal-title">Cerrar sesión</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">No hay sesión iniciada.</p>`;
   if (type === 'music-error') return `<div class="modal-head"><h2 id="modal-title">Música</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">El navegador no pudo reproducir la música. Comprueba el sonido y vuelve a intentarlo.</p>`;
+  if(type==='google-error')return `<div class="modal-head"><h2 id="modal-title">Acceso con Google</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p role="status">${escapeText(googleErrorNotice())}</p>`;
   if(type==='link-google')return `<div class="modal-head"><h2 id="modal-title">Vincular Google</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p>Confirma la contraseña de ${escapeText(session.nick)} para vincular tu cuenta de Google.</p><form id="google-link"><div class="login-fields"><label>Contraseña actual<input type="password" name="password" required maxlength="1024" autocomplete="current-password" /></label></div><button type="submit" class="textured-button modal-primary">Continuar con Google</button><p id="google-link-status" role="status"></p></form>`;
   return accessMarkup();
 }
@@ -393,7 +394,7 @@ async function bootstrapSession(authenticated=null){
   resetPrivateState();const generation=sessionEpoch;sessionState={status:'loading'};profileState={status:'loading'};
   try{const result=authenticated??await api.getSession();if(generation!==sessionEpoch)return;session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
    if(session){googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
-   else profileState={status:'signedOut'};
+   else {profileState={status:'signedOut'};if(['login','linked'].includes(googleNotice))googleNotice='google_session_missing'}
   }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
   syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();
 }
@@ -476,7 +477,7 @@ async function launchOriginalGame(name){
 }
 
 function googleErrorNotice(){
- const messages={google_cancelled:'Has cancelado el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'Esta cuenta de Google ya está vinculada a otra cuenta, o tu usuario tiene otra vinculación.',account_inactive:'Esta cuenta no tiene el acceso habilitado.',session_expired:'Tu sesión ha caducado. Vuelve a entrar para vincular Google.',google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google. Vuelve a intentarlo.',google_not_allowed:'Esta cuenta de Google no tiene el acceso habilitado.',registration_unavailable:'Entra con tu usuario y contraseña y vincula Google desde Mi perfil.'};
+ const messages={google_session_missing:'Google ha respondido, pero no se pudo recuperar la sesión. Vuelve a intentarlo.',google_cancelled:'Has cancelado el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'Esta cuenta de Google ya está vinculada a otra cuenta, o tu usuario tiene otra vinculación.',account_inactive:'Esta cuenta no tiene el acceso habilitado.',session_expired:'Tu sesión ha caducado. Vuelve a entrar para vincular Google.',google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google. Vuelve a intentarlo.',google_not_allowed:'Esta cuenta de Google no tiene el acceso habilitado.',registration_unavailable:'Entra con tu usuario y contraseña y vincula Google desde Mi perfil.'};
  return messages[googleNotice]??'';
 }
 function legalLinks(){
@@ -497,11 +498,14 @@ function accessMarkup(){
   ${googleConfig.enabled?'<button type="button" class="textured-button google-access" data-action="google-login">Continuar con Google</button>':''}${legalLinks()}`;
 }
 async function initializeGoogleAccess(){
+ const callback=oauthCallbackPath(location);
+ if(callback){location.replace(callback);return}
  const query=new URLSearchParams(location.search);googleNotice=query.get('google')??'';
  if(query.has('google')){query.delete('google');history.replaceState(null,'',location.pathname+(query.size?'?'+query:'')+location.hash)}
  googlePending=null;googleLinked=null;
  try{googleConfig=await api.googleConfig();if(googleConfig.enabled){const pending=await api.googlePending();if(pending.pending)googlePending=pending}}catch{googleConfig={enabled:false,legalPublished:false}}
  await bootstrapSession();
+ if(session&&googleErrorNotice())openModal('google-error');
 }
 async function beginGoogle(button,password){
  if(!button||button.disabled)return;

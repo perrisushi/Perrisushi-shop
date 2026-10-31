@@ -1,4 +1,4 @@
-import {createHash} from 'node:crypto';
+import {createHash,randomUUID} from 'node:crypto';
 import {BackendError} from './repository.mjs';
 import {newToken,digest,sessionKey,csrfFor,equalText} from './security.mjs';
 
@@ -14,7 +14,7 @@ export function validNewNick(value){
 }
 // Auth HTTP es independiente de la clave service_role usada por el repositorio.
 // Solo se necesitan las credenciales públicas del proyecto; ningún secreto Google.
-export function createGoogleProvider({url,key,origin,testOnly=false,testEmail,fetchImpl=globalThis.fetch}){
+export function createGoogleProvider({url,key,origin,testOnly=false,testEmail,onDiagnostic=()=>{},fetchImpl=globalThis.fetch}){
  key=typeof key==='string'?key.trim():'';
  const base=new URL(url);if(base.protocol!=='https:'||base.pathname!=='/'||base.search||base.hash||base.username||base.password||!key)throw Error('Invalid Google Auth configuration');
  const callback=origin+'/api/auth/google/callback';
@@ -33,14 +33,21 @@ export function createGoogleProvider({url,key,origin,testOnly=false,testEmail,fe
    target.search=new URLSearchParams({provider:'google',redirect_to:callback,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'s256',scopes:'openid email profile',prompt:'select_account'}).toString();
    return target.href;
   },
-  async exchange(code,verifier){
+  async exchange(code,verifier,{requestId}={}){
+   let stage='provider_configuration';
+   const emit=(outcome,reason)=>{try{onDiagnostic({event:'google_provider',requestId,stage,outcome,reason})}catch{}};
+   try{
    checkTestConfiguration();
+   stage='token_exchange';
    const data=await request('/auth/v1/token?grant_type=pkce',{method:'POST',body:JSON.stringify({auth_code:code,code_verifier:verifier})});
    if(typeof data.access_token!=='string'||!data.access_token)fail(400,'google_failed');
    // Consultar Auth, no confiar en user_metadata ni decodificar un JWT sin verificar.
+   stage='identity_fetch';
    const user=await request('/auth/v1/user',{method:'GET',headers:{Authorization:'Bearer '+data.access_token}});
+   stage='identity_validation';
    if(!uuid.test(user.id??'')||user.is_anonymous||user.deleted_at||Date.parse(user.banned_until)>Date.now()||!user.email_confirmed_at||!user.identities?.some(i=>i.provider==='google'))fail(400,'google_failed');
    if(testOnly){
+    stage='test_account_check';
     // Solo datos de la respuesta autenticada de Supabase, nunca user_metadata
     // ni un correo enviado por el navegador. Sin normalizaciones de alias Gmail.
     const identity=user.identities.find(i=>i.provider==='google');
@@ -48,7 +55,9 @@ export function createGoogleProvider({url,key,origin,testOnly=false,testEmail,fe
     if(identity?.identity_data?.email_verified!==true||typeof identityEmail!=='string'||identityEmail.toLowerCase()!==allowedEmail||typeof user.email!=='string'||user.email.toLowerCase()!==allowedEmail)fail(403,'google_not_allowed');
    }
    // Los tokens OAuth/refresh no se persisten, ni se envían al navegador.
+   emit('success','identity_verified');
    return user.id;
+   }catch(error){emit('failure',['google_not_allowed','google_failed','google_unavailable'].includes(error?.code)?error.code:'unexpected_failure');throw error}
   }
  };
 }
@@ -108,37 +117,54 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,regis
    return {url,cookie:cookie(token)};
   },
   async cancel(token){if(token)await tx(client=>client.query('DELETE FROM public.pw2_oauth_flows WHERE token_hash=$1',[digest(token)]))},
-  async callback(token,code){
+  async callback(token,code,{requestId=randomUUID()}={}){
+   let stage='flow_lookup';
+   const emit=(outcome,reason,extra={})=>{try{onDiagnostic({event:'google_auth',requestId,stage,outcome,reason,...extra})}catch{}};
+   try{
    if(typeof code!=='string'||!code||code.length>4096)fail(400,'google_failed');
    const started=await tx(async client=>{
     const row=await flow(client,token,'started');
     await client.query("UPDATE public.pw2_oauth_flows SET status='exchanging',verifier=NULL WHERE token_hash=$1",[digest(token)]);return row;
    });
-   const id=await provider.exchange(code,started.verifier);
-   return tx(async client=>{
+   stage='provider_exchange';
+   const id=await provider.exchange(code,started.verifier,{requestId});
+   stage='callback_transaction';
+   const result=await tx(async client=>{
     const row=await flow(client,token,'exchanging');
     if(row.mode==='link'){
+     stage='link_session_validation';
      const valid=(await client.query('SELECT nick FROM public.shop_sessions WHERE token=$1 AND nick=$2 AND expires_at>now() FOR UPDATE',[row.source_session,row.nick])).rows[0];
      if(!valid)fail(401,'session_expired');
+     stage='link_save';
      await link(client,id,row.nick);
      // La cookie Strict no llega al callback externo: rotar la sesión solo tras
      // validar en la BD la sesión original y la prueba de propiedad.
      await client.query('DELETE FROM public.shop_sessions WHERE token=$1',[row.source_session]);
+     stage='session_create';
      const session=await issue(client,row.nick);
      await client.query('DELETE FROM public.pw2_oauth_flows WHERE token_hash=$1',[digest(token)]);
      return {...session,outcome:'linked'};
     }
+    stage='link_lookup';
     const linked=(await client.query('SELECT nick FROM public.pw2_google_links WHERE auth_user_id=$1',[id])).rows[0];
     if(linked){
+     stage='session_create';
      const session=await issue(client,linked.nick);
      await client.query('DELETE FROM public.pw2_oauth_flows WHERE token_hash=$1',[digest(token)]);
      return {...session,outcome:'login'};
     }
+    stage='registration_gate';
     if(!registrationEnabled)fail(403,'registration_unavailable');
     // Auth puede crear auth.users. No se crea ningún jugador ni inventario aquí.
     await client.query("UPDATE public.pw2_oauth_flows SET auth_user_id=$2,status='pending',expires_at=now()+interval '10 minutes' WHERE token_hash=$1",[digest(token),id]);
     return {outcome:'register'};
    });
+   stage='callback_commit';emit('success',result.outcome,{linkFound:['linked','login'].includes(result.outcome),sessionCreated:Boolean(result.token)});
+   return result;
+   }catch(error){
+    const known=['google_expired','google_failed','google_not_allowed','google_unavailable','google_conflict','session_expired','account_inactive','registration_unavailable'];
+    emit('failure',known.includes(error?.code)?error.code:'unexpected_failure');throw error;
+   }
   },
   async pending(token){
    if(!token)return {pending:false};

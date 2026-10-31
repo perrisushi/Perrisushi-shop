@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createApiClient,ApiError} from '../src/services/api-client.js';
+import {createApiClient,ApiError,oauthCallbackPath} from '../src/services/api-client.js';
 const json=(value,status=200)=>({ok:status>=200&&status<300,status,json:async()=>value});
 test('usa mismo origen y nunca expone secretos ni tokens',async()=>{
  const calls=[];const api=createApiClient({fetchImpl:async(url,opts)=>{calls.push([url,opts]);return json({authenticated:false});}});
@@ -105,4 +105,14 @@ test('propaga solo errores públicos conocidos y conserva CSRF en memoria para l
  await assert.rejects(offline.getSession(),e=>e.code==='backend_not_configured');
  const unsafe=createApiClient({fetchImpl:async()=>json({error:'private_server_details'},500)});
  await assert.rejects(unsafe.getProfile(),e=>e.code==='request_failed');
+});
+
+
+test('retorno OAuth a Site URL: dirige al callback local y no confía en destinos ajenos',()=>{
+ assert.equal(oauthCallbackPath({pathname:'/',search:'?code=local-secret-code'}),'/api/auth/google/callback?code=local-secret-code');
+ assert.equal(oauthCallbackPath({pathname:'/index.html',search:'?code=x&redirect_to=https://evil.example&error_description=PRIVATE'}),'/api/auth/google/callback?code=x');
+ assert.equal(oauthCallbackPath({pathname:'/',search:'?error=access_denied&error_description=PRIVATE'}),'/api/auth/google/callback?error=access_denied');
+ for(const search of ['?code=','?code=one&code=two','?code='+('a'.repeat(4097))])assert.equal(oauthCallbackPath({pathname:'/',search}),'/api/auth/google/callback?error=invalid_callback');
+ assert.equal(oauthCallbackPath({pathname:'/api/auth/google/callback',search:'?code=x'}),null);
+ assert.equal(oauthCallbackPath({pathname:'/',search:'?google=login'}),null);
 });

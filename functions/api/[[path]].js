@@ -1,3 +1,10 @@
+// Conserva cookies separadas incluso si el runtime solo devuelve un encabezado combinado.
+export function responseCookies(headers){
+ let values;try{values=headers.getSetCookie?.()}catch{}
+ if(!Array.isArray(values)||!values.length)try{values=headers.getAll?.('Set-Cookie')}catch{}
+ if(!Array.isArray(values)||!values.length)values=headers.has('set-cookie')?[headers.get('set-cookie')]:[];
+ return values.filter(v=>typeof v==='string').flatMap(v=>v.split(/,(?=\s*[!#$%&'*+.^_`|~0-9A-Za-z-]+=)/).map(s=>s.trim())).filter(Boolean);
+}
 // Cloudflare Pages: únicamente /api/*; claves Supabase exclusivamente en Railway.
 export async function onRequest({request,env}){
  const incoming=new URL(request.url);
@@ -20,8 +27,9 @@ export async function onRequest({request,env}){
   if(response.status>=300&&response.status<400&&!oauthReturn)return unavailable();
   const returned=new Headers({'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});for(const key of ['content-type','content-security-policy','referrer-policy','x-csrf-token','x-request-id','server-timing'])if(response.headers.has(key))returned.set(key,response.headers.get(key));
   if(oauthReturn)returned.set('Location',response.headers.get('location'));
-  const cookies=response.headers.getSetCookie?.()??response.headers.getAll?.('Set-Cookie')??(response.headers.has('set-cookie')?[response.headers.get('set-cookie')]:[]);
+  const cookies=responseCookies(response.headers);
   for(const cookie of cookies)returned.append('Set-Cookie',cookie);
+  if(incoming.pathname==='/api/auth/google/callback')console.info(JSON.stringify({event:'google_auth_proxy',stage:'callback_forward',status:response.status,redirectAllowed:oauthReturn,cookiesForwarded:cookies.length,sessionCookieForwarded:cookies.some(c=>c.startsWith('pw2_session=')),requestId:/^[a-f0-9-]{36}$/i.test(response.headers.get('x-request-id')??'')?response.headers.get('x-request-id'):undefined}));
   return new Response(response.body,{status:response.status,headers:returned});
  }catch{return unavailable()}
 }

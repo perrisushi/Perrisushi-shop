@@ -127,3 +127,16 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
     buyRaffleTicket: ({raffleId,idempotencyKey})=>request('/shop/raffles/buy',{method:'POST',body:{raffleId,idempotencyKey}}),
   });
 }
+
+// Compatibilidad con retornos PKCE que Supabase devuelve a Site URL (/).
+// Solo construye el callback local; el backend exige su cookie y verificador.
+export function oauthCallbackPath({pathname,search}) {
+  if(!['/','/index.html'].includes(pathname))return null;
+  const query=new URLSearchParams(search);
+  if(!query.has('code')&&!query.has('error'))return null;
+  const next=new URLSearchParams();
+  if(query.has('error'))next.set('error','access_denied');
+  else if(query.getAll('code').length===1&&query.get('code')&&query.get('code').length<=4096)next.set('code',query.get('code'));
+  else next.set('error','invalid_callback');
+  return '/api/auth/google/callback?'+next;
+}

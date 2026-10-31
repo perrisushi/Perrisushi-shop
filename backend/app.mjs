@@ -28,12 +28,14 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
   try{await google.cancel(token)}catch{try{onAuthDiagnostic({event:'google_auth',reason:'flow_cleanup_failed'})}catch{}}
  }
  const sessionRead=key=>sessionStore==='memory'?Promise.resolve(sessions.get(key)??null):repository.session(key);
- async function identity(req){
-  const token=cookieToken(req.headers.cookie);if(!token)return null;
+ async function identity(req,diagnose=false){
+  const token=cookieToken(req.headers.cookie);
+  const finish=(user,reason)=>{if(diagnose)try{onAuthDiagnostic({event:'session_auth',requestId:randomUUID(),stage:'session_restore',outcome:user?'success':'failure',reason,cookiePresent:Boolean(token)})}catch{};return user};
+  if(!token)return finish(null,String(req.headers.cookie??'').includes('pw2_session=')?'invalid_cookie':'cookie_missing');
   const joined=sessionStore==='supabase'&&typeof repository.authenticatedSession==='function';
-  let row;try{row=await (joined?repository.authenticatedSession(sessionKey(token)):sessionRead(sessionKey(token)))}catch(error){try{onAuthDiagnostic({event:'traditional_auth',requestId:randomUUID(),stage:'session_restore',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}if(!row||typeof row.nick!=='string'||!row.nick||!Number.isFinite(Date.parse(row.expires_at))||Date.parse(row.expires_at)<=now())return null;
-  if(!joined){const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);if(!access||!player||access.active===false||player.active===false)return null}
-  return {nick:row.nick,token};
+  let row;try{row=await (joined?repository.authenticatedSession(sessionKey(token)):sessionRead(sessionKey(token)))}catch(error){try{onAuthDiagnostic({event:'traditional_auth',requestId:randomUUID(),stage:'session_restore',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}if(!row)return finish(null,'session_not_found_or_inactive');if(typeof row.nick!=='string'||!row.nick||!Number.isFinite(Date.parse(row.expires_at)))return finish(null,'invalid_session_record');if(Date.parse(row.expires_at)<=now())return finish(null,'session_expired');
+  if(!joined){const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);if(!access||!player||access.active===false||player.active===false)return finish(null,'account_inactive')}
+  return finish({nick:row.nick,token},'session_valid');
  }
  function pagination(url,cursorField='cursor'){
   const raw=url.searchParams.get('limit')??'20';if(!/^\d{1,3}$/.test(raw))throw new BackendError(400,'invalid_page');
@@ -65,12 +67,19 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
    if(route.startsWith('/api/auth/google/')){
     const flowToken=oauthToken(req.headers.cookie);
     if(route==='/api/auth/google/callback'&&req.method==='GET'){
+     const requestId=randomUUID();
      let target='/?google=google_failed#home',cookies=google?[google.cookie('',true)]:[];
      try{
       if(!google)fail(503,'google_unavailable');
       if(url.searchParams.has('error'))fail(400,'google_cancelled');
-      const result=await google.callback(flowToken,url.searchParams.get('code'));
-      if(result.token)cookies.push(cookie(result.token));
+      const result=await google.callback(flowToken,url.searchParams.get('code'),{requestId});
+      if(result.token){
+       let restored;try{restored=await identity({...req,headers:{...req.headers,cookie:'pw2_session='+result.token}})}catch(error){try{onAuthDiagnostic({event:'google_auth',requestId,stage:'session_visibility',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}
+       const visible=restored?.nick===result.nick;
+       try{onAuthDiagnostic({event:'google_auth',requestId,stage:'session_visibility',outcome:visible?'success':'failure',reason:visible?'session_recoverable':'session_not_recoverable'})}catch{}
+       if(!visible)fail(503,'google_unavailable');
+       cookies.push(cookie(result.token));
+      }
       if(result.outcome==='register')cookies=[google.cookie(flowToken)];
       target='/?google='+result.outcome+'#'+(result.outcome==='linked'?'profile':'home');
      }catch(error){
@@ -78,7 +87,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
       target='/?google='+(allowed.includes(error?.code)?error.code:'google_failed')+'#home';
       try{await google?.cancel(flowToken)}catch{}
      }
-     status=303;res.writeHead(303,{'Location':target,'Set-Cookie':cookies,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});res.end();return;
+     status=303;res.writeHead(303,{'Location':target,'Set-Cookie':cookies,'X-Request-ID':requestId,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});res.end();return;
     }
     if(!google)fail(503,'google_unavailable');
     if(route==='/api/auth/google/pending'&&req.method==='GET'){send(200,await google.pending(flowToken));return}
@@ -133,7 +142,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
    if(req.method==='POST'&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
    if(!repository.configured)fail(503,'backend_not_configured');
-   const user=await identity(req);
+   const user=await identity(req,route==='/api/session');
    detailedTiming=Boolean(user);
    if(user&&!accountReads.take(user.nick))fail(429,'too_many_requests');
    if(route==='/api/session'&&req.method==='GET'){send(200,{authenticated:Boolean(user),...(user?{nick:user.nick,sessionPersistence:sessionStore}:{})},user?{'X-CSRF-Token':csrfFor(user.token,csrfSecret)}:{});return}

@@ -6,7 +6,7 @@ import http from 'node:http';
 import {createGoogleAuth,createGoogleProvider,oauthToken,validNewNick} from '../backend/google-auth.mjs';
 import {createBackend} from '../backend/app.mjs';
 import {digest,sessionKey} from '../backend/security.mjs';
-import {onRequest as proxy} from '../functions/api/[[path]].js';
+import {onRequest as proxy,responseCookies} from '../functions/api/[[path]].js';
 import {createLegalPages} from '../backend/legal-pages.mjs';
 const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
 async function fixture({termsVersion='local-reviewed-documents',registrationEnabled=true,provider:customProvider}={}){
@@ -154,7 +154,7 @@ test('Google: RLS y permisos niegan acceso de navegador a vínculos y verificado
  }finally{await f.close()}
 });
 async function httpFixture(worker,{legalPublished=true,termsVersion='local-reviewed-documents',registrationEnabled=true,provider}={}){
- const f=await fixture({termsVersion,registrationEnabled,provider});const server=http.createServer(createBackend({repository:f.repository,google:f.google,legalPublished,publicOrigin:'https://perrisushi.com',production:true,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)}));
+ const f=await fixture({termsVersion,registrationEnabled,provider});const server=http.createServer(createBackend({repository:f.repository,google:f.google,legalPublished,onAuthDiagnostic:event=>f.events.push(event),publicOrigin:'https://perrisushi.com',production:true,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)}));
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const request=async(path,{method='GET',cookie,body,csrf,origin='https://perrisushi.com'}={})=>{
   const response=await fetch('http://127.0.0.1:'+server.address().port+'/api'+path,{method,redirect:'manual',headers:{origin,...(cookie?{cookie}:{}),...(csrf?{'x-csrf-token':csrf}:{}),...(body!==undefined?{'content-type':'application/json'}:{})},...(body!==undefined?{body:JSON.stringify(body)}:{})});
@@ -478,3 +478,67 @@ test('HTTP privado: las altas siguen cerradas aunque se publiquen legales; la co
  const attempt=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
  assert.equal(attempt.status,503);assert.equal(attempt.data.error,'google_unavailable');
 },{legalPublished:true,registrationEnabled:false,provider:createGoogleProvider({url:'https://project.supabase.co',key:'public',origin:'https://perrisushi.com',testOnly:true})}));
+
+
+test('Proxy OAuth: encabezado combinado o API vacía no pierde la cookie de sesión y respeta Expires',async()=>{
+ const raw='pw2_oauth=; Path=/; Expires=Wed, 21 Oct 2015 07:28:00 GMT; HttpOnly; Secure, pw2_session=PRIVATE_TOKEN; Path=/; HttpOnly; SameSite=Strict; Secure';
+ const combined={getSetCookie:()=>[],getAll:()=>[],has:name=>name==='set-cookie',get:name=>name==='set-cookie'?raw:null};
+ assert.deepEqual(responseCookies(combined),['pw2_oauth=; Path=/; Expires=Wed, 21 Oct 2015 07:28:00 GMT; HttpOnly; Secure','pw2_session=PRIVATE_TOKEN; Path=/; HttpOnly; SameSite=Strict; Secure']);
+ const previous=globalThis.fetch,info=console.info,logs=[];
+ try{
+  console.info=event=>logs.push(JSON.parse(event));
+  globalThis.fetch=async()=>({status:303,body:null,headers:{...combined,get:name=>name==='location'?'/?google=login#home':combined.get(name)}});
+  const result=await proxy({request:new Request('https://perrisushi.com/api/auth/google/callback?code=PRIVATE_CODE'),env:{PERRIWEB_BACKEND_ORIGIN:'https://api.example',PERRIWEB_PROXY_SECRET:'s'.repeat(40)}});
+  assert.equal(result.status,303);assert.equal(result.headers.getSetCookie().length,2);
+  assert.equal(logs.at(-1).sessionCookieForwarded,true);assert.equal(logs.at(-1).cookiesForwarded,2);
+  assert.ok(!JSON.stringify(logs).includes('PRIVATE'));
+ }finally{globalThis.fetch=previous;console.info=info}
+});
+
+test('OAuth: vínculo persiste al salir; diagnóstico distingue cookie perdida de sesión válida sin secretos',()=>httpFixture(async({request,db,events})=>{
+ const login=await request('/auth/login',{method:'POST',body:{nick:'OldNick',password:'original-password'}});
+ const cookie=login.headers.getSetCookie().find(c=>c.startsWith('pw2_session=')).split(';')[0];
+ const start=await request('/auth/google/start',{method:'POST',cookie,csrf:login.headers.get('x-csrf-token'),body:{mode:'link',password:'original-password'}});
+ const linked=await request('/auth/google/callback?code=A',{cookie:start.headers.getSetCookie()[0].split(';')[0]});
+ const linkedCookie=linked.headers.getSetCookie().find(c=>c.startsWith('pw2_session=')).split(';')[0];
+ const session=await request('/session',{cookie:linkedCookie});
+ await request('/auth/logout',{method:'POST',cookie:linkedCookie,csrf:session.headers.get('x-csrf-token'),body:{}});
+ assert.equal((await db.query('SELECT nick FROM pw2_google_links WHERE auth_user_id=$1',[A])).rows[0].nick,'OldNick');
+ const again=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ const callback=await request('/auth/google/callback?code=A',{cookie:again.headers.getSetCookie()[0].split(';')[0]});
+ assert.match(callback.headers.get('x-request-id'),/^[a-f0-9-]{36}$/i);
+ const sessionCookie=callback.headers.getSetCookie().find(c=>c.startsWith('pw2_session=')).split(';')[0];
+ assert.equal((await request('/session')).data.authenticated,false);
+ assert.equal(events.at(-1).reason,'cookie_missing');
+ assert.equal((await request('/session',{cookie:sessionCookie})).data.authenticated,true);
+ assert.equal(events.at(-1).reason,'session_valid');
+ assert.ok(events.some(e=>e.stage==='callback_commit'&&e.reason==='login'&&e.linkFound&&e.sessionCreated));
+ assert.ok(events.some(e=>e.stage==='session_visibility'&&e.reason==='session_recoverable'));
+ for(const privateValue of ['OldNick',A,'original-password',sessionCookie.slice(12),'PRIVATE_CODE'])assert.ok(!JSON.stringify(events).includes(privateValue));
+},{legalPublished:false,termsVersion:null,registrationEnabled:false}));
+
+test('OAuth: no entrega una cookie de éxito si la sesión SQL no se recupera por la API habitual',()=>httpFixture(async({request,repository,db,events})=>{
+ await db.query("INSERT INTO pw2_google_links(auth_user_id,nick) VALUES($1,'OldNick')",[A]);
+ const start=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ repository.session=async()=>null;
+ const result=await request('/auth/google/callback?code=A',{cookie:start.headers.getSetCookie()[0].split(';')[0]});
+ assert.equal(result.status,303);assert.equal(result.headers.get('location'),'/?google=google_unavailable#home');
+ assert.ok(!result.headers.getSetCookie().some(c=>c.startsWith('pw2_session=')));
+ assert.ok(events.some(e=>e.stage==='session_visibility'&&e.reason==='session_not_recoverable'));
+ assert.equal((await db.query('SELECT count(*)::integer AS n FROM pw2_google_links')).rows[0].n,1);
+},{legalPublished:false,termsVersion:null,registrationEnabled:false}));
+
+
+test('Diagnóstico OAuth: distingue intercambio e identidad sin registrar la respuesta del proveedor',async()=>{
+ const events=[];let tokenFails=true;
+ const provider=createGoogleProvider({url:'https://project.supabase.co',key:'PRIVATE_KEY',origin:'https://perrisushi.com',onDiagnostic:e=>events.push(e),fetchImpl:async url=>{
+  if(String(url).includes('/token?'))return tokenFails?Response.json({error:'PRIVATE_PROVIDER_BODY'},{status:400}):Response.json({access_token:'PRIVATE_TOKEN'});
+  return Response.json({id:A,email_confirmed_at:'2026-10-31',identities:[]});
+ }});
+ await assert.rejects(provider.exchange('PRIVATE_CODE','PRIVATE_VERIFIER'),{code:'google_failed'});
+ assert.equal(events.at(-1).stage,'token_exchange');
+ tokenFails=false;
+ await assert.rejects(provider.exchange('PRIVATE_CODE','PRIVATE_VERIFIER'),{code:'google_failed'});
+ assert.equal(events.at(-1).stage,'identity_validation');
+ assert.ok(!JSON.stringify(events).includes('PRIVATE'));
+});
