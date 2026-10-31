@@ -7,4 +7,6 @@ assert.match(css,/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 assert.match(css,/grid-template-rows: repeat\(3, min-content\)/);
 assert.match(css,/container-type: size/);
 assert.doesNotMatch(css,/grid-template-columns:\s*1fr|marco-recuadro-movil/);
-console.log('Tablero proporcional: composición única en PC y móvil: OK');
+console.log('Tablero proporcional exclusivo de escritorio; móvil original: OK');
+
+assert.doesNotMatch(css, /@media\s*\(max-width/);

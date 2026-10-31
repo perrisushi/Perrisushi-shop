@@ -5,50 +5,49 @@
     width: min(1300px, calc(100vw - 24px), calc((100dvh - 24px) * 1.23));
   }
 }
-.stage-content.show-home {
-  container-type: size;
-}
-.stage-content.show-home .home-menu {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  right: auto;
-  bottom: auto;
-  transform: translate(-50%, -50%);
-  margin: 0;
-  width: min(72cqw, 112cqh);
-  height: auto;
-  min-height: 0;
-  aspect-ratio: 1448 / 1086;
-  background-image: url('../public/assets/marco-recuadro-pc.webp');
-  container-type: inline-size;
-}
-.home-menu .home-links {
-  inset: 29% 8.5% 9%;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(3, min-content);
-  align-content: center;
-  align-items: center;
-  justify-items: center;
-  column-gap: 3%;
-  row-gap: 1.4cqw;
-}
-.home-menu .art-menu-button {
-  width: 83%;
-  max-width: none;
-}
-.home-menu .art-menu-button:nth-child(odd) { justify-self: end; }
-.home-menu .art-menu-button:nth-child(even) { justify-self: start; }
-.home-menu .art-menu-button img {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: none;
-  object-fit: contain;
-}
-@media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
+/* El escalado fijo pertenece solo a escritorio. En móvil se conservan
+   íntegramente las reglas originales de styles.css, también en horizontal. */
+@media (min-width: 701px) and (min-height: 501px), (min-width: 701px) and (pointer: fine) {
+  .stage-content.show-home {
+    container-type: size;
+  }
   .stage-content.show-home .home-menu {
-    width: min(96cqw, 128cqh);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    width: min(72cqw, 112cqh);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1448 / 1086;
+    background-image: url('../public/assets/marco-recuadro-pc.webp');
+    container-type: inline-size;
+  }
+  .home-menu .home-links {
+    inset: 29% 8.5% 9%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, min-content);
+    align-content: center;
+    align-items: center;
+    justify-items: center;
+    column-gap: 3%;
+    row-gap: 1.4cqw;
+  }
+  .home-menu .art-menu-button {
+    width: 83%;
+    max-width: none;
+  }
+  .home-menu .art-menu-button:nth-child(odd) { justify-self: end; }
+  .home-menu .art-menu-button:nth-child(even) { justify-self: start; }
+  .home-menu .art-menu-button img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
   }
 }
 /* Las ventanas de PC muy bajas también conservan el escenario proporcional. */
