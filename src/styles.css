@@ -371,3 +371,18 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 .modal-card .google-access::after {content:"";width:18px}
 .modal-card .google-access:hover {background:#f8faff;border-color:#4f5351;box-shadow:0 2px 5px #0002}
 .modal-card .google-access:focus-visible {outline:3px solid #5f452c;outline-offset:3px}
+
+/* Contenido de Asistencia, dentro del marco original. */
+.support-content {line-height:1.55}
+.support-content h3 {font-size:18px;line-height:1.35;margin:20px 0 12px}
+.support-content > p {font-size:14px;margin:12px 0}
+.support-contact {margin:20px 0 0;padding:14px 0;border-top:1px solid #a5774566}
+.support-contact p {margin:0}
+.support-email {margin-top:5px!important;font-size:clamp(13px,3.8vw,17px);font-weight:700;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;cursor:text}
+.support-content .support-link {min-height:44px;margin:8px 0 0}
+.support-content .support-privacy {margin:18px 0 0;text-align:center;font-size:12px}
+.support-privacy a {color:inherit;text-underline-offset:3px}
+.support-content a:focus-visible {outline:2px solid #70412a;outline-offset:4px}
+@media (max-width:700px) and (max-height:650px) {
+ .scene:has(.show-home) .overlay-layer:has(.support-content) {padding:12px}
+}
