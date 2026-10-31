@@ -362,3 +362,12 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 #login-status:empty,#google-link-status:empty {display:none}
 
 .stage-indicator a {color:inherit;pointer-events:auto;font-size:10px;text-underline-offset:2px}
+
+/* Solo el logo del acceso y el aspecto del botón Google. */
+.access-brand {justify-content:center}
+.access-world-logo {display:block;width:100%;height:clamp(70px,17dvh,125px);object-fit:contain}
+.modal-card .google-access {display:grid;grid-template-columns:18px minmax(0,1fr) 18px;gap:10px;align-items:center;min-height:44px;padding:11px 12px;border:1px solid #747775;border-radius:4px;background:#fff;color:#1f1f1f;box-shadow:0 1px 3px #0002;font:500 14px/20px Arial,sans-serif;letter-spacing:0;text-shadow:none}
+.modal-card .google-access img {display:block;width:18px;height:18px;object-fit:contain}
+.modal-card .google-access::after {content:"";width:18px}
+.modal-card .google-access:hover {background:#f8faff;border-color:#4f5351;box-shadow:0 2px 5px #0002}
+.modal-card .google-access:focus-visible {outline:3px solid #5f452c;outline-offset:3px}

@@ -491,11 +491,11 @@ function accessMarkup(){
  ${googleConfig.legalPublished?'<label class="access-accept"><input name="acceptedTerms" type="checkbox" required /> He leído la Política de Privacidad y acepto las Condiciones del Servicio.</label>':''}
  ${legalLinks()}</div><button type="submit" class="textured-button modal-primary">Crear cuenta</button></form>`:'<p>El registro no está disponible en este momento. Si ya tienes cuenta, entra con tu usuario y contraseña.</p>'}
  <button type="button" class="textured-button access-cancel" data-action="google-cancel">Cancelar y volver al acceso</button><p id="login-status" role="status"></p>`;
- return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div>
+ return `<div class="modal-head access-brand"><h2 id="modal-title" class="sr-only">Entrar en Perrisushi World</h2><img class="access-world-logo" src="${ASSETS}perrisushi-world.webp" alt="Perrisushi World" draggable="false" /></div>
   <form id="traditional-login"><div class="login-fields"><label>Usuario<input name="nick" type="text" required maxlength="80" autocomplete="username" /></label>
   <label>Contraseña<input name="password" type="password" required maxlength="1024" autocomplete="current-password" /></label></div>
   <button type="submit" class="textured-button modal-primary">Iniciar sesión</button><p id="login-status" role="status"></p></form>
-  ${googleConfig.enabled?'<button type="button" class="textured-button google-access" data-action="google-login">Continuar con Google</button>':''}${legalLinks()}`;
+  ${googleConfig.enabled?'<button type="button" class="textured-button google-access" data-action="google-login"><img src="./public/assets/google-g.webp" width="18" height="18" alt="" /><span>Continuar con Google</span></button>':''}${legalLinks()}`;
 }
 async function initializeGoogleAccess(){
  const callback=oauthCallbackPath(location);
