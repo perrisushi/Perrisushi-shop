@@ -1,34 +1,35 @@
-PRUEBA ACTUAL: usar PRUEBA_OAUTH_SIN_REGISTRO.md.
-Para la prueba privada, PW2_LEGAL_PUBLISHED=false, PW2_GOOGLE_TEST_MODE=true,
-PW2_GOOGLE_REGISTRATION_ENABLED=false y PW2_GOOGLE_TEST_EMAIL con el correo exacto autorizado.
-La activación pública descrita debajo queda POSPUESTA y no debe aplicarse para esta prueba.
-VALORES PARA ACTIVAR GOOGLE EN EL SERVICIO RAILWAY EXISTENTE
-Aplicar únicamente durante la publicación autorizada y cuando existan los HTML finales.
-Este archivo no se importa automáticamente y no contiene secretos.
+ACTIVACIÓN TÉCNICA PÚBLICA DE GOOGLE — DECISIÓN DEL PROPIETARIO
+No afirma cumplimiento de requisitos legales pendientes.
+No publica borradores ni datos personales. No requiere SQL.
 
-NODE_ENV=production
-PUBLIC_ORIGIN=https://perrisushi.com
-SESSION_STORE=supabase
-ALLOW_SUPABASE_SESSION_WRITES=true
-PW2_LEGAL_DIRECTORY=./backend/legal-reviewed
-PW2_LEGAL_PUBLISHED=true
+VARIABLES EN EL SERVICIO RAILWAY EXISTENTE
 PW2_GOOGLE_ENABLED=true
+PW2_GOOGLE_TEST_MODE=false
+PW2_GOOGLE_REGISTRATION_ENABLED=true
+PW2_LEGAL_PUBLISHED=false
 
-CLAVE PÚBLICA
-Mantener SUPABASE_ANON_KEY si ya contiene la clave pública del mismo proyecto.
-Si no existe, añadir SUPABASE_PUBLISHABLE_KEY con la clave pública publishable/anon de ese proyecto.
-No poner un texto de ejemplo ni la service_role en esa variable.
+Conservar todas las variables actuales de conexión, claves, TLS, sesiones,
+minijuegos y economía. PW2_GOOGLE_TEST_EMAIL se ignora al desactivar TEST_MODE;
+no es necesario borrarlo ni compartir su valor.
 
-CONSERVAR SIN CAMBIOS
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-DATABASE_URL
-DATABASE_SSL_CA, si está configurada
-CSRF_SECRET
-PERRIWEB_PROXY_SECRET, si está configurada
-Todas las variables existentes de minijuegos y economía.
-PORT lo proporciona el alojamiento; no es necesario fijarlo para Google.
+DESACTIVACIÓN RÁPIDA
+PW2_GOOGLE_ENABLED=false
+Desactiva nuevos accesos, registros y vinculaciones Google. No borra vínculos,
+cuentas, recursos ni sesiones ya emitidas. El acceso tradicional se conserva.
+Para cerrar solo las altas: PW2_GOOGLE_REGISTRATION_ENABLED=false.
 
-No añadir Google Client Secret a Railway: ya está configurado en el proveedor Supabase.
-No reemplazar el fichero de variables completo ni copiar secretos al repositorio.
-No se ha verificado el contenido del panel real de Railway; se ha comprobado el código que lee estas variables.
+LEGALES
+Las rutas de privacidad/condiciones permanecen sin publicar.
+Si no hay documentos publicados, no se muestra una casilla de aceptación ni
+se registra una aceptación inexistente: terms_version y terms_accepted_at
+quedan NULL en las cuentas nuevas. Los documentos siguen pendientes.
+Si se publican documentos completos más adelante, la interfaz vuelve a exigir
+su aceptación y el servidor comprueba la versión antes del registro.
+No se han ejecutado cambios de estructura ni migraciones.
+
+GOOGLE/SUPABASE
+Se conservan el proveedor, proyecto y callback que ya funcionan:
+https://perrisushi.com/api/auth/google/callback
+Los únicos permisos solicitados son openid, email y profile.
+La política de Google y las obligaciones legales pendientes no se declaran
+cumplidas por habilitar técnicamente el registro.

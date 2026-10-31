@@ -176,7 +176,6 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,regis
   async register(token,csrfToken,nick){
    if(!registrationEnabled)fail(503,'registration_unavailable');
    if(!token||!equalText(csrf(token),csrfToken))fail(403,'csrf_invalid');
-   if(!termsVersion)fail(503,'registration_unavailable');
    if(!validNewNick(nick))fail(400,'nick_invalid');
    return tx(async client=>{
     const row=await flow(client,token,'pending');
@@ -193,7 +192,7 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,regis
     await client.query("INSERT INTO public.shop_profiles(nick,selected_logo_id,owned_logo_ids) VALUES($1,'logo-pelusa-1','[\"logo-pelusa-1\"]'::jsonb)",[nick]);
     const inv=(await client.query('SELECT pc FROM public.shop_inventories WHERE nick=$1',[nick])).rows[0];
     await client.query("INSERT INTO public.shop_public_users(nick,pc,logo_id) VALUES($1,$2,'logo-pelusa-1')",[nick,inv.pc]);
-    await client.query('INSERT INTO public.pw2_google_links(auth_user_id,nick,terms_version,terms_accepted_at) VALUES($1,$2,$3,now())',[row.auth_user_id,nick,termsVersion]);
+    await client.query('INSERT INTO public.pw2_google_links(auth_user_id,nick,terms_version,terms_accepted_at) VALUES($1,$2,$3,CASE WHEN $3::text IS NOT NULL THEN now() ELSE NULL END)',[row.auth_user_id,nick,termsVersion??null]);
     const session=await issue(client,nick);
     await client.query('DELETE FROM public.pw2_oauth_flows WHERE token_hash=$1',[digest(token)]);
     return session;

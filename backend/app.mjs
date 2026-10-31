@@ -63,7 +63,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
     if(!/^application\/json(?:\s*;|$)/i.test(String(req.headers['content-type']??'')))fail(415,'unsupported_media_type');
     if(req.headers['sec-fetch-site']&& !['same-origin','none'].includes(req.headers['sec-fetch-site']))fail(403,'cross_site_request');
    }
-   if(route==='/api/auth/google/config'&&req.method==='GET'){send(200,{enabled:Boolean(google),legalPublished,registrationEnabled:Boolean(google)&&google.registrationEnabled!==false&&legalPublished,legalVersion:google?.termsVersion??null});return}
+   if(route==='/api/auth/google/config'&&req.method==='GET'){send(200,{enabled:Boolean(google),legalPublished,registrationEnabled:Boolean(google)&&google.registrationEnabled!==false,legalVersion:google?.termsVersion??null});return}
    if(route.startsWith('/api/auth/google/')){
     const flowToken=oauthToken(req.headers.cookie);
     if(route==='/api/auth/google/callback'&&req.method==='GET'){
@@ -118,9 +118,12 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
      send(200,{url:result.url},{'Set-Cookie':result.cookie});return;
     }
     if(route==='/api/auth/google/register'){
-     if(!legalPublished||google.registrationEnabled===false)fail(503,'registration_unavailable');
-     if(Object.keys(body).some(k=>!['nick','csrf','acceptedTerms','termsVersion'].includes(k))||body.acceptedTerms!==true)fail(400,'invalid_request');
-     if(!google.termsVersion||body.termsVersion!==google.termsVersion)fail(409,'legal_changed');
+     if(google.registrationEnabled===false)fail(503,'registration_unavailable');
+     if(Object.keys(body).some(k=>!['nick','csrf','acceptedTerms','termsVersion'].includes(k))||(body.acceptedTerms!==undefined&&typeof body.acceptedTerms!=='boolean'))fail(400,'invalid_request');
+     if(legalPublished){
+      if(body.acceptedTerms!==true)fail(400,'invalid_request');
+      if(!google.termsVersion||body.termsVersion!==google.termsVersion)fail(409,'legal_changed');
+     }else if(body.acceptedTerms===true||body.termsVersion!=null)fail(409,'legal_changed');
      if(await identity(req))fail(409,'google_already_signed_in');
      const result=await google.register(flowToken,body.csrf,body.nick);
      send(200,{authenticated:true,nick:result.nick,sessionPersistence:sessionStore},{'Set-Cookie':[cookie(result.token),google.cookie('',true)],'X-CSRF-Token':csrfFor(result.token,csrfSecret)});return;

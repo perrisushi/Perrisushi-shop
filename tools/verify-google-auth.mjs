@@ -14,7 +14,8 @@ import {digest} from '../backend/security.mjs';
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE??'C:/Users/borja/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const privateMode=process.env.PW2_QA_PRIVATE==='true';
 const rootReturn=process.env.PW2_QA_ROOT_RETURN==='true';
-const base='http://127.0.0.1:4199',output=process.env.PW2_QA_DIR??process.env.TEMP+'/perriweb-google-qa'+(privateMode?'-private':'')+(rootReturn?'-root':'');
+const legalEnabled=!privateMode&&process.env.PW2_QA_LEGALS!=='false';
+const base='http://127.0.0.1:4199',output=process.env.PW2_QA_DIR??process.env.TEMP+'/perriweb-google-qa'+(privateMode?'-private':'')+(rootReturn?'-root':'')+(!legalEnabled&&!privateMode?'-no-legals':'');
 const db=new PGlite(),errors=[],results=[];
 let backend,frontend,browser,qaClock=Date.now();
 try{
@@ -40,7 +41,7 @@ try{
  const legalDirectory=await mkdtemp(output+'/legal-local-');
  const legalConfig={aprobado:true,...Object.fromEntries(legalFields.map(([key])=>[key,key==='email'?'qa@example.invalid':'Texto local de verificación para '+key+' '+('contenido '.repeat(12))]))};
  await prepareLegalFiles(legalConfig,{output:legalDirectory});
- const legal=createLegalPages({enabled:!privateMode,directory:legalDirectory});
+ const legal=createLegalPages({enabled:legalEnabled,directory:legalDirectory});
  const provider=createGoogleProvider({url:'https://qa-google.invalid',key:'qa-public',origin:base,testOnly:privateMode,testEmail:'qa-owner@example.test',fetchImpl:async url=>{
   if(String(url).includes('/token?'))return Response.json({access_token:'QA_PRIVATE_TOKEN'});
   const email=chosen===A?'qa-owner@example.test':'qa-other@example.test';
@@ -127,17 +128,18 @@ try{
    await page.setViewportSize(size);
   }
 
-  await page.locator('[name=nick]').fill('OldNick');await page.locator('[name=acceptedTerms]').check();
+  await page.locator('[name=nick]').fill('OldNick');if(legalEnabled)await page.locator('[name=acceptedTerms]').check();else assert.equal(await page.locator('[name=acceptedTerms]').count(),0);
   await page.locator('#google-register button').click();await page.getByRole('status').filter({hasText:'Ese nick ya está ocupado'}).waitFor();
   await page.locator('[name=nick]').fill('Nuevo'+size.width);await page.locator('#google-register button').click();
   await page.locator('body[data-access=ready]').waitFor();
   assert.equal(await page.locator('.identity-chip strong').innerText(),'Nuevo'+size.width);
   await page.reload();await page.locator('body[data-access=ready]').waitFor();
   const inventory=await one('shop_inventories','Nuevo'+size.width);assert.equal(inventory.pc,0);
+  if(!legalEnabled){const consent=(await db.query('SELECT terms_version,terms_accepted_at FROM pw2_google_links WHERE auth_user_id=$1',[B])).rows[0];assert.equal(consent.terms_version,null);assert.equal(consent.terms_accepted_at,null);assert.equal((await page.request.get(base+'/api/legal/privacy')).status(),404);assert.equal((await page.request.get(base+'/api/legal/terms')).status(),404)}
   results.push({size,state:'register-and-persist',geometry});
   await context.close();
  }
- for(const size of (privateMode?[]:[{width:1440,height:900},{width:390,height:844}])){
+ for(const size of (!legalEnabled?[]:[{width:1440,height:900},{width:390,height:844}])){
   const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   for(const route of ['privacy','terms']){

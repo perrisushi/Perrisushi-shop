@@ -201,11 +201,11 @@ test('HTTP: origen ajeno bloqueado; callback sin cookie y cancelado vuelve al ac
  assert.equal(denied.headers.get('location'),'/?google=google_cancelled#home');
  assert.ok(!denied.headers.get('location').includes('SECRET'));
 }));
-test('HTTP: borradores legales no habilitan registro',()=>httpFixture(async({request})=>{
+test('HTTP: el interruptor de altas bloquea el registro independientemente de los legales',()=>httpFixture(async({request})=>{
  assert.equal((await request('/auth/google/config')).data.legalPublished,false);
  const result=await request('/auth/google/register',{method:'POST',body:{nick:'NoAccount',csrf:'no',acceptedTerms:true}});
  assert.equal(result.status,503);assert.equal(result.data.error,'registration_unavailable');
-},{legalPublished:false}));
+},{legalPublished:false,registrationEnabled:false}));
 test('Proxy: solo admite retorno OAuth local y conserva ambas cookies, nunca redirecciones externas',async()=>{
  const previous=globalThis.fetch,env={PERRIWEB_BACKEND_ORIGIN:'https://backend.example',PERRIWEB_PROXY_SECRET:'s'.repeat(40)};
  try{
@@ -398,7 +398,7 @@ test('HTTP: prueba OAuth sin legales publicados vincula y permite entrar, pero n
  const strangerStart=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
  const strangerCookie=strangerStart.headers.getSetCookie()[0].split(';')[0];
  await request('/auth/google/callback?code=B',{cookie:strangerCookie});
- const pending=await request('/auth/google/pending',{cookie:strangerCookie});assert.equal(pending.data.pending,true);
+ const pending=await request('/auth/google/pending',{cookie:strangerCookie});assert.equal(pending.data.pending,false);
  const denied=await request('/auth/google/register',{method:'POST',cookie:strangerCookie,body:{nick:'BlockedNewPlayer',csrf:pending.data.csrf,acceptedTerms:true,termsVersion:null}});
  assert.equal(denied.status,503);assert.equal(denied.data.error,'registration_unavailable');
  assert.equal((await db.query('SELECT count(*)::integer AS total FROM shop_players')).rows[0].total,2);
@@ -406,7 +406,7 @@ test('HTTP: prueba OAuth sin legales publicados vincula y permite entrar, pero n
  assert.deepEqual((await db.query('SELECT * FROM shop_inventories ORDER BY nick')).rows,before);
  assert.deepEqual((await db.query('SELECT * FROM shop_access ORDER BY nick')).rows,originalAccess);
  assert.equal((await request('/auth/login',{method:'POST',body:{nick:'OldNick',password:'original-password'}})).status,200);
-},{legalPublished:false,termsVersion:null}));
+},{legalPublished:false,termsVersion:null,registrationEnabled:false}));
 
 test('Google privado: solo el correo verificado de la identidad Google autorizada; no acepta metadatos ni alias',async()=>{
  const user=(email='owner@example.test')=>({id:A,email,email_confirmed_at:'2026-10-31',identities:[{provider:'google',identity_data:{email,email_verified:true}}]});
@@ -542,3 +542,25 @@ test('Diagnóstico OAuth: distingue intercambio e identidad sin registrar la res
  assert.equal(events.at(-1).stage,'identity_validation');
  assert.ok(!JSON.stringify(events).includes('PRIVATE'));
 });
+
+
+test('Google público: registro explícito sin publicar borradores ni inventar aceptación legal; cuentas existentes intactas',()=>httpFixture(async({request,db})=>{
+ const before=(await db.query('SELECT * FROM shop_inventories ORDER BY nick')).rows;
+ const access=(await db.query('SELECT * FROM shop_access ORDER BY nick')).rows;
+ const config=(await request('/auth/google/config')).data;
+ assert.equal(config.registrationEnabled,true);assert.equal(config.legalPublished,false);assert.equal(config.legalVersion,null);
+ const start=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ const cookie=start.headers.getSetCookie()[0].split(';')[0];
+ const callback=await request('/auth/google/callback?code=B',{cookie});assert.equal(callback.headers.get('location'),'/?google=register#home');
+ assert.equal((await db.query('SELECT count(*)::integer AS n FROM shop_players')).rows[0].n,2);
+ const pending=(await request('/auth/google/pending',{cookie})).data;
+ const forged=await request('/auth/google/register',{method:'POST',cookie,body:{nick:'CommunityUser',csrf:pending.csrf,acceptedTerms:true,termsVersion:'invented'}});
+ assert.equal(forged.status,409);
+ const invalid=await request('/auth/google/register',{method:'POST',cookie,body:{nick:'OldNick',csrf:pending.csrf,acceptedTerms:false,termsVersion:null}});assert.equal(invalid.data.error,'nick_unavailable');
+ const result=await request('/auth/google/register',{method:'POST',cookie,body:{nick:'CommunityUser',csrf:pending.csrf,acceptedTerms:false,termsVersion:null}});
+ assert.equal(result.status,200);assert.equal(result.data.nick,'CommunityUser');
+ const link=(await db.query("SELECT terms_version,terms_accepted_at FROM pw2_google_links WHERE nick='CommunityUser'")).rows[0];
+ assert.equal(link.terms_version,null);assert.equal(link.terms_accepted_at,null);
+ const rows=(await db.query("SELECT * FROM shop_inventories WHERE nick<>'CommunityUser' ORDER BY nick")).rows;assert.deepEqual(rows,before);
+ assert.deepEqual((await db.query("SELECT * FROM shop_access WHERE nick<>'CommunityUser' ORDER BY nick")).rows,access);
+},{legalPublished:false,termsVersion:null,registrationEnabled:true}));

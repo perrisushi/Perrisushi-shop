@@ -485,10 +485,10 @@ function legalLinks(){
 }
 function accessMarkup(){
  if(googlePending)return `<div class="modal-head"><h2 id="modal-title">Crear cuenta</h2></div>
- ${googleConfig.legalPublished&&googleConfig.registrationEnabled!==false?`<form id="google-register"><div class="access-register-content">
+ ${googleConfig.registrationEnabled!==false?`<form id="google-register"><div class="access-register-content">
  <p>¿Ya tienes cuenta? Entra con tu usuario y vincula Google desde tu perfil.</p>
  <div class="login-fields"><label>Elige tu nick<input name="nick" type="text" required minlength="3" maxlength="30" autocomplete="nickname" aria-describedby="nick-help" /></label><small id="nick-help">De 3 a 30 letras, números, guiones o guiones bajos.</small></div>
- <label class="access-accept"><input name="acceptedTerms" type="checkbox" required /> He leído la Política de Privacidad y acepto las Condiciones del Servicio.</label>
+ ${googleConfig.legalPublished?'<label class="access-accept"><input name="acceptedTerms" type="checkbox" required /> He leído la Política de Privacidad y acepto las Condiciones del Servicio.</label>':''}
  ${legalLinks()}</div><button type="submit" class="textured-button modal-primary">Crear cuenta</button></form>`:'<p>El registro no está disponible en este momento. Si ya tienes cuenta, entra con tu usuario y contraseña.</p>'}
  <button type="button" class="textured-button access-cancel" data-action="google-cancel">Cancelar y volver al acceso</button><p id="login-status" role="status"></p>`;
  return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div>
@@ -530,7 +530,7 @@ document.addEventListener('submit',async event=>{
   const form=event.target,button=form.querySelector('button[type="submit"]'),status=overlay.querySelector('#login-status');if(button.disabled)return;
   button.disabled=true;status.textContent='Creando tu cuenta…';
   try{
-   const result=await api.registerGoogle(form.elements.nick.value,googlePending.csrf,form.elements.acceptedTerms.checked,googleConfig.legalVersion);
+   const result=await api.registerGoogle(form.elements.nick.value,googlePending.csrf,form.elements.acceptedTerms?.checked??false,googleConfig.legalVersion);
    googlePending=null;googleNotice='';history.replaceState(null,'','#home');await bootstrapSession(result);
   }catch(error){status.textContent=message({error:error.code});button.disabled=false}
  }
