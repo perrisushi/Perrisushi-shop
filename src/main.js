@@ -1,3 +1,4 @@
+import {createNotificationCenter,notificationDate,mergeNotifications} from './services/notifications.js';
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createGameWindow,mobileGameView} from './game-window.js';
 import {createApiClient,oauthCallbackPath} from './services/api-client.js';
@@ -11,6 +12,36 @@ const containerOperations=new Map();
 let inventoryObserver=null;
 const openableContainers=['perri_cofres','perri_cofres_minijuego','bolsa_gemas','bolsa_chatarra','bolsa_especial','cajita_armas'];
 const remoteStates={};
+let notificationObserver=null,notificationReadTimer=null,notificationModalEpoch=0;
+const notificationCenter=createNotificationCenter({api,isActive:()=>Boolean(session)&&document.visibilityState==='visible',onPending:pending=>{
+ const bell=document.querySelector('.notification-trigger');bell.classList.toggle('has-unread',pending);bell.setAttribute('aria-label',pending?'Notificaciones nuevas pendientes':'Notificaciones');
+},onViewed:id=>{const state=remoteStates.notifications;if(state?.items)state.items=state.items.map(item=>item.id===id?{...item,read_at:new Date().toISOString()}:item)},onError:()=>{
+ const status=overlay.querySelector('.notification-status');if(status){status.innerHTML='No se pudo guardar la lectura. <button type="button" class="textured-button" data-action="retry-notifications">Reintentar</button>';}
+}});
+const refreshNotifications=()=>{if(document.visibilityState==='visible'){void notificationCenter.refresh();if(modalKind==='notifications')observeNotificationCards()}};
+document.addEventListener('visibilitychange',refreshNotifications);
+window.addEventListener('focus',refreshNotifications);
+function notificationVisible(element){
+ if(modalKind!=='notifications'||!element.isConnected||overlay.hidden||document.visibilityState!=='visible')return false;
+ const r=element.getBoundingClientRect(),card=overlay.querySelector('.modal-card'),b=card.getBoundingClientRect(),header=card.querySelector('.modal-head').getBoundingClientRect();
+ return r.bottom>Math.max(b.top,header.bottom)&&r.top<Math.min(b.bottom,innerHeight);
+}
+function scheduleNotificationRead(){
+ clearTimeout(notificationReadTimer);const epoch=notificationModalEpoch;
+ notificationReadTimer=setTimeout(()=>{
+  if(epoch!==notificationModalEpoch||modalKind!=='notifications')return;
+  overlay.querySelectorAll('[data-notification-id]').forEach(element=>{if(notificationVisible(element))void notificationCenter.markViewed(element.dataset.notificationId,()=>notificationVisible(element))});
+ },120);
+}
+function observeNotificationCards(){
+ notificationObserver?.disconnect();clearTimeout(notificationReadTimer);
+ if(modalKind!=='notifications'||document.visibilityState!=='visible')return;
+ const card=overlay.querySelector('.modal-card');
+ card.removeEventListener('scroll',scheduleNotificationRead);card.addEventListener('scroll',scheduleNotificationRead,{passive:true});
+ notificationObserver=new IntersectionObserver(scheduleNotificationRead,{root:card,threshold:0});
+ overlay.querySelectorAll('[data-notification-id]').forEach(el=>notificationObserver.observe(el));
+ scheduleNotificationRead();
+}
 
 const ASSETS = './public/assets/';
 const stage = document.querySelector('#contenido');
@@ -90,7 +121,7 @@ function profileView() {
       ${profileState.status==='ready'?'':stateNotice(profileState)}
       <div class="info-strip"><span>PC · Gemas</span><strong>${escapeText(profileState.balances?.pc??'—')} · ${escapeText(profileState.balances?.gemas??'—')}</strong></div><div class="info-strip"><span>Logros</span><strong>${escapeText(Array.isArray(profileState.profile?.achievements)?profileState.profile.achievements.join(' · '):'—')}</strong></div>
       <div class="info-strip"><span>Karma</span><strong>${escapeText(profileState.profile?.karma??'—')}</strong></div>
-      <div class="profile-actions"><button class="textured-button history-button" type="button" data-action="history" aria-label="Historial" title="Historial"><span aria-hidden="true">⌛</span></button><button class="textured-button" type="button" data-action="album">Cambiar Perrilogos</button></div>
+      <div class="profile-actions"><button class="textured-button history-button" type="button" data-action="history" aria-label="Historial" title="Historial"><span aria-hidden="true">⌛</span></button><button class="textured-button history-button" type="button" data-action="notification-history" aria-label="Historial de notificaciones" title="Historial de notificaciones"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></button><button class="textured-button" type="button" data-action="album">Cambiar Perrilogos</button></div>
       ${googleConfig.enabled?`<div class="google-profile">${googleLinked===true?'<p>Google vinculado</p>':googleLinked===null?'<button type="button" class="textured-button" data-action="google-status">Comprobar vinculación de Google</button>':`<button type="button" class="textured-button" data-action="link-google">Vincular Google</button>`}${googleNotice==='linked'?'<p role="status">Tu cuenta de Google se ha vinculado.</p>':''}</div>`:''}
     </div>
   </div>`);
@@ -170,7 +201,7 @@ function render() {
   document.title = `${routeTitles[route]} | Perrisushi World`;
   closeMenu();
   stage.scrollTop = 0;
-  stage.focus({preventScroll:true});
+  stage.focus({preventScroll:true});void notificationCenter.refresh();
   void loadCurrentRoute(route);
 }
 
@@ -260,9 +291,13 @@ function modalMarkup(type) {
   if(type.startsWith('game:'))return gameMarkup(type.slice(5));
   if(type==='receipt')return `<div class="modal-head"><h2 id="modal-title">Operación completada</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${economicReceipt?.redeemed?`<p>${escapeText(economicReceipt.redeemed.game)}</p><code>${escapeText(economicReceipt.redeemed.key)}</code>`:`<p>Boletos: ${escapeText(economicReceipt?.tickets)} · PC: ${escapeText(economicReceipt?.pc)}</p>`}`;
 
-  if(type==='history'||type==='notifications'){
-    const s=remoteStates[type]??{status:'loading'};
-    return `<div class="modal-head"><h2 id="modal-title">${type==='history'?'Historial':'Notificaciones'}</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${s.status==='ready'?`${(s.items??[]).map(item=>`<article class="info-strip"><div><strong>${escapeText(item.title??item.game??'Actividad')}</strong><p>${escapeText(item.message??item.result??'')}</p><p>${escapeText(item.details??'')}</p><small>${escapeText(item.created_at??'')}</small>${type==='notifications'&&!item.read_at?`<button type="button" class="textured-button" data-read-note="${escapeText(item.id)}">Marcar como leída</button>`:''}</div></article>`).join('')||stateNotice({status:'empty'})}${pager(s.nextCursor,type)}`:stateNotice(s)}`;
+  if(type==='notifications'||type==='notification-history'){
+    const state=remoteStates[type]??{status:'loading'},unread=type==='notifications';
+    return `<div class="modal-head"><h2 id="modal-title">${unread?'Notificaciones nuevas':'Historial de notificaciones'}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`<div class="notification-list">${(state.items??[]).map(item=>`<article class="notification-entry" ${unread&&!item.read_at?`data-notification-id="${escapeText(item.id)}"`:''}><h3>${escapeText(item.title)}</h3><p>${escapeText(item.message)}</p><time datetime="${escapeText(item.created_at)}">${escapeText(notificationDate(item.created_at))}</time></article>`).join('')||`<p class="notification-empty">${unread?'No tienes notificaciones nuevas.':'Todavía no hay notificaciones revisadas.'}</p>`}</div>${pager(state.nextCursor,type)}`:stateNotice(state)}${unread?'<p class="notification-status" role="status"></p>':''}`;
+  }
+  if(type==='history'){
+    const state=remoteStates[type]??{status:'loading'};
+    return `<div class="modal-head"><h2 id="modal-title">Historial</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`${(state.items??[]).map(item=>`<article class="info-strip"><div><strong>${escapeText(item.title??item.game??'Actividad')}</strong><p>${escapeText(item.message??item.result??'')}</p><p>${escapeText(item.details??'')}</p><small>${escapeText(item.created_at??'')}</small></div></article>`).join('')||stateNotice({status:'empty'})}${pager(state.nextCursor,type)}`:stateNotice(state)}`;
   }
   if(type==='album'){
     const s=profileState,logos=s.logos??[],owned=s.profile?.ownedLogoIds??[];
@@ -277,6 +312,7 @@ function modalMarkup(type) {
 }
 
 function openModal(type,{pending=false,immersive=false}={}) {
+  notificationModalEpoch++;notificationObserver?.disconnect();clearTimeout(notificationReadTimer);
   if(!session)type='auth';
   modalKind=type;
   lastFocus = sessionOptions.contains(document.activeElement) ? menuToggle : document.activeElement;
@@ -299,6 +335,7 @@ function closeModal() {
   finishCloseModal();
 }
 function finishCloseModal(){
+  notificationModalEpoch++;notificationObserver?.disconnect();clearTimeout(notificationReadTimer);
   overlay.hidden=true;overlay.replaceChildren();
   modalKind=null;
   [...document.querySelector('#app').children].forEach(el => { if (el !== overlay) el.inert = false; });
@@ -320,7 +357,6 @@ document.addEventListener('click', e => {
   const game=e.target.closest('[data-game]')?.dataset.game;if(game&&Object.hasOwn(gameRoutes,game)){void launchOriginalGame(game);return}
   const economic=e.target.closest('[data-economy]');if(economic&&!economic.disabled){void runEconomicOperation(economic.dataset.economy,economic);return}
   const avatar=e.target.closest('[data-avatar-id]');if(avatar&&!avatar.disabled){void savePersonalChange('avatar',avatar.dataset.avatarId,avatar);return}
-  const note=e.target.closest('[data-read-note]');if(note&&!note.disabled){void savePersonalChange('notification',note.dataset.readNote,note);return}
   const liveAlbum=e.target.closest('[data-live-album]')?.dataset.liveAlbum;
   if(liveAlbum){overlay.querySelectorAll('[data-owned]').forEach(el=>el.hidden=el.dataset.owned!==String(liveAlbum==='found'));overlay.querySelectorAll('[data-live-album]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.liveAlbum===liveAlbum)));return}
   const nextOpening=e.target.closest('[data-next-container]');if(nextOpening){const id=nextOpening.dataset.nextContainer;if(containerOperations.get(id)?.busy)return;containerOperations.delete(id);void openInventoryContainer(id,nextOpening);return}
@@ -343,6 +379,8 @@ document.addEventListener('click', e => {
   else if (action === 'assistance') openModal('assistance');
   else if (action === 'logout') void logoutAccount();
   else if (action === 'notifications') void openRemoteModal('notifications');
+  else if (action === 'notification-history') void openRemoteModal('notification-history');
+  else if (action === 'retry-notifications') {const status=overlay.querySelector('.notification-status');if(status)status.replaceChildren();observeNotificationCards()}
   else if (action === 'game-fullscreen') void gameWindow.toggle();
   else if (action === 'close-modal') closeModal();
   else if (!e.target.closest('#session-options,.nav-toggle')) closeMenu();
@@ -372,6 +410,7 @@ function showLogin(error){
 }
 function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitInventoryGrid()}
 function resetPrivateState(){
+  notificationCenter.stop();notificationObserver?.disconnect();clearTimeout(notificationReadTimer);notificationModalEpoch++;
   inventoryObserver?.disconnect();inventoryObserver=null;
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
@@ -396,7 +435,7 @@ async function bootstrapSession(authenticated=null){
    if(session){googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
    else {profileState={status:'signedOut'};if(['login','linked'].includes(googleNotice))googleNotice='google_session_missing'}
   }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
-  syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();
+  syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();if(session)notificationCenter.start();
 }
 async function loadCurrentRoute(route){
  const sequence=++routeEpoch,generation=sessionEpoch;
@@ -411,17 +450,17 @@ async function loadCurrentRoute(route){
  }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
-function paintRemote(kind){if(modalKind!==kind)return;overlay.querySelector('.modal-card').innerHTML=modalMarkup(kind);overlay.querySelector('.modal-close').focus()}
-async function openRemoteModal(kind){remoteStates[kind]=session?{status:'loading'}:sessionState.status==='error'?sessionState:{status:'signedOut'};openModal(kind);if(!session)return;const generation=sessionEpoch;
- try{const result=await (kind==='history'?api.getHistory():api.getNotifications());if(generation!==sessionEpoch)return;remoteStates[kind]={status:'ready',...result}}
- catch(error){if(generation!==sessionEpoch)return;remoteStates[kind]=errorState(error);syncIdentity();paintStage()}
+function paintRemote(kind){if(modalKind!==kind)return;const card=overlay.querySelector('.modal-card'),scroll=card.scrollTop;card.innerHTML=modalMarkup(kind);card.querySelector('.modal-close').focus({preventScroll:true});card.scrollTop=scroll;if(kind==='notifications')observeNotificationCards()}
+async function openRemoteModal(kind){remoteStates[kind]=session?{status:'loading'}:sessionState.status==='error'?sessionState:{status:'signedOut'};openModal(kind);if(!session)return;const generation=sessionEpoch,modalEpoch=notificationModalEpoch;
+ try{const result=await (kind==='history'?api.getHistory():api.getNotifications({state:kind==='notifications'?'unread':'read'}));if(generation!==sessionEpoch||modalEpoch!==notificationModalEpoch)return;remoteStates[kind]={status:'ready',...result,items:kind==='history'?result.items:mergeNotifications([],result.items)}}
+ catch(error){if(generation!==sessionEpoch||modalEpoch!==notificationModalEpoch)return;remoteStates[kind]=errorState(error);syncIdentity();paintStage()}
  paintRemote(kind);
 }
 async function loadMore(kind,cursor,button){
  const generation=sessionEpoch,previousUsers=dataState.users;button.disabled=true;
  try{
   if(kind==='users'){const result=await api.listUsers({cursor});if(generation!==sessionEpoch||dataState.users!==previousUsers)return;setPageData('users',{status:'ready',items:[...previousUsers.items,...result.items],nextCursor:result.nextCursor});if(normalizeRoute(location.hash)==='users'){const list=button.isConnected&&stage.querySelector('.pw04-user-rows');if(list){list.insertAdjacentHTML('beforeend',renderUserRows(result.items));if(result.nextCursor)button.dataset.cursor=result.nextCursor;else button.remove()}else paintStage()}}
-  else if(['history','notifications'].includes(kind)){const result=await (kind==='history'?api.getHistory({cursor}):api.getNotifications({cursor}));if(generation!==sessionEpoch)return;remoteStates[kind]={status:'ready',items:[...remoteStates[kind].items,...result.items],nextCursor:result.nextCursor};paintRemote(kind)}
+  else if(['history','notifications','notification-history'].includes(kind)){const modalEpoch=notificationModalEpoch;const result=await (kind==='history'?api.getHistory({cursor}):api.getNotifications({cursor,state:kind==='notifications'?'unread':'read'}));if(generation!==sessionEpoch||modalEpoch!==notificationModalEpoch)return;remoteStates[kind]={status:'ready',items:kind==='history'?[...remoteStates[kind].items,...result.items]:mergeNotifications(remoteStates[kind].items,result.items),nextCursor:result.nextCursor};paintRemote(kind)}
   else if(['tickets','claims'].includes(kind)){const result=await api.listRandomKeys({[kind==='tickets'?'ticketCursor':'claimCursor']:cursor});if(generation!==sessionEpoch)return;const current=dataState.shop.randomKey;current[kind]={items:[...current[kind].items,...result[kind].items],nextCursor:result[kind].nextCursor};if(normalizeRoute(location.hash)==='shop')paintStage()}
  }catch(error){if(generation===sessionEpoch){errorState(error);button.textContent=message({error:error.code})}}
  finally{if(button.isConnected)button.disabled=false}
@@ -448,9 +487,6 @@ async function savePersonalChange(kind,id,button){
   if(kind==='avatar'){
    await api.updateAvatar(id);const result=await api.getProfile();if(generation!==sessionEpoch)return;
    profileState={status:'ready',...result};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album');
-  }else{
-   await api.markNotificationRead(id);if(generation!==sessionEpoch)return;
-   remoteStates.notifications.items=remoteStates.notifications.items.map(n=>n.id===id?{...n,read_at:new Date().toISOString()}:n);paintRemote('notifications');
   }
  }catch(error){if(generation===sessionEpoch){errorState(error);if(button.isConnected){button.textContent=message({error:error.code});button.disabled=false}}}
  finally{pendingPersonalChanges.delete(kind)}

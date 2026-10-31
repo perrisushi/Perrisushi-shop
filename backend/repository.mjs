@@ -88,7 +88,7 @@ export function createRepository({url,key,fetchImpl=globalThis.fetch,allowSessio
   syncPublicAvatar:(nick,id)=>query('shop_public_users',{nick,method:'PATCH',body:{logo_id:id}}),
   operationReceipt:(nick,id)=>one('shop_operations',{nick,filters:{operation_id:'eq.pw2:economy:'+id.toLowerCase()}}),
   readNotification:(nick,id)=>query('shop_notifications',{nick,method:'PATCH',filters:{id:'eq.'+String(id),read_at:'is.null'},body:{read_at:new Date().toISOString()}}),
-  page:(kind,nick,{cursor,limit})=>{
+  page:(kind,nick,{cursor,limit,state='unread'})=>{
    const table={history:'shop_activity',notifications:'shop_notifications',tickets:'shop_random_key_tickets',claims:'shop_random_key_claims',users:'shop_public_users'}[kind];
    if(!table)throw new BackendError(400,'invalid_page');
    if(kind==='users'){
@@ -99,6 +99,12 @@ export function createRepository({url,key,fetchImpl=globalThis.fetch,allowSessio
      else{const quoted=JSON.stringify(cursor.nick);filters.or='(pc.lt.'+cursor.pc+',and(pc.eq.'+cursor.pc+',nick.gt.'+quoted+'),pc.is.null)'}
     }
     return query('shop_public_users',{filters,order:'pc.desc.nullslast,nick.asc',limit:limit+1});
+   }
+   if(kind==='notifications'){
+    if(!['unread','read'].includes(state))throw new BackendError(400,'invalid_page');
+    const filters={read_at:state==='unread'?'is.null':'not.is.null'};
+    if(cursor)filters.or='(created_at.lt.'+cursor.created_at+',and(created_at.eq.'+cursor.created_at+',id.lt.'+cursor.id+'))';
+    return query(table,{nick,filters,order:'created_at.desc,id.desc',limit:limit+1});
    }
    return query(table,{nick,cursor,column:'id',order:'id.asc',limit:limit+1});
   }

@@ -386,3 +386,16 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 @media (max-width:700px) and (max-height:650px) {
  .scene:has(.show-home) .overlay-layer:has(.support-content) {padding:12px}
 }
+/* Notificaciones personales: bandeja de nuevas e historial. */
+.notification-trigger.has-unread {color:#fff1da;background:linear-gradient(#bf2929,#761616);border-color:#f08a75;box-shadow:0 0 0 2px #d748483d,0 3px 8px #0008}
+.notification-entry {padding:16px 0;border-bottom:1px solid #a5774566;overflow-wrap:anywhere}
+.notification-entry h3 {margin:0 0 8px;font-size:17px;line-height:1.35}
+.notification-entry p {margin:0 0 10px;white-space:pre-wrap;font-size:14px;line-height:1.55}
+.notification-entry time {display:block;color:#65432c;font:12px/1.5 system-ui,sans-serif}
+.notification-empty {line-height:1.5;margin:20px 0 8px}
+.notification-status:empty {display:none}
+.notification-status {font-size:13px;line-height:1.5}
+.modal-card:has(.notification-list) .modal-head h2 {font-size:clamp(20px,5vw,26px);overflow-wrap:anywhere}
+.profile-actions {flex-wrap:wrap}
+.profile-actions .history-button {display:grid;place-items:center}
+.profile-actions [data-action="album"] {min-width:0;max-width:100%;flex:1 0 165px}

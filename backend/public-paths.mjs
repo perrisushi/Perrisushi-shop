@@ -1,4 +1,4 @@
-export const publicPattern=/^\/(?:index\.html|privacidad\.html|src\/(?:main|routes|game-bridge|game-window|game-presentation|casillas-host)\.js|src\/services\/(?:api-client|live-ui|help-content)\.js|src\/(?:styles|desktop-layout-fix|preview-pages|game-window|game-presentation)\.css|public\/assets\/[\w-]+\.(?:webp|mp3))$/;
+export const publicPattern=/^\/(?:index\.html|privacidad\.html|src\/(?:main|routes|game-bridge|game-window|game-presentation|casillas-host)\.js|src\/services\/(?:api-client|live-ui|help-content|notifications)\.js|src\/(?:styles|desktop-layout-fix|preview-pages|game-window|game-presentation)\.css|public\/assets\/[\w-]+\.(?:webp|mp3))$/;
 export function gamePath(path){
  if(path==='/privacidad'||path==='/privacidad/')return '/privacidad.html';
  if(path==='/musica-web.mp3')return '/public/assets/musica-web.mp3';

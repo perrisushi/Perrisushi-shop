@@ -119,7 +119,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
     getInventory: ()=>request(ENDPOINTS.inventory,{cacheMs:20_000}),
     getReceipt: id=>request('/shop/receipt',{params:{id}}),
     getGameContext: ()=>request('/games/context'),
-    getNotifications: ({cursor,limit=20}={})=>request(ENDPOINTS.notifications,{params:{cursor,limit:pageLimit(limit)},cacheMs:30_000}),
+    getNotifications: ({cursor,limit=20,state='unread'}={})=>request(ENDPOINTS.notifications,{params:{cursor,limit:pageLimit(limit),state},cacheMs:0}),
     markNotificationRead: (id)=>request('/notifications/read',{method:'POST',body:{id}}),
     listRandomKeys: ({ticketCursor,claimCursor,limit=20}={})=>request(ENDPOINTS.randomKey,{params:{ticketCursor,claimCursor,limit:pageLimit(limit)},cacheMs:20_000}),
     redeemRandomKey: (idempotencyKey)=>request('/shop/random-key/redeem',{method:'POST',body:{idempotencyKey}}),

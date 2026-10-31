@@ -40,10 +40,14 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
  function pagination(url,cursorField='cursor'){
   const raw=url.searchParams.get('limit')??'20';if(!/^\d{1,3}$/.test(raw))throw new BackendError(400,'invalid_page');
   const limit=Math.min(50,Math.max(1,Number(raw)));let cursor;
-  const value=url.searchParams.get(cursorField);if(value){try{if(value.length>800)throw Error();const parsed=JSON.parse(Buffer.from(value,'base64url').toString());if(url.pathname==='/api/users'){if(!parsed||typeof parsed!=='object'||Array.isArray(parsed)||Object.keys(parsed).sort().join(',')!=='nick,pc'||typeof parsed.nick!=='string'||!parsed.nick.length||parsed.nick.length>100||/[\x00-\x1f]/.test(parsed.nick)||(parsed.pc!==null&&!Number.isSafeInteger(parsed.pc)))throw Error()}else if(typeof parsed!=='string'||parsed.length>100||/[\x00-\x1f]/.test(parsed))throw Error();cursor=parsed}catch{throw new BackendError(400,'invalid_cursor')}}
-  return {limit,cursor};
+  const value=url.searchParams.get(cursorField);if(value){try{if(value.length>800)throw Error();const parsed=JSON.parse(Buffer.from(value,'base64url').toString());if(url.pathname==='/api/users'){if(!parsed||typeof parsed!=='object'||Array.isArray(parsed)||Object.keys(parsed).sort().join(',')!=='nick,pc'||typeof parsed.nick!=='string'||!parsed.nick.length||parsed.nick.length>100||/[\x00-\x1f]/.test(parsed.nick)||(parsed.pc!==null&&!Number.isSafeInteger(parsed.pc)))throw Error() }else if(url.pathname==='/api/notifications'){
+     if(!parsed||typeof parsed!=='object'||Array.isArray(parsed)||Object.keys(parsed).sort().join(',')!=='created_at,id'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(parsed.id??'')||typeof parsed.created_at!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(parsed.created_at)||!Number.isFinite(Date.parse(parsed.created_at)))throw Error();
+    }else if(typeof parsed!=='string'||parsed.length>100||/[\x00-\x1f]/.test(parsed))throw Error();cursor=parsed}catch{throw new BackendError(400,'invalid_cursor')}}
+  const state=url.pathname==='/api/notifications'?(url.searchParams.get('state')??'unread'):undefined;
+  if(state!==undefined&&!['unread','read'].includes(state))throw new BackendError(400,'invalid_page');
+  return {limit,cursor,...(state?{state}:{})};
  }
- const pageDTO=(rows,{limit},kind)=>({items:rows.slice(0,limit),nextCursor:rows.length>limit?Buffer.from(JSON.stringify(kind==='users'?{pc:rows[limit-1].pc??null,nick:rows[limit-1].nick}:String(rows[limit-1].id))).toString('base64url'):null});
+ const pageDTO=(rows,{limit},kind)=>({items:rows.slice(0,limit),nextCursor:rows.length>limit?Buffer.from(JSON.stringify(kind==='users'?{pc:rows[limit-1].pc??null,nick:rows[limit-1].nick}:kind==='notifications'?{created_at:rows[limit-1].created_at,id:rows[limit-1].id}:String(rows[limit-1].id))).toString('base64url'):null});
  async function jsonBody(req,max=4096){const parts=[];let size=0;for await(const chunk of req){const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);size+=bytes.length;if(size>max)throw new BackendError(413,'body_too_large');parts.push(bytes)}try{const value=JSON.parse(Buffer.concat(parts).toString('utf8'));if(!value||typeof value!=='object'||Array.isArray(value))throw Error();return value}catch{throw new BackendError(400,'invalid_request')}}
  const fail=(status,code)=>{throw new BackendError(status,code)};
  const handle=function handle(req,res){return metricsContext.run({queries:0},async()=>{
@@ -152,7 +156,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
    if(!user)fail(401,'session_expired');
    if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const [inventory,readiness]=await Promise.all([repository.inventory(user.nick),games?.availability?games.availability(user):Promise.resolve(games?.availableFor?.(user)).then(available=>({available:available===true}))]);send(200,{...readiness,available:inventory!==null&&readiness.available===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))},{'X-CSRF-Token':csrfFor(user.token,csrfSecret)});return}
    // La identidad siempre deriva de la cookie; los parámetros privados ajenos se rechazan.
-   for(const field of url.searchParams.keys())if(!(route==='/api/inventory/open/status'?['id','itemId']:route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:['limit','cursor']).includes(field))fail(400,'invalid_request');
+   for(const field of url.searchParams.keys())if(!(route==='/api/inventory/open/status'?['id','itemId']:route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:route==='/api/notifications'?['limit','cursor','state']:['limit','cursor']).includes(field))fail(400,'invalid_request');
    if(route==='/api/inventory/open/status'){
     if(req.method!=='GET')fail(405,'method_not_allowed');if(!games?.containerReceipt)fail(503,'games_not_configured');
     send(200,await games.containerReceipt(user,{itemId:url.searchParams.get('itemId'),idempotencyKey:url.searchParams.get('id')}));return;
