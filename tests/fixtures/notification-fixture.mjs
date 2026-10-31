@@ -24,7 +24,7 @@ export async function notificationFixture(){
   }
   if(opts.method!=='GET'||url.searchParams.get('order')!=='created_at.desc,id.desc')throw Error('Unexpected query');
   // Preserva microsegundos y zona de PostgreSQL al construir el cursor.
-  const result=await db.query("SELECT id,kind,title,message,read_at,to_char(created_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US')||'+00:00' AS created_at FROM shop_notifications WHERE "+clauses.join(' AND ')+' ORDER BY created_at DESC,id DESC LIMIT '+param(Number(url.searchParams.get('limit'))),values);
+  const result=await db.query("SELECT id,kind,title,message,payload,read_at,to_char(created_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US')||'+00:00' AS created_at FROM shop_notifications WHERE "+clauses.join(' AND ')+' ORDER BY created_at DESC,id DESC LIMIT '+param(Number(url.searchParams.get('limit'))),values);
   return Response.json(result.rows);
  }});
  const add=async({id,nick='Alpha',title='Notificación '+id,message='Contenido original',created='2026-08-13T21:22:09.236422+00:00',read=null})=>db.query('INSERT INTO shop_notifications(id,nick,kind,title,message,created_at,read_at) VALUES($1,$2,\'comunicado\',$3,$4,$5,$6)',[notificationId(id),nick,title,message,created,read]);

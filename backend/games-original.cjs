@@ -865,9 +865,11 @@ async function loadInventoryWithoutChestSync(nick) {
   return rowToInventory(row);
 }
 
-async function persistInventoryRow(nick, inventory) {
+async function persistInventoryRow(nick, inventory, notificationRewards = null) {
   const normalizedNick = await ensurePlayer(nick);
-  await upsertRow("shop_inventories", inventoryToRow(normalizedNick, inventory), "nick", { returning: "minimal" });
+  const persist = () => upsertRow("shop_inventories", inventoryToRow(normalizedNick, inventory), "nick", { returning: "minimal" });
+  if (notificationRewards) await require('./game-transport.cjs').withNotificationRewards(normalizedNick, notificationRewards, persist);
+  else await persist();
   return rowToInventory(inventoryToRow(normalizedNick, inventory));
 }
 
@@ -1106,7 +1108,7 @@ async function getInventory(nick) {
   return syncResult.inventory;
 }
 
-async function saveInventory(nick, inventory) {
+async function saveInventory(nick, inventory, notificationRewards = null) {
   const normalizedNick = await ensurePlayer(nick);
   const targetInventory = rowToInventory(inventoryToRow(normalizedNick, inventory));
   const currentInventory = (await syncInventoryChestState(normalizedNick, await loadInventoryWithoutChestSync(normalizedNick))).inventory;
@@ -1127,10 +1129,10 @@ async function saveInventory(nick, inventory) {
       perriCofres: currentInventory.perriCofres,
       perriCofresMinijuego: currentInventory.perriCofresMinijuego
     });
-    return persistInventoryRow(normalizedNick, finalSync.inventory);
+    return persistInventoryRow(normalizedNick, finalSync.inventory, notificationRewards);
   }
 
-  return persistInventoryRow(normalizedNick, targetInventory);
+  return persistInventoryRow(normalizedNick, targetInventory, notificationRewards);
 }
 
 async function getProfile(nick) {
@@ -5195,7 +5197,7 @@ async function publicShopOpenPerriCasilla(sessionToken, openId, cellIndex) {
       }
       cell.reward = reward;
       const inventoryDelta = mergeInventoryDelta({ monedas: -PERRI_CASILLAS_COST }, reward.inventoryDelta || {});
-      const savedInventory = await saveInventory(sessionResult.nick, applyInventoryDelta(inventory, inventoryDelta));
+      const savedInventory = await saveInventory(sessionResult.nick, applyInventoryDelta(inventory, inventoryDelta), reward.inventoryDelta);
       cell.opened = true;
       game.playsInWindow += 1;
       if (game.playsInWindow >= PERRI_CASILLAS_MAX_GAMES) {
@@ -5266,7 +5268,7 @@ async function publicShopPlayCard(sessionToken, reward, cardNumber, forced, play
     }
 
     inventory = applyInventoryDelta(inventory, mergeInventoryDelta((forced || useFreePlay) ? {} : { monedas: -1 }, rewardDelta));
-    const savedInventory = await saveInventory(sessionResult.nick, inventory);
+    const savedInventory = await saveInventory(sessionResult.nick, inventory, rewardDelta);
     const profile = await getProfile(sessionResult.nick);
     await touchPublicUser(sessionResult.nick, savedInventory, profile);
     await appendActivity(sessionResult.nick, "Cartas", String(reward || "").trim(), `Carta ${Number(cardNumber || 0) || "?"}${useFreePlay ? " | Tirada gratis diaria: si" : ""}`);
@@ -6090,7 +6092,7 @@ async function adminPlayCard(nick, reward, cardNumber, forced, playId) {
     }
 
     inventory = applyInventoryDelta(inventory, mergeInventoryDelta(forced ? {} : { monedas: -1 }, rewardDelta));
-    const savedInventory = await saveInventory(normalizedNick, inventory);
+    const savedInventory = await saveInventory(normalizedNick, inventory, rewardDelta);
     const profile = await getProfile(normalizedNick);
     await touchPublicUser(normalizedNick, savedInventory, profile);
     await appendActivity(normalizedNick, "Cartas", String(reward || "").trim(), `Carta ${Number(cardNumber || 0) || "?"}${forced ? " | Tirada gratis" : ""}`);

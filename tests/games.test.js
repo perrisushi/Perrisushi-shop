@@ -123,8 +123,17 @@ test('los recursos originales de los minijuegos conservan sus bytes y mecánicas
  const manifest=JSON.parse(await readFile('games/manifest.json','utf8'));assert.ok(manifest.files.length>300);
  for(const f of manifest.files)assert.equal(createHash('sha256').update(await readFile(f.path)).digest('hex'),f.sha256,f.path);
 });
-test('backend original conserva sus reglas: solo cambia transporte y exporta el validador existente',async()=>{
- const original=(await readFile('backend/games-original.cjs','utf8')).replace(/\r/g,'').replace("require('./game-transport.cjs').fetch(`${SUPABASE_URL}/rest/v1/${pathname}`","fetch(`${SUPABASE_URL}/rest/v1/${pathname}`").replace('  validateDuelTarget: readDuelTargetTokenPayload,\n','').trimEnd();
+test('backend original conserva sus reglas: solo transporte, validador y contexto de avisos sin cambiar recompensas',async()=>{
+ const original=(await readFile('backend/games-original.cjs','utf8')).replace(/\r/g,'').replace("require('./game-transport.cjs').fetch(`${SUPABASE_URL}/rest/v1/${pathname}`","fetch(`${SUPABASE_URL}/rest/v1/${pathname}`").replace('  validateDuelTarget: readDuelTargetTokenPayload,\n','')
+ .replaceAll(', notificationRewards = null)',')')
+ .replaceAll('persistInventoryRow(normalizedNick, finalSync.inventory, notificationRewards)','persistInventoryRow(normalizedNick, finalSync.inventory)')
+ .replaceAll('persistInventoryRow(normalizedNick, targetInventory, notificationRewards)','persistInventoryRow(normalizedNick, targetInventory)')
+ .replace('saveInventory(sessionResult.nick, applyInventoryDelta(inventory, inventoryDelta), reward.inventoryDelta)','saveInventory(sessionResult.nick, applyInventoryDelta(inventory, inventoryDelta))')
+ .replaceAll('saveInventory(sessionResult.nick, inventory, rewardDelta)','saveInventory(sessionResult.nick, inventory)')
+ .replaceAll('saveInventory(normalizedNick, inventory, rewardDelta)','saveInventory(normalizedNick, inventory)')
+ .replace(`  const persist = () => upsertRow("shop_inventories", inventoryToRow(normalizedNick, inventory), "nick", { returning: "minimal" });
+  if (notificationRewards) await require('./game-transport.cjs').withNotificationRewards(normalizedNick, notificationRewards, persist);
+  else await persist();`,`  await upsertRow("shop_inventories", inventoryToRow(normalizedNick, inventory), "nick", { returning: "minimal" });`).trimEnd();
  assert.equal(createHash('sha256').update(original).digest('hex'),'637ad7a7754b70a0995c93c35dcb957ad103626daedb648777782d1c797374fe');
 });
 test('gateway de juegos bloquea admin, identidad inyectada y falta de configuración',async()=>{

@@ -210,7 +210,9 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
    }
    if(['/api/history','/api/users','/api/notifications'].includes(route)){
     const kind=route.split('/').pop(),options=pagination(url);const rows=await repository.page(kind,user.nick,options);
-    const safe=rows.map(row=>{if(kind!=='users')return row;return {nick:row.nick,pc:row.pc,logoId:row.logo_id,karma:row.karma,achievements:row.achievements,selectedTitleId:row.selected_title_id}});
+    const safe=rows.map(row=>{if(kind==='notifications'){
+     const {payload,...note}=row;return {...note,payload:{...(typeof payload?.itemId==='string'&&payload.itemId.length<=80?{itemId:payload.itemId}:{}),...(typeof payload?.amount==='number'&&Number.isFinite(payload.amount)?{amount:payload.amount}:{})}};
+    }if(kind!=='users')return row;return {nick:row.nick,pc:row.pc,logoId:row.logo_id,karma:row.karma,achievements:row.achievements,selectedTitleId:row.selected_title_id}});
     send(200,pageDTO(safe,options,kind));return;
    }
    if(route==='/api/shop/random-key'){

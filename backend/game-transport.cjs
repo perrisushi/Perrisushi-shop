@@ -75,3 +75,17 @@ exports.fetch=(input,opts={})=>{
  const url=new URL(input);url.searchParams.sort();const key=url.href;
  let pending=state.reads.get(key);if(!pending){pending=request(input,opts);state.reads.set(key,pending);pending.catch(()=>{if(state.reads.get(key)===pending)state.reads.delete(key)})}return pending;
 };
+
+// Contexto de una entrega comprobada en servidor; no procede de la petición del jugador.
+exports.withNotificationRewards=async(nick,rewards,worker)=>{
+ const client=context.getStore()?.client;if(!client)throw Error('No transactional game context');
+ // Solo monedas se cobran y premian juntas. Los otros seis recursos usan su delta real,
+ // incluido el ajuste del contador desde las filas auxiliares de cofres.
+ const aliases={monedas:'monedas'};
+ const values={};for(const [key,value] of Object.entries(rewards??{}))if(aliases[key]&&Number.isSafeInteger(value)&&value>0)values[aliases[key]]=value;
+ if(!Object.keys(values).length)return worker();
+ const previous=(await client.query("SELECT current_setting('pw2.notification_rewards',true) AS value")).rows[0]?.value??'';
+ await client.query("SELECT set_config('pw2.notification_rewards',$1,true)",[JSON.stringify({nick,rewards:values})]);
+ try{const result=await worker();await client.query("SELECT set_config('pw2.notification_rewards',$1,true)",[previous]);return result}
+ catch(error){try{await client.query("SELECT set_config('pw2.notification_rewards',$1,true)",[previous])}catch{}throw error}
+};

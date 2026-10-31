@@ -1,4 +1,4 @@
-import {createNotificationCenter,notificationDate,mergeNotifications} from './services/notifications.js';
+import {createNotificationCenter,mergeNotifications,notificationCard} from './services/notifications.js';
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createGameWindow,mobileGameView} from './game-window.js';
 import {createApiClient,oauthCallbackPath} from './services/api-client.js';
@@ -293,7 +293,7 @@ function modalMarkup(type) {
 
   if(type==='notifications'||type==='notification-history'){
     const state=remoteStates[type]??{status:'loading'},unread=type==='notifications';
-    return `<div class="modal-head"><h2 id="modal-title">${unread?'Notificaciones nuevas':'Historial de notificaciones'}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`<div class="notification-list">${(state.items??[]).map(item=>`<article class="notification-entry" ${unread&&!item.read_at?`data-notification-id="${escapeText(item.id)}"`:''}><h3>${escapeText(item.title)}</h3><p>${escapeText(item.message)}</p><time datetime="${escapeText(item.created_at)}">${escapeText(notificationDate(item.created_at))}</time></article>`).join('')||`<p class="notification-empty">${unread?'No tienes notificaciones nuevas.':'Todavía no hay notificaciones revisadas.'}</p>`}</div>${pager(state.nextCursor,type)}`:stateNotice(state)}${unread?'<p class="notification-status" role="status"></p>':''}`;
+    return `<div class="modal-head"><h2 id="modal-title">${unread?'Notificaciones nuevas':'Historial de notificaciones'}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`<div class="notification-list">${(state.items??[]).map(item=>notificationCard(item,unread)).join('')||`<p class="notification-empty">${unread?'No tienes notificaciones nuevas.':'Todavía no hay notificaciones revisadas.'}</p>`}</div>${pager(state.nextCursor,type)}`:stateNotice(state)}${unread?'<p class="notification-status" role="status"></p>':''}`;
   }
   if(type==='history'){
     const state=remoteStates[type]??{status:'loading'};
@@ -450,7 +450,14 @@ async function loadCurrentRoute(route){
  }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
-function paintRemote(kind){if(modalKind!==kind)return;const card=overlay.querySelector('.modal-card'),scroll=card.scrollTop;card.innerHTML=modalMarkup(kind);card.querySelector('.modal-close').focus({preventScroll:true});card.scrollTop=scroll;if(kind==='notifications')observeNotificationCards()}
+function fitNotificationPanel(){
+ if(!['notifications','notification-history'].includes(modalKind)||remoteStates[modalKind]?.status!=='ready')return;
+ const card=overlay.querySelector('.modal-card');if(!card)return;const scroll=card.scrollTop;
+ card.classList.remove('notification-cards-ready');card.style.height='';
+ card.style.height=card.getBoundingClientRect().height+'px';card.classList.add('notification-cards-ready');card.scrollTop=scroll;
+}
+window.addEventListener('resize',()=>{fitNotificationPanel();if(modalKind==='notifications')scheduleNotificationRead()});
+function paintRemote(kind){if(modalKind!==kind)return;const card=overlay.querySelector('.modal-card'),scroll=card.scrollTop;card.classList.remove('notification-cards-ready');card.style.height='';card.innerHTML=modalMarkup(kind);fitNotificationPanel();card.querySelector('.modal-close').focus({preventScroll:true});card.scrollTop=scroll;if(kind==='notifications')observeNotificationCards()}
 async function openRemoteModal(kind){remoteStates[kind]=session?{status:'loading'}:sessionState.status==='error'?sessionState:{status:'signedOut'};openModal(kind);if(!session)return;const generation=sessionEpoch,modalEpoch=notificationModalEpoch;
  try{const result=await (kind==='history'?api.getHistory():api.getNotifications({state:kind==='notifications'?'unread':'read'}));if(generation!==sessionEpoch||modalEpoch!==notificationModalEpoch)return;remoteStates[kind]={status:'ready',...result,items:kind==='history'?result.items:mergeNotifications([],result.items)}}
  catch(error){if(generation!==sessionEpoch||modalEpoch!==notificationModalEpoch)return;remoteStates[kind]=errorState(error);syncIdentity();paintStage()}

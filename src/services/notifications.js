@@ -1,3 +1,5 @@
+import {escapeText} from './live-ui.js';
+import {itemDetails} from './help-content.js';
 // read_at pertenece al servidor; ninguna lectura GET modifica notificaciones.
 const dates=new Intl.DateTimeFormat('es-ES',{dateStyle:'long',timeStyle:'short',timeZone:'Europe/Madrid'});
 export function notificationDate(value){const date=new Date(value);return value&&Number.isFinite(date.getTime())?dates.format(date):''}
@@ -37,4 +39,12 @@ export function createNotificationCenter({api,onPending=()=>{},onViewed=()=>{},o
   queue=work.catch(()=>{});pending.set(id,work);return work;
  }
  return {start,stop,refresh,markViewed};
+}
+
+const rewardItems=new Set(['perri_cofres','perri_cofres_minijuego','cajita_armas','bolsa_especial','bolsa_chatarra','bolsa_gemas','monedas']);
+export function notificationCard(item,unread=false){
+ const id=rewardItems.has(item.payload?.itemId)?item.payload.itemId:rewardItems.has(item.kind)?item.kind:null;
+ const image=id?itemDetails(id).image:['welcome','twitch','youtube'].includes(item.kind)?'./public/assets/icono-notificacion-social.webp':'./public/assets/icono-notificacion-comunicado.webp';
+ const amount=item.payload?.amount;
+ return `<article class="notification-entry" ${unread&&!item.read_at?`data-notification-id="${escapeText(item.id)}"`:''}><span class="notification-graphic" aria-hidden="true"><img src="${escapeText(image)}" alt="" draggable="false"/>${id&&typeof amount==='number'&&Number.isFinite(amount)&&amount>0?`<span class="notification-amount">+${escapeText(amount.toLocaleString('es-ES'))}</span>`:''}</span><div class="notification-copy"><h3>${escapeText(item.title)}</h3><p>${escapeText(item.message)}</p><time datetime="${escapeText(item.created_at)}">${escapeText(notificationDate(item.created_at))}</time></div></article>`;
 }

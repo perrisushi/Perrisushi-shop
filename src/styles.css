@@ -399,3 +399,15 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 .profile-actions {flex-wrap:wrap}
 .profile-actions .history-button {display:grid;place-items:center}
 .profile-actions [data-action="album"] {min-width:0;max-width:100%;flex:1 0 165px}
+/* Las tarjetas enriquecen solo el interior; paintRemote conserva el alto exterior anterior. */
+.notification-graphic {display:none}
+.notification-copy {display:contents}
+.notification-cards-ready .notification-list {display:grid;gap:12px;padding:14px 0 2px}
+.notification-cards-ready .notification-entry {display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid #a9753c;border-radius:9px;background:linear-gradient(125deg,#f6dbad,#dfb57f);box-shadow:inset 0 0 0 2px #ffedcd80,0 2px 4px #5c301a22}
+.notification-cards-ready .notification-copy {display:block;flex:1;min-width:0}
+.notification-cards-ready .notification-entry h3 {color:#583217;font-size:16px;line-height:1.35;margin:0 0 8px}
+.notification-cards-ready .notification-entry p {font-size:14px;line-height:1.5;margin:0 0 10px}
+.notification-cards-ready .notification-entry time {color:#795434;font-size:11px;line-height:1.4}
+.notification-cards-ready .notification-graphic {display:grid;justify-items:center;gap:4px;width:52px;flex:none;padding:5px;border:1px solid #bc8e4e;border-radius:7px;background:linear-gradient(#5b301b,#301c13);box-shadow:inset 0 0 6px #0005}
+.notification-graphic img {display:block;width:40px;height:40px;object-fit:contain}
+.notification-amount {font:bold 11px/1.2 system-ui;color:#ffe3a7;max-width:100%;overflow-wrap:anywhere}
