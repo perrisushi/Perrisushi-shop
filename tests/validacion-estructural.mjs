@@ -1,13 +1,10 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 const css = readFileSync(new URL('../src/desktop-layout-fix.css', import.meta.url), 'utf8');
-assert.match(css,/\@media \(min-width: 701px\)/);
-assert.match(css,/\.scene\s*\{/);
 assert.match(css,/1300px/);
-assert.match(css,/calc\(\(100dvh - 24px\) \* 1\.23\)/);
-assert.match(css,/\.home-menu\s*\{/);
-assert.match(css,/\.home-links\s*\{/);
+assert.match(css,/aspect-ratio: 1448 \/ 1086/);
+assert.match(css,/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 assert.match(css,/grid-template-rows: repeat\(3, min-content\)/);
-assert.doesNotMatch(css,/\@media\s*\(max-width/);
-assert.doesNotMatch(css.replace(/\/\*[\s\S]*?\*\//g, ''),/transform:\s*scale|\bzoom\s*:/);
-console.log('Corrección 02 actualizada: breakpoint PC y protección móvil: OK');
+assert.match(css,/container-type: size/);
+assert.doesNotMatch(css,/grid-template-columns:\s*1fr|marco-recuadro-movil/);
+console.log('Tablero proporcional: composición única en PC y móvil: OK');
