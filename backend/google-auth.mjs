@@ -14,10 +14,13 @@ export function validNewNick(value){
 }
 // Auth HTTP es independiente de la clave service_role usada por el repositorio.
 // Solo se necesitan las credenciales públicas del proyecto; ningún secreto Google.
-export function createGoogleProvider({url,key,origin,fetchImpl=globalThis.fetch}){
+export function createGoogleProvider({url,key,origin,testOnly=false,testEmail,fetchImpl=globalThis.fetch}){
  key=typeof key==='string'?key.trim():'';
  const base=new URL(url);if(base.protocol!=='https:'||base.pathname!=='/'||base.search||base.hash||base.username||base.password||!key)throw Error('Invalid Google Auth configuration');
  const callback=origin+'/api/auth/google/callback';
+ const allowedEmail=typeof testEmail==='string'?testEmail.trim().toLowerCase():'';
+ const testConfigured=/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(allowedEmail)&&allowedEmail.length<=254;
+ const checkTestConfiguration=()=>{if(testOnly&&!testConfigured)fail(503,'google_unavailable')};
  async function request(path,options){
   let response;try{response=await fetchImpl(new URL(path,base),{...options,headers:{apikey:key,'Content-Type':'application/json',...options.headers},redirect:'error',cache:'no-store',signal:AbortSignal.timeout(8000)})}catch{fail(503,'google_unavailable')}
   if(!response.ok)fail(response.status>=500?503:400,response.status>=500?'google_unavailable':'google_failed');
@@ -25,22 +28,31 @@ export function createGoogleProvider({url,key,origin,fetchImpl=globalThis.fetch}
  }
  return {
   authorize(verifier){
+   checkTestConfiguration();
    const target=new URL('/auth/v1/authorize',base);
    target.search=new URLSearchParams({provider:'google',redirect_to:callback,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'s256',scopes:'openid email profile',prompt:'select_account'}).toString();
    return target.href;
   },
   async exchange(code,verifier){
+   checkTestConfiguration();
    const data=await request('/auth/v1/token?grant_type=pkce',{method:'POST',body:JSON.stringify({auth_code:code,code_verifier:verifier})});
    if(typeof data.access_token!=='string'||!data.access_token)fail(400,'google_failed');
    // Consultar Auth, no confiar en user_metadata ni decodificar un JWT sin verificar.
    const user=await request('/auth/v1/user',{method:'GET',headers:{Authorization:'Bearer '+data.access_token}});
    if(!uuid.test(user.id??'')||user.is_anonymous||user.deleted_at||Date.parse(user.banned_until)>Date.now()||!user.email_confirmed_at||!user.identities?.some(i=>i.provider==='google'))fail(400,'google_failed');
+   if(testOnly){
+    // Solo datos de la respuesta autenticada de Supabase, nunca user_metadata
+    // ni un correo enviado por el navegador. Sin normalizaciones de alias Gmail.
+    const identity=user.identities.find(i=>i.provider==='google');
+    const identityEmail=identity?.identity_data?.email;
+    if(identity?.identity_data?.email_verified!==true||typeof identityEmail!=='string'||identityEmail.toLowerCase()!==allowedEmail||typeof user.email!=='string'||user.email.toLowerCase()!==allowedEmail)fail(403,'google_not_allowed');
+   }
    // Los tokens OAuth/refresh no se persisten, ni se envían al navegador.
    return user.id;
   }
  };
 }
-export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessionTtlMs=8*3600_000,onDiagnostic=()=>{}}){
+export function createGoogleAuth({pool,provider,origin,secret,termsVersion,registrationEnabled=true,sessionTtlMs=8*3600_000,onDiagnostic=()=>{}}){
  const secure=origin.startsWith('https:');
  const cookie=(token='',clear=false)=>'pw2_oauth='+token+'; Path=/; HttpOnly; SameSite=Lax'+(secure?'; Secure':'')+'; Max-Age='+(clear?0:600);
  const csrf=token=>csrfFor('google:'+token,secret);
@@ -83,16 +95,17 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessi
   await client.query('INSERT INTO public.pw2_google_links(auth_user_id,nick) VALUES($1,$2)',[id,nick]);
  }
  return {
-  cookie,csrf,termsVersion,
+  cookie,csrf,termsVersion,registrationEnabled,
   async start({mode='login',user}={}){
    const token=newToken(),verifier=newToken();
+   const url=provider.authorize(verifier);
    await tx(async client=>{
     await client.query('DELETE FROM public.pw2_oauth_flows WHERE expires_at<=now()');
     if(mode==='link'){if(!user)fail(401,'session_expired');await account(client,user.nick)}
     else if(mode!=='login')fail(400,'invalid_request');
     await client.query("INSERT INTO public.pw2_oauth_flows(token_hash,verifier,mode,nick,source_session,status,expires_at) VALUES($1,$2,$3,$4,$5,'started',now()+interval '10 minutes')",[digest(token),verifier,mode,user?.nick??null,user?sessionKey(user.token):null]);
    });
-   return {url:provider.authorize(verifier),cookie:cookie(token)};
+   return {url,cookie:cookie(token)};
   },
   async cancel(token){if(token)await tx(client=>client.query('DELETE FROM public.pw2_oauth_flows WHERE token_hash=$1',[digest(token)]))},
   async callback(token,code){
@@ -121,6 +134,7 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessi
      await client.query('DELETE FROM public.pw2_oauth_flows WHERE token_hash=$1',[digest(token)]);
      return {...session,outcome:'login'};
     }
+    if(!registrationEnabled)fail(403,'registration_unavailable');
     // Auth puede crear auth.users. No se crea ningún jugador ni inventario aquí.
     await client.query("UPDATE public.pw2_oauth_flows SET auth_user_id=$2,status='pending',expires_at=now()+interval '10 minutes' WHERE token_hash=$1",[digest(token),id]);
     return {outcome:'register'};
@@ -134,6 +148,7 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,sessi
    });
   },
   async register(token,csrfToken,nick){
+   if(!registrationEnabled)fail(503,'registration_unavailable');
    if(!token||!equalText(csrf(token),csrfToken))fail(403,'csrf_invalid');
    if(!termsVersion)fail(503,'registration_unavailable');
    if(!validNewNick(nick))fail(400,'nick_invalid');

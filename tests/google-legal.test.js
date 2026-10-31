@@ -42,3 +42,16 @@ test('Legales Google: asistente CLI admite JSON y directorio de salida sin publi
   await rmdir(out);await unlink(input);await rmdir(directory);
  }
 });
+
+test('Legales: la dirección no es una exigencia técnica OAuth; no se inventa ni se exige DNI',async()=>{
+ const c=config();delete c.direccion;
+ const documents=buildLegalDocuments(c,await templates());
+ for(const html of Object.values(documents)){
+  assert.match(html,/Responsable local|Contenido local revisado para responsable/);
+  assert.match(html,/legal@example.test/);
+  assert.doesNotMatch(html,/<p><\/p>|undefined|data-legal-(draft|required)/);
+ }
+ const professional=buildLegalDocuments({...c,direccion:'Oficina profesional de contacto <local>'},await templates());
+ assert.match(professional['privacidad.html'],/Oficina profesional de contacto &lt;local&gt;/);
+ assert.throws(()=>buildLegalDocuments({...c,responsable:''},{}),/Nombre completo/);
+});

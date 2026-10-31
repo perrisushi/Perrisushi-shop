@@ -1,0 +1,34 @@
+PRUEBA ACTUAL: usar PRUEBA_OAUTH_SIN_REGISTRO.md.
+Para la prueba privada, PW2_LEGAL_PUBLISHED=false, PW2_GOOGLE_TEST_MODE=true,
+PW2_GOOGLE_REGISTRATION_ENABLED=false y PW2_GOOGLE_TEST_EMAIL con el correo exacto autorizado.
+La activación pública descrita debajo queda POSPUESTA y no debe aplicarse para esta prueba.
+VALORES PARA ACTIVAR GOOGLE EN EL SERVICIO RAILWAY EXISTENTE
+Aplicar únicamente durante la publicación autorizada y cuando existan los HTML finales.
+Este archivo no se importa automáticamente y no contiene secretos.
+
+NODE_ENV=production
+PUBLIC_ORIGIN=https://perrisushi.com
+SESSION_STORE=supabase
+ALLOW_SUPABASE_SESSION_WRITES=true
+PW2_LEGAL_DIRECTORY=./backend/legal-reviewed
+PW2_LEGAL_PUBLISHED=true
+PW2_GOOGLE_ENABLED=true
+
+CLAVE PÚBLICA
+Mantener SUPABASE_ANON_KEY si ya contiene la clave pública del mismo proyecto.
+Si no existe, añadir SUPABASE_PUBLISHABLE_KEY con la clave pública publishable/anon de ese proyecto.
+No poner un texto de ejemplo ni la service_role en esa variable.
+
+CONSERVAR SIN CAMBIOS
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+DATABASE_URL
+DATABASE_SSL_CA, si está configurada
+CSRF_SECRET
+PERRIWEB_PROXY_SECRET, si está configurada
+Todas las variables existentes de minijuegos y economía.
+PORT lo proporciona el alojamiento; no es necesario fijarlo para Google.
+
+No añadir Google Client Secret a Railway: ya está configurado en el proveedor Supabase.
+No reemplazar el fichero de variables completo ni copiar secretos al repositorio.
+No se ha verificado el contenido del panel real de Railway; se ha comprobado el código que lee estas variables.

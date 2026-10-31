@@ -1,31 +1,17 @@
-# Datos legales que debe aportar y aprobar el responsable
+# Revisión final de los documentos legales
 
-Los archivos privacidad.html y condiciones.html de esta carpeta son plantillas privadas; no se incluyen en dist ni se publican directamente.
+Los apartados de privacidad, acceso, proveedores, conservación, derechos, menores, uso y sorteos están preparados según el código y las aclaraciones del titular.
 
-Usar el asistente local:
-```powershell
-npm run legal:prepare -- --interactive
-```
+Faltan identidad real y correo de contacto del responsable. No exigir dirección ni DNI como requisito técnico Google. Las obligaciones adicionales de la LSSI y la posible dirección profesional se distinguen en IDENTIFICACION_Y_NORMATIVA.md. No volver a pedir reglas de premios, territorio de comunidad, redacción jurídica ni uso de una terminal.
 
-Preguntará:
-1. Nombre completo o razón social del responsable.
-2. Dirección.
-3. Correo de contacto y derechos.
-4. Finalidades y bases jurídicas aprobadas.
-5. Proveedores reales, ubicación y transferencias/garantías aplicables.
-6. Conservación de cuentas, historiales, registros y copias.
-7. Derechos, bajas y autoridad competente.
-8. Ámbito y menores.
-9. Reglas de PC, monedas, objetos, sorteos y canjes.
-10. Incidencias, moderación, suspensión y cierre.
-11. Otras condiciones: contenidos, disponibilidad, responsabilidad, cambios y conflictos.
+Los documentos mantienen la marca privada data-legal-draft y sus tres bloques del generador hasta incorporar esa identidad. DATOS_PARA_GENERAR.json contiene los textos propuestos, campos de identidad vacíos y aprobado=false: no es una aprobación ficticia ni un archivo de secretos. El asistente completará y ejecutará la herramienta local cuando reciba los datos y proceda la aprobación del contenido.
 
-No se inventan esos datos ni se sustituyen por respuestas automáticas. El asistente requiere aprobación explícita antes de generar los HTML; después se deben abrir y revisar antes de activar su publicación.
+No existe un borrado automático de cuentas ni comprobación automática de edad. Se describen las solicitudes por contacto y los requisitos legales aplicables sin inventar controles o plazos automáticos. La comunidad es internacional, principalmente de España y Latinoamérica; cada sorteo fija sus requisitos particulares.
 
-El resultado se guarda en backend/legal-reviewed. No contiene credenciales ni contraseñas y se debe incluir en el repositorio únicamente una vez revisado para que viaje con el código a Railway.
+Supabase, Railway y Google se identifican por su función real. Cloudflare se menciona solo de forma condicional porque el repositorio contiene un proxy opcional. La región del alojamiento y los acuerdos privados de proveedores no se han inspeccionado: no se afirma una residencia exclusiva en Europa ni una garantía contractual no comprobada. Los textos incluyen criterios de conservación y el canal para pedir información sobre transferencias y garantías; no sustituyen las obligaciones operativas del responsable frente a sus proveedores.
 
-Si una versión ya existe, no se sobrescribe. Puede prepararse otra con --output backend/legal-reviewed-v2 y configurar ese directorio al publicarla.
+Las bases de sorteos se completan por evento. La selección se realiza durante Twitch; el organizador contacta y entrega por Discord u otros medios externos. PerriWeb solo obtiene, permite comprar con recursos virtuales y gestiona las participaciones. No hay compras con dinero real.
 
-Los apartados técnicos se han redactado según las funciones reales: identidad/nick, perfiles, inventario, progresos, historial, notificaciones, cookies, operaciones, Google/Supabase Auth y diagnósticos mínimos. Confirmar los proveedores efectivamente contratados y su régimen de tratamiento: tener una integración de Cloudflare no demuestra que esté usándose en ese despliegue.
+La migración Google ya está ejecutada. No se ha repetido SQL, accedido a producción, modificado recursos o publicado nada. La guía de activación y las variables están actualizadas sin instrucciones de repetir la migración.
 
-Guardar las versiones aprobadas: el alta nueva conserva su huella y fecha de aceptación. No poner un correo, domicilio, plazo, base jurídica o jurisdicción inventados solo para habilitar el registro.
+Verificación local final: 197 pruebas superadas, compilación de 485 archivos públicos correcta y 19 comprobaciones de navegador sin errores JavaScript. Incluyen acceso tradicional, registro/vinculación Google con proveedor simulado, persistencia, cierre de sesión y tamaños PC/móvil. No equivalen a una prueba con Google/Supabase reales. Los borradores no se han publicado ni se han generado HTML con una identidad ficticia.

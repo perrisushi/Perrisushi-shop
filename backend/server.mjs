@@ -15,6 +15,7 @@ import {gamesEnabled} from './game-readiness.mjs';
 import {databasePoolOptions} from './database-config.mjs';
 const allowSessionWrites=process.env.ALLOW_SUPABASE_SESSION_WRITES==='true';
 const production=process.env.NODE_ENV==='production';
+const googleTestOnly=process.env.PW2_GOOGLE_ENABLED==='true'&&process.env.PW2_GOOGLE_TEST_MODE!=='false';
 const repository=createRepository({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,allowSessionWrites});
 const economy=createEconomy({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,enabled:process.env.PW2_ECONOMY_ENABLED==='true',rafflePrice:Number(process.env.PW2_RAFFLE_PRICE),raffleMax:Number(process.env.PW2_RAFFLE_MAX)});
 let gamePool;
@@ -24,12 +25,14 @@ if(process.env.DATABASE_URL){gamePool=new pg.Pool(databasePoolOptions(process.en
 const games=createGames({pool:gamePool,legacy:legacyGames,enabled:enableGames,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
 if(production&&!process.env.PUBLIC_ORIGIN)throw Error('PUBLIC_ORIGIN obligatorio en producción');
 const configuredOrigin=publicOrigin(process.env.PUBLIC_ORIGIN??'http://127.0.0.1:4173');
-const legal=createLegalPages({enabled:process.env.PW2_LEGAL_PUBLISHED==='true',directory:process.env.PW2_LEGAL_DIRECTORY});
+const legal=createLegalPages({enabled:process.env.PW2_LEGAL_PUBLISHED==='true'&&!googleTestOnly,directory:process.env.PW2_LEGAL_DIRECTORY});
 const authSecret=process.env.CSRF_SECRET??randomBytes(32).toString('hex');
 let google;
 if(process.env.PW2_GOOGLE_ENABLED==='true'){
+ const testOnly=googleTestOnly;
+ const registrationEnabled=!testOnly&&process.env.PW2_GOOGLE_REGISTRATION_ENABLED==='true';
  if(!repository.configured||!gamePool||sources.projectMatch==='different'||sources.keyProjectMatch==='different'||!allowSessionWrites||process.env.SESSION_STORE!=='supabase')throw Error('Google requiere PostgreSQL del mismo proyecto y sesiones persistentes habilitadas');
- google=createGoogleAuth({pool:gamePool,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY,origin:configuredOrigin}),onDiagnostic:event=>console.log(JSON.stringify(event))});
+ google=createGoogleAuth({pool:gamePool,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,registrationEnabled,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY,origin:configuredOrigin,testOnly,testEmail:process.env.PW2_GOOGLE_TEST_EMAIL}),onDiagnostic:event=>console.log(JSON.stringify(event))});
 }
 const handler=createBackend({repository,economy,games,google,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
 const site=serveSite({authenticate:handler.authenticate});

@@ -1,97 +1,49 @@
-# Google Login: activación definitiva, paso a paso
+# Google Login: publicación y prueba final
 
-Código local terminado. No se ha realizado Commit, Push, despliegue ni cambio alguno en Supabase/Railway.
+Para la prueba actual con cuenta existente, sin publicar legales ni abrir registro, seguir PRUEBA_OAUTH_SIN_REGISTRO.md. La configuración de activación general de esta guía queda pospuesta.
 
-## 1. Preparar y revisar los documentos legales
-Abrir una terminal en C:\Users\borja\Documents\GitHub\Perrisushi-shop y ejecutar:
-```powershell
-npm run legal:prepare -- --interactive
-```
-El asistente pregunta los datos del responsable, dirección y correo; finalidades/bases jurídicas; proveedores/transferencias; conservación; derechos; menores; reglas económicas/sorteos; moderación/bajas; y otras condiciones.
+La migración 002-google-auth.sql ya está ejecutada. No ejecutar SQL adicional ni repetirla.
 
-No introducir claves o contraseñas. No se inventa ninguno de esos datos. Las bases jurídicas, conservación, condiciones y transferencias deben estar revisadas y aprobadas por el responsable.
+## Único dato pendiente para cerrar los HTML
 
-Al finalizar, se crean:
-- backend/legal-reviewed/privacidad.html
-- backend/legal-reviewed/condiciones.html
+Para identificar al responsable del tratamiento faltan nombre completo o razón social y correo real de contacto. La dirección no es una exigencia técnica OAuth. La posible obligación de dirección profesional/establecimiento y NIF conforme a la LSSI se valora separadamente; ver legal/IDENTIFICACION_Y_NORMATIVA.md. No solicitar DNI o domicilio particular como requisito de Google.
 
-Abrir ambos archivos y revisar el contenido antes de publicarlos. El asistente no publica nada y no reemplaza versiones existentes. Si hace falta preparar otra versión, puede usarse:
-```powershell
-npm run legal:prepare -- --interactive --output backend/legal-reviewed-v2
-```
-En ese caso, usar después ese directorio en PW2_LEGAL_DIRECTORY.
+El resto de los apartados está preparado en docs/google-auth/legal. No hay que utilizar una terminal ni redactar cláusulas jurídicas. El asistente incorporará los datos recibidos, generará backend/legal-reviewed/privacidad.html y condiciones.html y comprobará los dos documentos. No se generan documentos con un responsable ficticio.
 
-Los borradores originales permanecen en docs/google-auth/legal. No pueden publicarse accidentalmente: el servidor rechaza sus marcas y textos sin completar.
+La aprobación de los textos y la autorización de publicación siguen correspondiendo al propietario. No activar las páginas mientras falte la identidad.
 
-## 2. Ejecutar el único SQL de Google
-En Supabase, abrir el proyecto actual → SQL Editor → nueva consulta.
-Copiar TODO sql/002-google-auth.sql y pulsar Run.
+## Variables de Railway
 
-No hace falta ejecutar ningún otro SQL de preparación para activar Google.
+Se ha verificado su compatibilidad con backend/server.mjs y el proxy del repositorio. No se ha consultado ni alterado el panel real.
 
-Esta migración:
-- admite NULL en code_hash para cuentas Google sin contraseña;
-- crea/protege pw2_google_links y pw2_oauth_flows;
-- conserva hashes, cuentas, sesiones, inventarios y progresos existentes;
-- reserva la unicidad normalizada del nick para nuevas altas;
-- permite reejecución compatible con una versión anterior de Google.
+Valores de activación preparados en RAILWAY_VARIABLES.txt. Se conservan el servicio, railway.json, el repositorio y los secretos ya existentes. No añadir secretos de Google Cloud: el proveedor está configurado en Supabase.
 
-Si aparece un error, no activar aún Google. El SQL está en una transacción: no hay cambios parciales tras un fallo.
+## Publicación manual, cuando el propietario la autorice
 
-## 3. Guardar los cambios y configurar Railway manualmente
-Cuando los documentos estén completos y revisados, incluir los dos HTML generados junto con los cambios Google en GitHub Desktop. El propietario realiza Commit y Push origin cuando decide publicarlos. Se conserva railway.json y su despliegue actual.
+1. Una vez generados los dos HTML finales, incluirlos con el código Google en GitHub Desktop. No incluir archivos .env, copias de seguridad, registros, claves o contraseñas.
+2. Realizar Commit y Push origin. El repositorio conectado puede desplegar automáticamente al hacer Push: no hacerlo hasta autorizar la publicación.
+3. Configurar los valores del archivo RAILWAY_VARIABLES.txt en el servicio existente. Cualquier cambio puede provocar despliegue; hacerlo como parte de la publicación autorizada.
+4. Comprobar que ambas páginas responden sin iniciar sesión:
+   https://perrisushi.com/api/legal/privacy
+   https://perrisushi.com/api/legal/terms
+5. Añadir esas dos URLs a Privacidad y Condiciones en la configuración de la aplicación Google si faltan. No cambiar el callback ya autorizado:
+   https://perrisushi.com/api/auth/google/callback
 
-En Railway → servicio de PerriWeb → Variables:
+No se debe ejecutar otra vez la migración. No hay que cambiar inventarios, cuentas ni contraseñas.
 
-| Variable | Valor |
-|---|---|
-| PUBLIC_ORIGIN | https://perrisushi.com |
-| SESSION_STORE | supabase |
-| ALLOW_SUPABASE_SESSION_WRITES | true |
-| SUPABASE_PUBLISHABLE_KEY | Clave pública publishable o anon del mismo proyecto Supabase |
-| PW2_LEGAL_DIRECTORY | ./backend/legal-reviewed |
-| PW2_LEGAL_PUBLISHED | true, solo tras revisar los HTML |
-| PW2_GOOGLE_ENABLED | true, al completar SQL y documentos |
+## Prueba real imprescindible
 
-Mantener NODE_ENV=production y las variables existentes SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL, DATABASE_SSL_CA, CSRF_SECRET y PERRIWEB_PROXY_SECRET cuando se utilice el proxy. No regenerar ni cambiar credenciales. Si ya está configurada SUPABASE_ANON_KEY, se admite como alternativa a SUPABASE_PUBLISHABLE_KEY.
+1. En ventana privada, entrar con una cuenta tradicional propia. Comprobar nombre, Perrilogo, inventario y PC.
+2. Mi perfil → Vincular Google. Confirmar la contraseña tradicional y elegir el Google propio habilitado para pruebas.
+3. Cerrar sesión y entrar con Continuar con Google. Debe recuperarse la misma cuenta y recursos. Probar recarga y cierre de sesión.
+4. Volver a entrar con la contraseña original: debe seguir funcionando.
+5. Para registro nuevo, usar otra identidad Google aún no vinculada. Elegir nick disponible, aceptar las condiciones y completar el alta. No crear una segunda cuenta para un usuario antiguo que solo desea vincular su Google.
+6. Repetir acceso, vinculación o registro, recarga y cierre de sesión en PC y un móvil físico. No es necesario consumir objetos ni participar en juegos para estas comprobaciones.
 
-La clave pública se obtiene en la configuración de API Keys de Supabase. Las claves/variables privadas solo se guardan en Railway, nunca en archivos del repositorio.
+El código rechaza cuentas desactivadas, nicks ocupados y vinculaciones duplicadas. No se deben manipular cuentas de terceros para probar estos bloqueos; están cubiertos localmente.
 
-No se necesita añadir Client Secret de Google a Railway: ya está configurado en el proveedor de Supabase.
+La cuenta Google de prueba ya configurada sirve para el primer recorrido. Si se pretende abrir el acceso al público general, completar la publicación de la aplicación en Google Cloud conforme a su configuración. Si Supabase impide nuevas altas, habilitar Allow new users to sign up sin tocar las credenciales OAuth existentes.
 
-El callback autorizado sigue siendo:
-https://perrisushi.com/api/auth/google/callback
+## Límite de lo verificado
 
-Comprobar en Supabase Auth que Allow new users to sign up permite nuevas altas. No desactivar la verificación de correo ni cambiar otras opciones que ya funcionen.
-
-## 4. Probar con Google real
-Después de publicar manualmente esos cambios:
-1. Abrir perrisushi.com en una ventana privada y entrar con usuario/contraseña antiguos.
-2. Comprobar el nick, Perrilogo y saldos.
-3. Ir a Mi perfil → Vincular Google, confirmar la contraseña y elegir la cuenta Google autorizada para pruebas.
-4. Volver a PerriWeb: debe conservarse el mismo nick y sus datos.
-5. Cerrar sesión y entrar con Continuar con Google.
-6. Recargar y verificar que la sesión sigue activa. Cerrar sesión debe volver al acceso.
-7. Para probar el registro, usar OTRA cuenta Google autorizada que todavía no esté vinculada. Elegir un nick disponible y aceptar los documentos.
-8. Probar un nick ocupado: debe rechazarse sin crear otro jugador ni modificar ninguna cuenta.
-9. Repetir en PC y móvil físico. En móvil, comprobar orientación, teclado, casilla de aceptación y botones.
-10. Abrir perfil, inventario, historial, notificaciones y las pantallas de juegos para comprobar la sesión compartida.
-
-No intentar usar el mismo Google para crear otra cuenta si ya se ha vinculado: se rechaza intencionadamente.
-
-Antes de abrir el servicio a todo el público, revisar la audiencia y publicación de la aplicación en Google Cloud según su configuración y permisos. La cuenta de prueba ya configurada sirve para el primer recorrido. No se modificaron las credenciales OAuth.
-
-Cuando estén publicadas, usar también estas URLs en los campos de Privacidad y Condiciones de Google Cloud → Branding. Las páginas legales serán públicas:
-- https://perrisushi.com/api/legal/privacy
-- https://perrisushi.com/api/legal/terms
-
-## 5. Qué está comprobado y qué requiere esa prueba manual
-Pruebas locales completas y compilación correctas. Frontend/backend reales del repositorio con PostgreSQL local; proveedor OAuth sustituido solo para pruebas. El recorrido con las credenciales reales y el alojamiento real se verifica en el paso 4. No se ha declarado validado antes de hacerlo.
-
-La entrada tradicional funciona incluso si falla la limpieza de un intento Google. Las cuentas nuevas tienen is_admin=false de forma explícita. El estado OAuth es privado, temporal y de un solo uso; no se guardan tokens Google en el navegador. La versión legal aceptada debe coincidir con la publicada por el servidor.
-
-## Referencias oficiales
-- Google en Supabase: https://supabase.com/docs/guides/auth/social-sign-in/auth-google
-- PKCE: https://supabase.com/docs/guides/auth/sessions/pkce-flow
-- Altas de usuarios: https://supabase.com/docs/guides/auth/general-configuration
-- Audiencia/publicación Google: https://developers.google.com/identity/protocols/oauth2/production-readiness/overview
+Las pruebas locales emplean una base de datos efímera y un proveedor simulado. No prueban la configuración privada real de Railway ni el intercambio real Google/Supabase. No se ha ejecutado check:live contra producción ni se ha publicado nada desde el asistente.

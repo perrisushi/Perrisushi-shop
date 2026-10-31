@@ -5,14 +5,15 @@ import {readFile,mkdir,writeFile,mkdtemp} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import http from 'node:http';
 import assert from 'node:assert/strict';
-import {createGoogleAuth} from '../backend/google-auth.mjs';
+import {createGoogleAuth,createGoogleProvider} from '../backend/google-auth.mjs';
 import {createLegalPages} from '../backend/legal-pages.mjs';
 import {prepareLegalFiles,legalFields} from './prepare-google-legal.mjs';
 import {createBackend} from '../backend/app.mjs';
 import {createFrontendServer} from '../dev-server.mjs';
 import {digest} from '../backend/security.mjs';
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE??'C:/Users/borja/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const base='http://127.0.0.1:4199',output=process.env.PW2_QA_DIR??process.env.TEMP+'/perriweb-google-qa';
+const privateMode=process.env.PW2_QA_PRIVATE==='true';
+const base='http://127.0.0.1:4199',output=process.env.PW2_QA_DIR??process.env.TEMP+'/perriweb-google-qa'+(privateMode?'-private':'');
 const db=new PGlite(),errors=[],results=[];
 let backend,frontend,browser,qaClock=Date.now();
 try{
@@ -38,9 +39,14 @@ try{
  const legalDirectory=await mkdtemp(output+'/legal-local-');
  const legalConfig={aprobado:true,...Object.fromEntries(legalFields.map(([key])=>[key,key==='email'?'qa@example.invalid':'Texto local de verificación para '+key+' '+('contenido '.repeat(12))]))};
  await prepareLegalFiles(legalConfig,{output:legalDirectory});
- const legal=createLegalPages({enabled:true,directory:legalDirectory});
- const google=createGoogleAuth({pool,provider:{authorize:()=> 'https://qa-google.invalid/auth/v1/authorize?provider=google',exchange:async()=>chosen},origin:base,secret:'s'.repeat(40),termsVersion:legal.version});
- const handler=createBackend({repository,google,legalPublished:true,now:()=>qaClock,publicOrigin:base,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)});
+ const legal=createLegalPages({enabled:!privateMode,directory:legalDirectory});
+ const provider=createGoogleProvider({url:'https://qa-google.invalid',key:'qa-public',origin:base,testOnly:privateMode,testEmail:'qa-owner@example.test',fetchImpl:async url=>{
+  if(String(url).includes('/token?'))return Response.json({access_token:'QA_PRIVATE_TOKEN'});
+  const email=chosen===A?'qa-owner@example.test':'qa-other@example.test';
+  return Response.json({id:chosen,email,email_confirmed_at:'2026-10-31',identities:[{provider:'google',identity_data:{email,email_verified:true}}]});
+ }});
+ const google=createGoogleAuth({pool,provider,origin:base,secret:'s'.repeat(40),termsVersion:legal.version,registrationEnabled:!privateMode});
+ const handler=createBackend({repository,google,legalPublished:legal.enabled,now:()=>qaClock,publicOrigin:base,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)});
  backend=http.createServer((req,res)=>legal.matches(req.url)?legal.handle(req,res):handler(req,res));
  await new Promise(r=>backend.listen(0,'127.0.0.1',r));
  frontend=createFrontendServer({apiTarget:'http://127.0.0.1:'+backend.address().port,authenticate:async()=>true});
@@ -99,7 +105,7 @@ try{
   await context.close();
  }
  // Fresh Google identity -> explicit signup -> conflict handling -> create -> persistence/logout.
- for(const size of [{width:1440,height:900},{width:320,height:568},{width:390,height:844},{width:667,height:375}]){
+ for(const size of (privateMode?[]:[{width:1440,height:900},{width:320,height:568},{width:390,height:844},{width:667,height:375}])){
   await db.query('DELETE FROM pw2_google_links WHERE auth_user_id=$1',[B]);
   qaClock+=16*60_000;
   const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
@@ -130,7 +136,7 @@ try{
   results.push({size,state:'register-and-persist',geometry});
   await context.close();
  }
- for(const size of [{width:1440,height:900},{width:390,height:844}]){
+ for(const size of (privateMode?[]:[{width:1440,height:900},{width:390,height:844}])){
   const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   for(const route of ['privacy','terms']){
@@ -141,6 +147,30 @@ try{
    await page.screenshot({path:output+'/'+size.width+'x'+size.height+'-legal-'+route+'.png',fullPage:true});
    results.push({size,state:'legal-'+route,public:true});
   }
+  await context.close();
+ }
+ if(privateMode)for(const size of [{width:1440,height:900},{width:390,height:844}]){
+  qaClock+=16*60_000;
+  const context=await browser.newContext({viewport:size,isMobile:size.width<701,hasTouch:size.width<701});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  await context.route('https://qa-google.invalid/**',route=>route.fulfill({status:302,headers:{location:base+'/api/auth/google/callback?code=local-code'},body:''}));
+  const inventoryBefore=await one('shop_inventories','OldNick');
+  chosen=B;await page.goto(base);await page.locator('[data-action=google-login]').click();
+  await page.getByRole('status').filter({hasText:'Esta cuenta de Google no tiene el acceso habilitado.'}).waitFor();
+  assert.equal(await page.locator('#google-register').count(),0);
+  assert.equal(await page.locator('a[href="/api/legal/privacy"]').count(),0);
+  const config=await (await page.request.get(base+'/api/auth/google/config')).json();
+  assert.equal(config.registrationEnabled,false);assert.equal(config.legalPublished,false);assert.equal(config.legalVersion,null);
+  const denied=await page.request.post(base+'/api/auth/google/register',{headers:{origin:base},data:{nick:'NeverCreated',acceptedTerms:true}});
+  assert.equal(denied.status(),503);
+  assert.equal((await page.request.get(base+'/api/legal/privacy')).status(),404);
+  assert.equal((await page.request.get(base+'/api/legal/terms')).status(),404);
+  assert.equal((await db.query('SELECT count(*)::integer AS total FROM shop_players')).rows[0].total,1);
+  assert.deepEqual(await one('shop_inventories','OldNick'),inventoryBefore);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+  const box=await page.locator('.modal-card').boundingBox();assert.ok(box.y>=0&&box.y+box.height<=size.height+1);
+  await page.screenshot({path:output+'/'+size.width+'x'+size.height+'-private-rejection.png'});
+  results.push({size,state:'private-rejection-no-registration-no-public-legals'});
   await context.close();
  }
  assert.deepEqual(errors,[]);

@@ -476,7 +476,7 @@ async function launchOriginalGame(name){
 }
 
 function googleErrorNotice(){
- const messages={google_cancelled:'Has cancelado el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'Esta cuenta de Google ya está vinculada a otra cuenta, o tu usuario tiene otra vinculación.',account_inactive:'Esta cuenta no tiene el acceso habilitado.',session_expired:'Tu sesión ha caducado. Vuelve a entrar para vincular Google.',google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google. Vuelve a intentarlo.'};
+ const messages={google_cancelled:'Has cancelado el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'Esta cuenta de Google ya está vinculada a otra cuenta, o tu usuario tiene otra vinculación.',account_inactive:'Esta cuenta no tiene el acceso habilitado.',session_expired:'Tu sesión ha caducado. Vuelve a entrar para vincular Google.',google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google. Vuelve a intentarlo.',google_not_allowed:'Esta cuenta de Google no tiene el acceso habilitado.',registration_unavailable:'Entra con tu usuario y contraseña y vincula Google desde Mi perfil.'};
  return messages[googleNotice]??'';
 }
 function legalLinks(){
@@ -484,13 +484,13 @@ function legalLinks(){
 }
 function accessMarkup(){
  if(googlePending)return `<div class="modal-head"><h2 id="modal-title">Crear cuenta</h2></div>
- ${googleConfig.legalPublished?`<form id="google-register"><div class="access-register-content">
+ ${googleConfig.legalPublished&&googleConfig.registrationEnabled!==false?`<form id="google-register"><div class="access-register-content">
  <p>¿Ya tienes cuenta? Entra con tu usuario y vincula Google desde tu perfil.</p>
  <div class="login-fields"><label>Elige tu nick<input name="nick" type="text" required minlength="3" maxlength="30" autocomplete="nickname" aria-describedby="nick-help" /></label><small id="nick-help">De 3 a 30 letras, números, guiones o guiones bajos.</small></div>
  <label class="access-accept"><input name="acceptedTerms" type="checkbox" required /> He leído la Política de Privacidad y acepto las Condiciones del Servicio.</label>
  ${legalLinks()}</div><button type="submit" class="textured-button modal-primary">Crear cuenta</button></form>`:'<p>El registro no está disponible en este momento. Si ya tienes cuenta, entra con tu usuario y contraseña.</p>'}
  <button type="button" class="textured-button access-cancel" data-action="google-cancel">Cancelar y volver al acceso</button><p id="login-status" role="status"></p>`;
- return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div>
+ return `<div class="modal-head"><h2 id="modal-title">Entrar en PerriWeb</h2></div><p class="access-legal">Comunidad con minijuegos y participaciones para sorteos en Twitch.</p>
   <form id="traditional-login"><div class="login-fields"><label>Usuario<input name="nick" type="text" required maxlength="80" autocomplete="username" /></label>
   <label>Contraseña<input name="password" type="password" required maxlength="1024" autocomplete="current-password" /></label></div>
   <button type="submit" class="textured-button modal-primary">Iniciar sesión</button><p id="login-status" role="status"></p></form>

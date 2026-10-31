@@ -9,7 +9,7 @@ import {digest,sessionKey} from '../backend/security.mjs';
 import {onRequest as proxy} from '../functions/api/[[path]].js';
 import {createLegalPages} from '../backend/legal-pages.mjs';
 const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
-async function fixture(){
+async function fixture({termsVersion='local-reviewed-documents',registrationEnabled=true,provider:customProvider}={}){
  const db=new PGlite();
  await db.exec('CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid PRIMARY KEY);');
  await db.exec((await readFile('tests/fixtures/game-schema.sql','utf8')).replace('create extension if not exists pgcrypto;',''));
@@ -26,8 +26,8 @@ async function fixture(){
   const previous=tail;let release;tail=new Promise(r=>release=r);await previous;
   return {query:(...args)=>db.query(...args),release};
  }};
- const provider={authorize:verifier=>'https://project.supabase.co/auth/v1/authorize?provider=google&challenge='+digest(verifier),exchange:async code=>code==='A'?A:code==='B'?B:Promise.reject(Error('provider rejected'))};
- const events=[],google=createGoogleAuth({pool,provider,origin:'https://perrisushi.com',secret:'s'.repeat(40),termsVersion:'local-reviewed-documents',onDiagnostic:event=>events.push(event)});
+ const provider=customProvider??{authorize:verifier=>'https://project.supabase.co/auth/v1/authorize?provider=google&challenge='+digest(verifier),exchange:async code=>code==='A'?A:code==='B'?B:Promise.reject(Error('provider rejected'))};
+ const events=[],google=createGoogleAuth({pool,provider,origin:'https://perrisushi.com',secret:'s'.repeat(40),termsVersion,registrationEnabled,onDiagnostic:event=>events.push(event)});
  const repository={configured:true,access:async nick=>(await db.query('SELECT * FROM shop_access WHERE lower(nick)=lower($1)',[nick])).rows[0],
   player:async nick=>(await db.query('SELECT * FROM shop_players WHERE nick=$1',[nick])).rows[0],
   session:async token=>JSON.parse(JSON.stringify((await db.query('SELECT * FROM shop_sessions WHERE token=$1',[token])).rows[0]??null)),
@@ -153,8 +153,8 @@ test('Google: RLS y permisos niegan acceso de navegador a vínculos y verificado
   }
  }finally{await f.close()}
 });
-async function httpFixture(worker,{legalPublished=true}={}){
- const f=await fixture();const server=http.createServer(createBackend({repository:f.repository,google:f.google,legalPublished,publicOrigin:'https://perrisushi.com',production:true,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)}));
+async function httpFixture(worker,{legalPublished=true,termsVersion='local-reviewed-documents',registrationEnabled=true,provider}={}){
+ const f=await fixture({termsVersion,registrationEnabled,provider});const server=http.createServer(createBackend({repository:f.repository,google:f.google,legalPublished,publicOrigin:'https://perrisushi.com',production:true,sessionStore:'supabase',allowSessionWrites:true,csrfSecret:'s'.repeat(40)}));
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const request=async(path,{method='GET',cookie,body,csrf,origin='https://perrisushi.com'}={})=>{
   const response=await fetch('http://127.0.0.1:'+server.address().port+'/api'+path,{method,redirect:'manual',headers:{origin,...(cookie?{cookie}:{}),...(csrf?{'x-csrf-token':csrf}:{}),...(body!==undefined?{'content-type':'application/json'}:{})},...(body!==undefined?{body:JSON.stringify(body)}:{})});
@@ -209,7 +209,7 @@ test('HTTP: borradores legales no habilitan registro',()=>httpFixture(async({req
 test('Proxy: solo admite retorno OAuth local y conserva ambas cookies, nunca redirecciones externas',async()=>{
  const previous=globalThis.fetch,env={PERRIWEB_BACKEND_ORIGIN:'https://backend.example',PERRIWEB_PROXY_SECRET:'s'.repeat(40)};
  try{
-  for(const [path,location,expected]of [['/api/auth/google/callback','/?google=login#home',303],['/api/auth/google/callback','https://evil.example/',503],['/api/auth/login','/?google=login#home',503],['/api/auth/google/callback','//evil.example/?google=login#home',503]]){
+  for(const [path,location,expected]of [['/api/auth/google/callback','/?google=login#home',303],['/api/auth/google/callback','/?google=google_not_allowed#home',303],['/api/auth/google/callback','/?google=registration_unavailable#home',303],['/api/auth/google/callback','/?google=not_whitelisted#home',503],['/api/auth/google/callback','https://evil.example/',503],['/api/auth/login','/?google=login#home',503],['/api/auth/google/callback','//evil.example/?google=login#home',503]]){
    globalThis.fetch=async()=>{const headers=new Headers({Location:location});headers.append('Set-Cookie','pw2_oauth=; Max-Age=0; HttpOnly; Secure');headers.append('Set-Cookie','pw2_session=private; HttpOnly; Secure');return new Response(null,{status:303,headers})};
    const response=await proxy({request:new Request('https://perrisushi.com'+path),env});
    assert.equal(response.status,expected);if(expected===303)assert.equal(response.headers.getSetCookie().length,2);
@@ -350,7 +350,7 @@ test('Google: una estructura de índice incompatible cancela toda la migración 
  }finally{await db.close()}
 });
 test('Google: colisión de nick en la base devuelve un mensaje de disponibilidad',async()=>{
- const google=createGoogleAuth({pool:{connect:async()=>({query:async()=>{throw Object.assign(Error('PRIVATE SQL'),{code:'23505',constraint:'pw2_shop_players_normalized_nick_uq'})},release(){}})},provider:{},origin:'https://perrisushi.com',secret:'s'.repeat(40),termsVersion:'local'});
+ const google=createGoogleAuth({pool:{connect:async()=>({query:async()=>{throw Object.assign(Error('PRIVATE SQL'),{code:'23505',constraint:'pw2_shop_players_normalized_nick_uq'})},release(){}})},provider:{authorize:()=> 'https://project.supabase.co/auth/v1/authorize?provider=google'},origin:'https://perrisushi.com',secret:'s'.repeat(40),termsVersion:'local'});
  await assert.rejects(google.start(),{code:'nick_unavailable'});
 });
 test('Legales: retirar solo las marcas no permite publicar texto pendiente',async()=>{
@@ -374,3 +374,107 @@ test('HTTP: no registra una cuenta si cambió la versión legal que aceptó el u
  assert.equal((await db.query("SELECT 1 FROM shop_players WHERE nick='NoStaleConsent'")).rows.length,0);
  assert.equal((await request('/auth/google/pending',{cookie})).data.pending,true);
 }));
+
+test('HTTP: prueba OAuth sin legales publicados vincula y permite entrar, pero nunca registra jugadores nuevos',()=>httpFixture(async({request,db})=>{
+ const before=(await db.query('SELECT * FROM shop_inventories ORDER BY nick')).rows;
+ const originalAccess=(await db.query('SELECT * FROM shop_access ORDER BY nick')).rows;
+ const config=await request('/auth/google/config');
+ assert.equal(config.data.enabled,true);assert.equal(config.data.legalPublished,false);assert.equal(config.data.legalVersion,null);
+ const login=await request('/auth/login',{method:'POST',body:{nick:'OldNick',password:'original-password'}});
+ assert.equal(login.status,200);
+ const cookie=login.headers.getSetCookie().find(v=>v.startsWith('pw2_session=')).split(';')[0];
+ const start=await request('/auth/google/start',{method:'POST',cookie,csrf:login.headers.get('x-csrf-token'),body:{mode:'link',password:'original-password'}});
+ assert.equal(start.status,200);
+ const linked=await request('/auth/google/callback?code=A',{cookie:start.headers.getSetCookie()[0].split(';')[0]});
+ assert.equal(linked.headers.get('location'),'/?google=linked#profile');
+ const linkedCookie=linked.headers.getSetCookie().find(v=>v.startsWith('pw2_session=')).split(';')[0];
+ const session=await request('/session',{cookie:linkedCookie});assert.equal(session.data.nick,'OldNick');
+ assert.equal((await request('/auth/logout',{method:'POST',cookie:linkedCookie,csrf:session.headers.get('x-csrf-token'),body:{}})).status,200);
+ const googleStart=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ const googleLogin=await request('/auth/google/callback?code=A',{cookie:googleStart.headers.getSetCookie()[0].split(';')[0]});
+ assert.equal(googleLogin.headers.get('location'),'/?google=login#home');
+ const googleCookie=googleLogin.headers.getSetCookie().find(v=>v.startsWith('pw2_session=')).split(';')[0];
+ assert.equal((await request('/session',{cookie:googleCookie})).data.nick,'OldNick');
+ const strangerStart=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ const strangerCookie=strangerStart.headers.getSetCookie()[0].split(';')[0];
+ await request('/auth/google/callback?code=B',{cookie:strangerCookie});
+ const pending=await request('/auth/google/pending',{cookie:strangerCookie});assert.equal(pending.data.pending,true);
+ const denied=await request('/auth/google/register',{method:'POST',cookie:strangerCookie,body:{nick:'BlockedNewPlayer',csrf:pending.data.csrf,acceptedTerms:true,termsVersion:null}});
+ assert.equal(denied.status,503);assert.equal(denied.data.error,'registration_unavailable');
+ assert.equal((await db.query('SELECT count(*)::integer AS total FROM shop_players')).rows[0].total,2);
+ assert.equal((await db.query('SELECT count(*)::integer AS total FROM pw2_google_links')).rows[0].total,1);
+ assert.deepEqual((await db.query('SELECT * FROM shop_inventories ORDER BY nick')).rows,before);
+ assert.deepEqual((await db.query('SELECT * FROM shop_access ORDER BY nick')).rows,originalAccess);
+ assert.equal((await request('/auth/login',{method:'POST',body:{nick:'OldNick',password:'original-password'}})).status,200);
+},{legalPublished:false,termsVersion:null}));
+
+test('Google privado: solo el correo verificado de la identidad Google autorizada; no acepta metadatos ni alias',async()=>{
+ const user=(email='owner@example.test')=>({id:A,email,email_confirmed_at:'2026-10-31',identities:[{provider:'google',identity_data:{email,email_verified:true}}]});
+ let response=user();
+ const provider=createGoogleProvider({url:'https://project.supabase.co',key:'public',origin:'https://perrisushi.com',testOnly:true,testEmail:' OWNER@example.test ',fetchImpl:async url=>Response.json(String(url).includes('/token?')?{access_token:'PRIVATE_ACCESS'}:response)});
+ assert.equal(await provider.exchange('A','verifier'),A);
+ response=user('other@example.test');response.user_metadata={email:'owner@example.test'};
+ await assert.rejects(provider.exchange('B','verifier'),{code:'google_not_allowed'});
+ response=user();response.identities[0].identity_data.email='other@example.test';
+ await assert.rejects(provider.exchange('B','verifier'),{code:'google_not_allowed'});
+ response=user();response.identities[0].identity_data.email_verified=false;
+ await assert.rejects(provider.exchange('B','verifier'),{code:'google_not_allowed'});
+ response=user('owner+alias@example.test');
+ await assert.rejects(provider.exchange('B','verifier'),{code:'google_not_allowed'});
+});
+
+test('Google privado: correo ausente o mal configurado no inicia OAuth y no realiza conexiones',async()=>{
+ for(const testEmail of [undefined,'','not-an-email','owner@example.test,other@example.test','owner@example.test\nother@example.test']){
+  const provider=createGoogleProvider({url:'https://project.supabase.co',key:'public',origin:'https://perrisushi.com',testOnly:true,testEmail,fetchImpl:()=>assert.fail('No debe conectarse')});
+  assert.throws(()=>provider.authorize('verifier'),{code:'google_unavailable'});
+  await assert.rejects(provider.exchange('A','verifier'),{code:'google_unavailable'});
+ }
+});
+
+function privateTestProvider(){
+ let selected='A';
+ return createGoogleProvider({url:'https://project.supabase.co',key:'public',origin:'https://perrisushi.com',testOnly:true,testEmail:'owner@example.test',fetchImpl:async(url,options)=>{
+  if(String(url).includes('/token?')){selected=JSON.parse(options.body).auth_code;return Response.json({access_token:'PRIVATE_ACCESS'})}
+  const email=selected==='A'?'owner@example.test':'other@example.test';
+  return Response.json({id:selected==='A'?A:B,email,email_confirmed_at:'2026-10-31',identities:[{provider:'google',identity_data:{email,email_verified:true}}]});
+ }});
+}
+
+test('HTTP privado: vinculación y login sin legales; otro Google no obtiene vínculo/sesión y no existe alta pública',()=>httpFixture(async({request,db})=>{
+ const inventory=(await db.query('SELECT * FROM shop_inventories ORDER BY nick')).rows;
+ const access=(await db.query('SELECT * FROM shop_access ORDER BY nick')).rows;
+ const config=await request('/auth/google/config');assert.equal(config.data.registrationEnabled,false);assert.equal(config.data.legalPublished,false);
+ const traditional=await request('/auth/login',{method:'POST',body:{nick:'OldNick',password:'original-password'}});
+ const cookie=traditional.headers.getSetCookie().find(v=>v.startsWith('pw2_session=')).split(';')[0];
+ const start=await request('/auth/google/start',{method:'POST',cookie,csrf:traditional.headers.get('x-csrf-token'),body:{mode:'link',password:'original-password'}});
+ const linked=await request('/auth/google/callback?code=A',{cookie:start.headers.getSetCookie()[0].split(';')[0]});
+ assert.equal(linked.headers.get('location'),'/?google=linked#profile');
+ const loginStart=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ const login=await request('/auth/google/callback?code=A',{cookie:loginStart.headers.getSetCookie()[0].split(';')[0]});
+ assert.equal(login.headers.get('location'),'/?google=login#home');
+ const sessionCookie=login.headers.getSetCookie().find(v=>v.startsWith('pw2_session=')).split(';')[0];
+ const session=await request('/session',{cookie:sessionCookie});assert.equal(session.data.nick,'OldNick');
+ const countBefore=(await db.query('SELECT count(*) AS total FROM shop_sessions')).rows[0].total;
+ const other=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ const denied=await request('/auth/google/callback?code=B',{cookie:other.headers.getSetCookie()[0].split(';')[0]});
+ assert.equal(denied.headers.get('location'),'/?google=google_not_allowed#home');
+ assert.equal((await db.query('SELECT count(*) AS total FROM shop_sessions')).rows[0].total,countBefore);
+ assert.equal((await db.query('SELECT count(*)::integer AS total FROM pw2_google_links')).rows[0].total,1);
+ assert.equal((await db.query('SELECT count(*)::integer AS total FROM pw2_oauth_flows')).rows[0].total,0);
+ assert.equal((await request('/auth/google/register',{method:'POST',body:{nick:'Blocked',acceptedTerms:true}})).data.error,'registration_unavailable');
+ assert.deepEqual((await db.query('SELECT * FROM shop_inventories ORDER BY nick')).rows,inventory);
+ assert.deepEqual((await db.query('SELECT * FROM shop_access ORDER BY nick')).rows,access);
+ assert.equal((await request('/auth/logout',{method:'POST',cookie:sessionCookie,csrf:session.headers.get('x-csrf-token'),body:{}})).status,200);
+ assert.equal((await request('/session',{cookie:sessionCookie})).data.authenticated,false);
+ assert.equal((await request('/auth/login',{method:'POST',body:{nick:'OldNick',password:'original-password'}})).status,200);
+},{legalPublished:false,termsVersion:null,registrationEnabled:false,provider:privateTestProvider()}));
+
+test('HTTP privado: las altas siguen cerradas aunque se publiquen legales; la contraseña no depende del correo de prueba',()=>httpFixture(async({request,google})=>{
+ assert.equal((await request('/auth/google/config')).data.registrationEnabled,false);
+ const denied=await request('/auth/google/register',{method:'POST',body:{nick:'Blocked',acceptedTerms:true,termsVersion:'local-reviewed-documents'}});
+ assert.equal(denied.status,503);assert.equal(denied.data.error,'registration_unavailable');
+ await assert.rejects(google.register('any','any','Blocked'),{code:'registration_unavailable'});
+ assert.equal((await request('/auth/login',{method:'POST',body:{nick:'OldNick',password:'original-password'}})).status,200);
+ const attempt=await request('/auth/google/start',{method:'POST',body:{mode:'login'}});
+ assert.equal(attempt.status,503);assert.equal(attempt.data.error,'google_unavailable');
+},{legalPublished:true,registrationEnabled:false,provider:createGoogleProvider({url:'https://project.supabase.co',key:'public',origin:'https://perrisushi.com',testOnly:true})}));

@@ -61,7 +61,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
     if(!/^application\/json(?:\s*;|$)/i.test(String(req.headers['content-type']??'')))fail(415,'unsupported_media_type');
     if(req.headers['sec-fetch-site']&& !['same-origin','none'].includes(req.headers['sec-fetch-site']))fail(403,'cross_site_request');
    }
-   if(route==='/api/auth/google/config'&&req.method==='GET'){send(200,{enabled:Boolean(google),legalPublished,legalVersion:google?.termsVersion??null});return}
+   if(route==='/api/auth/google/config'&&req.method==='GET'){send(200,{enabled:Boolean(google),legalPublished,registrationEnabled:Boolean(google)&&google.registrationEnabled!==false&&legalPublished,legalVersion:google?.termsVersion??null});return}
    if(route.startsWith('/api/auth/google/')){
     const flowToken=oauthToken(req.headers.cookie);
     if(route==='/api/auth/google/callback'&&req.method==='GET'){
@@ -74,7 +74,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
       if(result.outcome==='register')cookies=[google.cookie(flowToken)];
       target='/?google='+result.outcome+'#'+(result.outcome==='linked'?'profile':'home');
      }catch(error){
-      const allowed=['google_cancelled','google_expired','google_conflict','account_inactive','session_expired','google_unavailable'];
+      const allowed=['google_cancelled','google_expired','google_conflict','account_inactive','session_expired','google_unavailable','google_not_allowed','registration_unavailable'];
       target='/?google='+(allowed.includes(error?.code)?error.code:'google_failed')+'#home';
       try{await google?.cancel(flowToken)}catch{}
      }
@@ -109,7 +109,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
      send(200,{url:result.url},{'Set-Cookie':result.cookie});return;
     }
     if(route==='/api/auth/google/register'){
-     if(!legalPublished)fail(503,'registration_unavailable');
+     if(!legalPublished||google.registrationEnabled===false)fail(503,'registration_unavailable');
      if(Object.keys(body).some(k=>!['nick','csrf','acceptedTerms','termsVersion'].includes(k))||body.acceptedTerms!==true)fail(400,'invalid_request');
      if(!google.termsVersion||body.termsVersion!==google.termsVersion)fail(409,'legal_changed');
      if(await identity(req))fail(409,'google_already_signed_in');

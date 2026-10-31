@@ -6,7 +6,7 @@ import {createInterface} from 'node:readline/promises';
 const root=resolve(import.meta.dirname,'..');
 export const legalFields=[
  ['responsable','Nombre completo o razón social del responsable'],
- ['direccion','Dirección del responsable para el aviso legal'],
+ ['direccion','Dirección profesional de contacto, solo si procede; puede dejarse vacía'],
  ['email','Correo de contacto y ejercicio de derechos'],
  ['finalidades_y_bases','Finalidades y bases jurídicas que has revisado y aprobado'],
  ['proveedores_y_transferencias','Proveedores reales, ubicación y transferencias/garantías aplicables'],
@@ -22,15 +22,16 @@ const paragraph=value=>'<p>'+escape(value)+'</p>';
 export function validateLegalConfig(config){
  if(config?.aprobado!==true)throw Error('Debes revisar y aprobar el contenido legal antes de preparar su publicación');
  for(const [key,label]of legalFields){
-  const value=config[key];
+  const value=config[key]??(key==='direccion'?'':undefined);
+  if(key==='direccion'&&typeof value==='string'&&!value.trim())continue;
   if(typeof value!=='string'||!value.trim()||value.length>24000||/^(pendiente|por definir|completar|tbd|xxx)$/i.test(value.trim()))throw Error('Falta completar: '+label);
  }
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.email.trim()))throw Error('El correo de contacto no es válido');
- return Object.fromEntries([...legalFields.map(([k])=>[k,config[k].trim()]),['aprobado',true]]);
+ return Object.fromEntries([...legalFields.map(([k])=>[k,typeof config[k]==='string'?config[k].trim():'']),['aprobado',true]]);
 }
 export function buildLegalDocuments(config,templates){
  const c=validateLegalConfig(config);
- const owner=paragraph(c.responsable)+paragraph(c.direccion)+paragraph('Contacto: '+c.email);
+ const owner=paragraph(c.responsable)+(c.direccion?paragraph(c.direccion):'')+paragraph('Contacto: '+c.email);
  const sections={
   'privacidad.html':[
    '<section><h2>Responsable y contacto</h2>'+owner+'</section>',
