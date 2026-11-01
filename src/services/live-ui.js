@@ -7,7 +7,7 @@ const itemImage=id=>`<img src="${escapeText(Object.hasOwn(itemIcons,id)?"./publi
 export const labels={loading:'Cargando…',signedOut:'Inicia sesión para consultar tus datos.',empty:'No hay datos disponibles.',backend_not_configured:'El acceso no está disponible. Inténtalo más tarde.',backend_unavailable:'No se pudo conectar. Vuelve a intentarlo.',session_expired:'La sesión ha caducado. Vuelve a entrar.',invalid_credentials:'Usuario o contraseña incorrectos.',too_many_requests:'Demasiados intentos. Espera antes de volver a intentarlo.',operation_disabled:'Esta operación no está disponible.',session_writes_disabled:'No se pudo iniciar sesión. Inténtalo más tarde.',error:'No se pudo completar la consulta.'};
 export const message=state=>labels[state?.error]??labels[state?.status]??labels.error;
 Object.assign(labels,{origin_mismatch:'Abre la web desde su dirección principal y vuelve a entrar. (A01)',proxy_auth_required:'El acceso no está disponible. Comunica este error: A02.',cross_site_request:'Abre la web directamente y vuelve a intentarlo. (A03)',csrf_invalid:'Recarga la página y vuelve a intentarlo. (A04)',unsupported_media_type:'Recarga la página y vuelve a intentarlo. (A05)'});
-export const achievementText=value=>Array.isArray(value)?value.filter(v=>typeof v==='string').join(' · '):typeof value==='string'?value:'—';
+export const achievementText=value=>(Array.isArray(value)?value:[value]).map(achievementName).filter(Boolean).join(' · ')||'—';
 Object.assign(labels,{chest_unavailable:'No hay cofres vigentes disponibles para abrir.',inventory_mismatch:'No se pudo abrir este objeto. Vuelve a intentarlo.',item_not_owned:'No tienes unidades disponibles para abrir.',operation_conflict:'Esta operación ya se utilizó con otros datos.',insufficient_balance:'No tienes saldo suficiente.',ticket_limit:'Has alcanzado el máximo de boletos.',no_stock:'No quedan claves disponibles.',no_active_ticket:'No tienes un ticket activo sin caducar.',economy_unavailable:'No se pudo confirmar la operación. Pulsa para reintentar.',games_not_configured:'Los juegos no están disponibles. Inténtalo más tarde.',games_unavailable:'No se pudo confirmar la acción del juego.'});
 export function stateNotice(state){return `<p role="status">${escapeText(message(state))}</p>`}
 export function pager(next,kind){return next?`<button type="button" class="textured-button" data-live-next="${kind}" data-cursor="${escapeText(next)}">Cargar más</button>`:''}
@@ -33,7 +33,7 @@ Object.assign(labels,{legal_changed:'Las condiciones han cambiado. Recarga la p�
 
 export function renderSelectedAchievement(profile){
  const name=achievementName(profile?.selectedTitleId);
- return name?`<div class="profile-title-plaque" aria-label="Logro seleccionado"><span>${escapeText(name)}</span></div>`:'';
+ return name?`<p class="profile-selected-title" aria-label="Logro seleccionado">${escapeText(name)}</p>`:'';
 }
 export function renderProfileAchievements(profile){
  const selected=achievementName(profile?.selectedTitleId);

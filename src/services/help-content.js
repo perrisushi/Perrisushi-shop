@@ -213,6 +213,8 @@ export function achievementName(value){
  if(typeof value!=='string')return '';
  const key=value.trim();
  if(Object.hasOwn(achievementNames,key))return achievementNames[key];
- // Los logros antiguos pueden estar almacenados directamente con su nombre público.
- return /[_]|^[a-f0-9]{8}-[a-f0-9-]{27}$/i.test(key)?'':key;
+ // Conservar los nombres antiguos; hacer legibles los identificadores sin catálogo.
+ if(/^[a-f0-9]{8}-[a-f0-9-]{27}$/i.test(key))return '';
+ const name=key.replace(/[_-]+/g,' ').replace(/([a-záéíóúñ])([A-ZÁÉÍÓÚÑ])/g,'$1 $2').replace(/\s+/g,' ').trim();
+ return name?name[0].toLocaleUpperCase('es-ES')+name.slice(1):'';
 }
