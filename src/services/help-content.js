@@ -206,3 +206,13 @@ export const gameDescriptions=Object.freeze({
   "PerriCasillas": "Abre casillas para descubrir premios que se incorporan al inventario. Cada apertura cuesta una moneda y el tablero tiene un límite de jugadas por hora.",
   "PerriRPG": "Prepara tu armadura y los objetos de combate, elige tus acciones y enfréntate al enemigo por turnos. Las armas, escudos y pociones consumibles son de un solo uso."
 });
+
+// Nombres públicos verificados en ACHIEVEMENT_CATALOG de games-original.cjs.
+export const achievementNames=Object.freeze({me_gusta_el_marisco:'Me gusta el marisco'});
+export function achievementName(value){
+ if(typeof value!=='string')return '';
+ const key=value.trim();
+ if(Object.hasOwn(achievementNames,key))return achievementNames[key];
+ // Los logros antiguos pueden estar almacenados directamente con su nombre público.
+ return /[_]|^[a-f0-9]{8}-[a-f0-9-]{27}$/i.test(key)?'':key;
+}

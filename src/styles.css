@@ -475,3 +475,24 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 @media (min-width:701px) and (min-height:501px), (min-width:701px) and (pointer:fine) {
  .scene:has(.raffle-board) .footer-social {visibility:hidden;pointer-events:none}
 }
+
+/* Logros del perfil: placas de madera y nombres públicos. */
+.profile-title-plaque {max-width:100%;min-width:0;width:100%;margin-top:8px;padding:9px 10px;border:2px solid #b78a49;border-radius:2px;background:linear-gradient(#56331f,#301c13);box-shadow:inset 0 0 0 2px #23150f,0 2px 0 #67421f;color:#f6d99a;text-align:center;font:700 14px/1.4 Georgia,serif;overflow-wrap:anywhere}
+.profile-title-plaque span {display:block}
+.profile-achievements {margin:16px 0;border-top:1px solid #ad7b4655;padding-top:12px;min-width:0}
+.profile-achievements h3 {font:700 17px/1.3 Georgia,serif;color:#59331c;margin:0 0 10px}
+.profile-achievements ul {display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.profile-achievement {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #ab8555;border-left:3px solid #a38055;border-radius:2px;background:#f1d3a64d;min-width:0}
+.achievement-name {font:700 14px/1.4 Georgia,serif;overflow-wrap:anywhere;min-width:0}
+.achievement-state {flex:none;font:12px/1.3 Georgia,serif;color:#795939}
+.profile-achievement.is-selected {border-color:#92642e;background:linear-gradient(#654026,#41271a);box-shadow:inset 0 0 0 1px #bc92514d;color:#ffe0a2}
+.profile-achievement.is-selected .achievement-state {color:#f2cd8d;border:1px solid #af8246;padding:3px 6px;border-radius:2px}
+.profile-achievements-empty {font-size:14px!important;margin:0!important;color:#795939}
+@media(max-width:700px) {
+ .profile-portrait:has(.profile-title-plaque) {display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;min-width:0}
+ .profile-portrait:has(.profile-title-plaque) .perrilogo-preview {width:76px;height:76px}
+ .profile-title-plaque {flex:1;width:auto;margin:0;padding:9px;font-size:14px}
+ .profile-achievements {margin:12px 0;padding-top:10px}
+ .profile-achievement {padding:8px;gap:8px;flex-wrap:wrap}
+ .achievement-state {font-size:11px}
+}

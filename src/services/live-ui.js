@@ -1,4 +1,4 @@
-import {itemDetails} from './help-content.js';
+import {itemDetails,achievementName} from './help-content.js';
 export const escapeText=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const localLogos=new Set(['abeja-1','abuela-1','amparo-1','buho-1','cabra-1','cami-1','croqueta-1','esq-1','estresario-1','gato-1','panda-1','pelusa-1','perriweb1','slime-1','slime-2']);
 export const logoId=id=>localLogos.has(String(id??'').replace(/^logo-/,''))?String(id).replace(/^logo-/,''):'perriweb1';
@@ -30,3 +30,13 @@ export function renderLiveRaffles(){
 Object.assign(labels,{google_not_allowed:'Esta cuenta de Google no tiene el acceso habilitado.',google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'La cuenta ya tiene una vinculación diferente. Entra con tu cuenta original.',google_already_signed_in:'Ya tienes una sesión iniciada. Recarga la página.',registration_unavailable:'El registro no está disponible en este momento.',nick_invalid:'Elige un nick de 3 a 30 letras, números, guiones o guiones bajos.',nick_unavailable:'Ese nick ya está ocupado. Si es tu cuenta, entra con tu usuario y contraseña.',account_inactive:'Esta cuenta no tiene el acceso habilitado.'});
 
 Object.assign(labels,{legal_changed:'Las condiciones han cambiado. Recarga la página y revísalas antes de crear la cuenta.'});
+
+export function renderSelectedAchievement(profile){
+ const name=achievementName(profile?.selectedTitleId);
+ return name?`<div class="profile-title-plaque" aria-label="Logro seleccionado"><span>${escapeText(name)}</span></div>`:'';
+}
+export function renderProfileAchievements(profile){
+ const selected=achievementName(profile?.selectedTitleId);
+ const names=[...new Set((Array.isArray(profile?.achievements)?profile.achievements:[]).map(achievementName).filter(Boolean))];
+ return `<section class="profile-achievements" aria-labelledby="profile-achievements-heading"><h3 id="profile-achievements-heading">Logros</h3>${names.length?`<ul>${names.map(name=>`<li class="profile-achievement${name===selected?' is-selected':''}"><span class="achievement-name">${escapeText(name)}</span><span class="achievement-state">${name===selected?'Seleccionado':'Obtenido'}</span></li>`).join('')}</ul>`:'<p class="profile-achievements-empty">Sin logros obtenidos.</p>'}</section>`;
+}

@@ -2,7 +2,7 @@ import {createNotificationCenter,mergeNotifications,notificationCard} from './se
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createGameWindow,mobileGameView} from './game-window.js';
 import {createApiClient,oauthCallbackPath} from './services/api-client.js';
-import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,renderLiveRaffles} from './services/live-ui.js';
+import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,renderLiveRaffles,renderSelectedAchievement,renderProfileAchievements} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
@@ -117,10 +117,10 @@ function emptyNotice(title, details, icon = '') {
 
 function profileView() {
   return shellView('profile', `<div class="profile-grid">
-    <div class="profile-portrait">${avatarMarkup(selectedAvatar)}<span class="portrait-subtitle">${escapeText(profileState.profile?.selectedTitleId??'')}</span></div>
+    <div class="profile-portrait">${avatarMarkup(selectedAvatar)}${renderSelectedAchievement(profileState.profile)}</div>
     <div class="profile-details"><h2>${escapeText(session?.nick)}</h2>
       ${profileState.status==='ready'?'':stateNotice(profileState)}
-      <div class="info-strip"><span>PC · Gemas</span><strong>${escapeText(profileState.balances?.pc??'—')} · ${escapeText(profileState.balances?.gemas??'—')}</strong></div><div class="info-strip"><span>Logros</span><strong>${escapeText(Array.isArray(profileState.profile?.achievements)?profileState.profile.achievements.join(' · '):'—')}</strong></div>
+      <div class="info-strip"><span>PC · Gemas</span><strong>${escapeText(profileState.balances?.pc??'—')} · ${escapeText(profileState.balances?.gemas??'—')}</strong></div>${renderProfileAchievements(profileState.profile)}
       <div class="info-strip"><span>Karma</span><strong>${escapeText(profileState.profile?.karma??'—')}</strong></div>
       <div class="profile-actions"><button class="textured-button history-button" type="button" data-action="history" aria-label="Historial" title="Historial"><span aria-hidden="true">⌛</span></button><button class="textured-button history-button" type="button" data-action="notification-history" aria-label="Historial de notificaciones" title="Historial de notificaciones"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></button><button class="textured-button" type="button" data-action="album">Cambiar Perrilogos</button></div>
       ${googleConfig.enabled?`<div class="google-profile">${googleLinked===true?'<p>Google vinculado</p>':googleLinked===null?'<button type="button" class="textured-button" data-action="google-status">Comprobar vinculación de Google</button>':`<button type="button" class="textured-button" data-action="link-google">Vincular Google</button>`}${googleNotice==='linked'?'<p role="status">Tu cuenta de Google se ha vinculado.</p>':''}</div>`:''}
