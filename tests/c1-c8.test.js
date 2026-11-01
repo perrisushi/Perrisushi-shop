@@ -13,7 +13,7 @@ test('C1-C8 conserva los bloques y elimina solo los rótulos señalados',async()
  const main=await readFile('src/main.js','utf8');
  for(const term of ['ESTADO DE LA CUENTA','Tu perfil personal','Perrilogo de tu cuenta','Elige tu juego','<span>Jugar</span>','class="eyebrow"'])assert.ok(!main.includes(term),term);
  assert.match(main,/data-action="album"/);assert.match(main,/data-action="history"/);assert.match(main,/data-game-help/);assert.match(main,/class="game-launch"/);
- setPageData('users',{status:'ready',items:[{nick:'Real',pc:8,logoId:'buho-1',achievements:['Logro']}]});
+ setPageData('users',{status:'ready',items:[{nick:'Real',pc:8,logoId:'buho-1',achievements:['Logro'],selectedTitleId:'Logro'}]});
  setPageData('inventory',{status:'ready',inventory:{pc:2,monedas:3,pechera_sushi:4}});
  setPageData('shop',{status:'ready',randomKey:{inventoryRandomKey:1,tickets:{items:[]},claims:{items:[]}},raffles:{tickets:{boleto_sorteo1:0,boleto_sorteo2:2,mini_sorteo:0},operationsEnabled:true,policy:{price:3500,max:3}}});
  setPageData('raffles',{status:'ready',raffles:{tickets:{boleto_sorteo1:0,boleto_sorteo2:2,mini_sorteo:0},operationsEnabled:true,policy:{price:3500,max:3}}});
