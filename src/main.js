@@ -1,9 +1,11 @@
+import {initializeGlobalScale,designRect,designHeight,desktopScaleActive} from './global-scale.js';
 import {createNotificationCenter,mergeNotifications,notificationCard} from './services/notifications.js';
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createGameWindow,mobileGameView} from './game-window.js';
 import {createApiClient,oauthCallbackPath} from './services/api-client.js';
 import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,renderLiveRaffles,renderSelectedAchievement,renderProfileAchievements} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
+initializeGlobalScale();
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
 let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='';
@@ -137,10 +139,10 @@ function fitInteriorPanel(){
  const scene=stage.closest('.scene'),board=stage.querySelector('.content-board');
  const active=Boolean(board&&!board.querySelector('.pw04-inventory')&&!stage.classList.contains('show-home'));
  stage.classList.toggle('interior-layout',active);if(!active)return;
- const r=scene.getBoundingClientRect(),gap=12;
- const header=scene.querySelector('.topbar').getBoundingClientRect();
+ const r=designRect(scene),gap=12;
+ const header=designRect(scene.querySelector('.topbar'));
  const social=[...scene.querySelectorAll('.social-preview')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
- const bottom=social.length?Math.min(...social.map(el=>el.getBoundingClientRect().top)):r.bottom-24;
+ const bottom=social.length?Math.min(...social.map(el=>designRect(el).top)):r.bottom-24;
  stage.style.setProperty('--panel-top',Math.max(0,header.bottom-r.top-scene.clientTop+gap)+'px');
  stage.style.setProperty('--panel-bottom',Math.max(24,r.bottom-bottom-scene.clientTop+gap)+'px');
 }
@@ -163,10 +165,10 @@ function fitInventoryGrid(){
   const hostCss=style(stage),hostWidth=stage.clientWidth-value(hostCss,'padding-left')-value(hostCss,'padding-right'),hostHeight=stage.clientHeight-value(hostCss,'padding-top')-value(hostCss,'padding-bottom');
   const maxWidth=Math.min(hostWidth,value(boardCss,'--inventory-panel-max')||900),insetX=horizontal(boardCss)+horizontal(scrollCss)+horizontal(style(panel))+horizontal(mainCss);
   const availableWidth=Math.max(1,maxWidth-insetX),capacity=availableWidth<300?3:availableWidth<400?4:6,count=grid.children.length,columns=Math.min(count||1,capacity);
-  grid.style.setProperty('--inventory-columns',String(columns));grid.style.setProperty('--inventory-gap',innerHeight<=360?'6px':capacity<6?'6px':'8px');grid.style.setProperty('--inventory-pad',innerHeight<=360?'6px':capacity<6?'8px':'12px');
+  grid.style.setProperty('--inventory-columns',String(columns));grid.style.setProperty('--inventory-gap',designHeight()<=360?'6px':capacity<6?'6px':'8px');grid.style.setProperty('--inventory-pad',designHeight()<=360?'6px':capacity<6?'8px':'12px');
   const css=style(grid),gap=value(css,'column-gap'),borderX=value(css,'border-left-width')+value(css,'border-right-width'),padX=horizontal(css),padY=vertical(css);
-  const gutter=Math.max(0,grid.offsetWidth-grid.clientWidth-borderX),ideal=(availableWidth-padX-gutter-(capacity-1)*gap)/capacity;
-  const childrenWidth=e=>[...e.children].reduce((sum,child)=>sum+child.getBoundingClientRect().width,0);
+  const gutter=desktopScaleActive()?16:Math.max(0,grid.offsetWidth-grid.clientWidth-borderX),ideal=(availableWidth-padX-gutter-(capacity-1)*gap)/capacity;
+  const childrenWidth=e=>[...e.children].reduce((sum,child)=>sum+designRect(child).width,0);
   const headerNeed=childrenWidth(header)+Math.max(0,header.children.length-1)*value(headerCss,'column-gap')+horizontal(headerCss)+horizontal(boardCss);
   const balanceNeed=childrenWidth(balances)+Math.max(0,balances.children.length-1)*value(balanceCss,'column-gap')+insetX;
   const minWidth=Math.min(maxWidth,Math.max(headerNeed,balanceNeed,260));
@@ -174,13 +176,14 @@ function fitInventoryGrid(){
   const preferredGridWidth=columns*Math.max(1,ideal)+(columns-1)*gap+padX+gutter;
   board.style.width=Math.min(maxWidth,Math.max(minWidth,preferredGridWidth+insetX))+'px';
   if(!count){grid.style.removeProperty('width');grid.style.removeProperty('height');return}
-  const outside=[...panel.children].filter(e=>e!==main&&!e.hidden).reduce((sum,e)=>{const c=style(e);return sum+e.getBoundingClientRect().height+value(c,'margin-top')+value(c,'margin-bottom')},0);
-  const height=hostHeight-vertical(boardCss)-header.getBoundingClientRect().height-vertical(scrollCss)-vertical(style(panel))-outside-vertical(mainCss)-padY;
+  const outside=[...panel.children].filter(e=>e!==main&&!e.hidden).reduce((sum,e)=>{const c=style(e);return sum+designRect(e).height+value(c,'margin-top')+value(c,'margin-bottom')},0);
+  const height=hostHeight-vertical(boardCss)-designRect(header).height-vertical(scrollCss)-vertical(style(panel))-outside-vertical(mainCss)-padY;
   if(height<=0||ideal<=0)return;
   const actualRows=Math.ceil(count/columns),visibleRows=Math.min(actualRows,Math.max(1,Math.ceil((height+gap)/(ideal+gap))));
   const cell=Math.floor(Math.max(1,Math.min(ideal,(height-(visibleRows-1)*gap)/visibleRows))*64)/64;
   const gridWidth=columns*cell+(columns-1)*gap+padX+gutter;
   board.style.width=Math.min(maxWidth,Math.max(minWidth,gridWidth+insetX))+'px';
+  grid.style.setProperty('--inventory-cell',cell+'px');
   grid.style.width=gridWidth+'px';grid.style.height=(visibleRows*cell+(visibleRows-1)*gap+padY)+'px';
  };
  inventoryObserver=new ResizeObserver(fit);inventoryObserver.observe(stage);fit();
@@ -486,7 +489,7 @@ function fitNotificationPanel(){
  if(!['notifications','notification-history'].includes(modalKind)||remoteStates[modalKind]?.status!=='ready')return;
  const card=overlay.querySelector('.modal-card');if(!card)return;const list=card.querySelector('.notification-list'),scroll=list?.scrollTop??0;
  card.classList.remove('notification-cards-ready');card.style.height='';
- card.style.height=card.getBoundingClientRect().height+'px';card.classList.add('notification-cards-ready');if(list){list.scrollTop=scroll;list.tabIndex=list.scrollHeight>list.clientHeight+1?0:-1;}
+ card.style.height=designRect(card).height+'px';card.classList.add('notification-cards-ready');if(list){list.scrollTop=scroll;list.tabIndex=list.scrollHeight>list.clientHeight+1?0:-1;}
 }
 window.addEventListener('resize',()=>{fitNotificationPanel();if(modalKind==='notifications')scheduleNotificationRead()});
 function paintRemote(kind){if(modalKind!==kind)return;const card=overlay.querySelector('.modal-card'),scroll=card.querySelector('.notification-list')?.scrollTop??card.scrollTop;card.classList.remove('notification-cards-ready');card.style.height='';card.innerHTML=modalMarkup(kind);fitNotificationPanel();card.querySelector('.modal-close').focus({preventScroll:true});const list=card.querySelector('.notification-list');if(list)list.scrollTop=scroll;else card.scrollTop=scroll;if(kind==='notifications')observeNotificationCards()}

@@ -11,13 +11,16 @@
   <link rel="icon" href="./public/assets/logo-perrisushi.webp" type="image/webp" />
   <link rel="preload" href="./public/assets/fondo-menu-web-pc.webp" as="image" media="(min-width: 701px)" />
   <link rel="preload" href="./public/assets/fondo-menu-web-movil.webp" as="image" media="(max-width: 700px)" />
-  <link rel="stylesheet" href="./src/styles.css" />
-  <link rel="stylesheet" href="./src/desktop-layout-fix.css" />
-  <link rel="stylesheet" href="./src/preview-pages.css" />
-  <link rel="stylesheet" href="./src/game-window.css" />
+  <link rel="stylesheet" href="./src/styles.css" data-layout="responsive" />
+  <link rel="stylesheet" href="./src/desktop-layout-fix.css" data-layout="responsive" />
+  <link rel="stylesheet" href="./src/preview-pages.css" data-layout="responsive" />
+  <link rel="stylesheet" href="./src/game-window.css" data-layout="responsive" />
+  <link rel="stylesheet" href="./src/fixed-layout.css" data-layout="fixed" media="not all" />
+  <link rel="stylesheet" href="./src/global-scale.css" />
   <script type="module" src="./src/main.js"></script>
 </head>
 <body data-access="checking">
+  <div id="design-viewport">
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <div class="app-frame">
     <div class="scene" id="app">
@@ -48,6 +51,7 @@
       <div class="overlay-layer" id="overlay-layer" hidden></div>
       <audio id="background-music" src="./public/assets/musica-web.mp3" preload="none" loop></audio>
     </div>
+  </div>
   </div>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Solo ciclo de presentación. No consulta ni modifica datos del juego.
-export const mobileGameView=(win=window)=>win.matchMedia('(pointer: coarse) and (max-width: 1100px)').matches||win.navigator.userAgentData?.mobile===true||/Android|iPhone|iPad/i.test(win.navigator.userAgent);
+export const mobileGameView=(win=window)=>win.document?.documentElement?.dataset.globalScale==='true'?false:win.matchMedia('(pointer: coarse) and (max-width: 1100px)').matches||win.navigator.userAgentData?.mobile===true||/Android|iPhone|iPad/i.test(win.navigator.userAgent);
 export function createGameWindow({overlay,doc=document,win=window}){
  let card=null,mobile=false,marker=null,closing=null,wasFullscreen=false,lastExit=-Infinity,epoch=0;
  const fullscreen=()=>doc.fullscreenElement===card&&card!==null;
