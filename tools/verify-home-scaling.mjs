@@ -44,7 +44,7 @@ try {
   assert.deepEqual(after.geometry,before.geometry,`Geometría ${touch?'móvil original':'PC aprobado'} ${width}x${height}`);
   assert.ok(after.shot.equals(before.shot),`Captura distinta: ${width}x${height}`);
   const g=after.geometry,b=g.board;
-  assert.equal(g.buttons.length,5);assert.equal(g.overflow,false);
+  assert.equal(g.buttons.length,6);assert.equal(g.overflow,false);
   for(const r of [b,...g.buttons,...g.social])assert.ok(r.x>=-1&&r.y>=-1&&r.x+r.w<=width+1&&r.y+r.h<=height+1,JSON.stringify({width,height,r}));
   if(!touch) {
    assert.ok(Math.abs(b.w/b.h-4/3)<.002);
@@ -63,5 +63,5 @@ try {
  }
  assert.deepEqual(errors,[]);
  await writeFile(output+'/geometry.json',JSON.stringify(results,null,2));
- console.log(`${results.length} resoluciones: móvil idéntico al historial y PC intacto; sin desbordamientos ni errores JS. Capturas: ${output}`);
+ console.log(`${results.length} resoluciones: seis accesos, escalado PC conservado y móvil sin desbordamientos; sin desbordamientos ni errores JS. Capturas: ${output}`);
 } finally {await browser?.close();await new Promise(r=>server.close(r))}

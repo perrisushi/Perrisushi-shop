@@ -2,7 +2,7 @@ import {createNotificationCenter,mergeNotifications,notificationCard} from './se
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createGameWindow,mobileGameView} from './game-window.js';
 import {createApiClient,oauthCallbackPath} from './services/api-client.js';
-import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,bindPageEvents} from './services/live-ui.js';
+import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,renderLiveRaffles} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
@@ -81,9 +81,9 @@ async function toggleMusic() {
 const menuToggle = document.querySelector('.nav-toggle');
 let lastFocus = null;
 
-const imageButton = (image, route, label) => `
+const imageButton = (image, route, label, extension = 'webp') => `
   <button class="art-menu-button" type="button" data-route="${route}" aria-label="${label}">
-    <img src="${ASSETS}${image}.webp" alt="" draggable="false" />
+    <img src="${ASSETS}${image}.${extension}" alt="" draggable="false" />
     <span class="sr-only">${label}</span>
   </button>`;
 
@@ -95,6 +95,7 @@ function homeView() {
         ${imageButton('boton-inventario','inventory','Inventario')}
         ${imageButton('boton-minijuegos','games','Minijuegos')}
         ${imageButton('boton-tienda','shop','Tienda')}
+        ${imageButton('boton-sorteo','raffles','Sorteo','png')}
       </div>
   </section>`;
 }
@@ -184,7 +185,19 @@ function shopView() {
   return shellView('shop', renderLiveShop());
 }
 
-const views = {home:homeView,profile:profileView,users:usersView,inventory:inventoryView,games:gamesView,shop:shopView};
+function rafflesView() {return `<section class="content-board raffle-board" aria-label="Sorteos">
+ <header class="content-header"><button type="button" class="back-button" data-route="home" aria-label="Volver al inicio"><img src="${ASSETS}boton-atras.webp" alt="" /></button><h1>Sorteos</h1>
+ <div class="raffle-tabs" role="tablist" aria-label="Sorteos">
+ <button type="button" role="tab" id="raffle-buy-tab" aria-controls="raffle-buy-panel" aria-selected="true" data-raffle-tab="buy">COMPRAR</button>
+ <button type="button" role="tab" id="raffle-room-tab" aria-controls="raffle-room-panel" aria-selected="false" tabindex="-1" data-raffle-tab="room">SALA SORTEO</button>
+ </div></header><div class="content-scroll">${renderLiveRaffles()}</div></section>`}
+function selectRaffleTab(value,focus=false){
+ const board=stage.querySelector('.raffle-board');if(!board||!['buy','room'].includes(value))return;
+ board.querySelectorAll('[data-raffle-tab]').forEach(tab=>{const selected=tab.dataset.raffleTab===value;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;if(selected&&focus)tab.focus()});
+ board.querySelectorAll('[data-raffle-panel]').forEach(panel=>panel.hidden=panel.dataset.rafflePanel!==value);
+}
+
+const views = {home:homeView,profile:profileView,users:usersView,inventory:inventoryView,games:gamesView,shop:shopView,raffles:rafflesView};
 
 function closeMenu() {
   sessionOptions.hidden = true;
@@ -353,6 +366,7 @@ menuToggle.addEventListener('click', () => {
   menuToggle.setAttribute('aria-expanded',String(!sessionOptions.hidden));
 });
 document.addEventListener('click', e => {
+  const raffleTab=e.target.closest('[data-raffle-tab]');if(raffleTab){selectRaffleTab(raffleTab.dataset.raffleTab);return}
   const help=e.target.closest('[data-game-help]')?.dataset.gameHelp;if(help&&Object.hasOwn(gameDescriptions,help)){openModal('game-help:'+help);return}
   const game=e.target.closest('[data-game]')?.dataset.game;if(game&&Object.hasOwn(gameRoutes,game)){void launchOriginalGame(game);return}
   const economic=e.target.closest('[data-economy]');if(economic&&!economic.disabled){void runEconomicOperation(economic.dataset.economy,economic);return}
@@ -386,6 +400,7 @@ document.addEventListener('click', e => {
   else if (!e.target.closest('#session-options,.nav-toggle')) closeMenu();
 });
 document.addEventListener('keydown', e => {
+  const raffleTab=e.target.closest('[data-raffle-tab]');if(raffleTab&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();selectRaffleTab(e.key==='Home'?'buy':e.key==='End'?'room':raffleTab.dataset.raffleTab==='buy'?'room':'buy',true);return}
   if (e.key === 'Escape') {if(modalKind?.startsWith('game:')&&(gameWindow.isFullscreen()||gameWindow.recentlyExited())){if(gameWindow.isFullscreen())void gameWindow.toggle();return}if(!overlay.hidden) closeModal();else if (!sessionOptions.hidden) { closeMenu(); menuToggle.focus(); }}
   if (e.key === 'Tab' && !overlay.hidden) {
     const focusables = [...overlay.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href],.notification-list[tabindex="0"]')].filter(el => el.getClientRects().length);
@@ -398,7 +413,6 @@ document.addEventListener('keydown', e => {
 window.addEventListener('hashchange',render);
 window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.clearCache();if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
 window.addEventListener('pageshow',event=>{if(event.persisted)void initializeGoogleAccess()});
-bindPageEvents();
 renderMusicOption();
 overlay.innerHTML='<section class="modal-card" role="status">Comprobando sesión…</section>';overlay.hidden=false;
 void initializeGoogleAccess();
@@ -415,7 +429,7 @@ function resetPrivateState(){
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
   session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
-  for(const kind of ['users','inventory','shop'])setPageData(kind,{status:'signedOut'});
+  for(const kind of ['users','inventory','shop','raffles'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
   setAuthenticatedProfile(null);
   document.body.dataset.access='locked';stage.replaceChildren();
@@ -439,14 +453,14 @@ async function bootstrapSession(authenticated=null){
 }
 async function loadCurrentRoute(route){
  const sequence=++routeEpoch,generation=sessionEpoch;
- if(!['profile','users','inventory','shop'].includes(route))return;
+ if(!['profile','users','inventory','shop','raffles'].includes(route))return;
  if(!session){if(route!=='profile')setPageData(route,sessionState.status!=='ready'?sessionState:{status:'signedOut'});paintStage();return}
  if(route!=='profile')setPageData(route,{status:'loading'});paintStage();
  try{
-  const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():await Promise.all([api.listRandomKeys(),api.listRaffles()]);
+  const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await api.listRandomKeys():await api.listRaffles();
   if(sequence!==routeEpoch||generation!==sessionEpoch)return;
   if(route==='profile'){profileState={status:'ready',...result};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId??result.profile?.selectedLogoId})}
-  else setPageData(route,{status:'ready',...(route==='shop'?{randomKey:result[0],raffles:result[1]}:result)});
+  else setPageData(route,{status:'ready',...(route==='shop'?{randomKey:result}:route==='raffles'?{raffles:result}:result)});
  }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
@@ -504,8 +518,8 @@ async function runEconomicOperation(kind,button){
  const generation=sessionEpoch,operation=economicOperations.get(kind)??{id:/^[a-f0-9-]{36}$/i.test(saved??'')?saved:crypto.randomUUID()};try{sessionStorage.setItem(storageKey,operation.id)}catch{}operation.busy=true;economicOperations.set(kind,operation);button.disabled=true;
  try{
   const result=await (kind==='redeem'?api.redeemRandomKey(operation.id):api.buyRaffleTicket({raffleId:'boletoSorteo2',idempotencyKey:operation.id}));
-  if(generation!==sessionEpoch)return;economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}economicReceipt=result;await loadCurrentRoute('shop');openModal('receipt');
- }catch(error){if(generation===sessionEpoch){operation.busy=false;if(error.code==='operation_conflict'){try{const receipt=await api.getReceipt(operation.id);if(generation!==sessionEpoch)return;if(receipt.kind===(kind==='redeem'?'random-redeem':'raffle-buy')){economicReceipt=receipt;economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}await loadCurrentRoute('shop');openModal('receipt');return}}catch{}button.textContent='Revisa la operación anterior en el historial antes de continuar.';button.disabled=true;return}if(['invalid_request','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','operation_disabled'].includes(error.code)){economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}}errorState(error);button.textContent=message({error:error.code})+' Pulsa para reintentar.';button.disabled=false}}
+  if(generation!==sessionEpoch)return;economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}economicReceipt=result;await loadCurrentRoute(kind==='redeem'?'shop':'raffles');openModal('receipt');
+ }catch(error){if(generation===sessionEpoch){operation.busy=false;if(error.code==='operation_conflict'){try{const receipt=await api.getReceipt(operation.id);if(generation!==sessionEpoch)return;if(receipt.kind===(kind==='redeem'?'random-redeem':'raffle-buy')){economicReceipt=receipt;economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}await loadCurrentRoute(kind==='redeem'?'shop':'raffles');openModal('receipt');return}}catch{}button.textContent='Revisa la operación anterior en el historial antes de continuar.';button.disabled=true;return}if(['invalid_request','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','operation_disabled'].includes(error.code)){economicOperations.delete(kind);try{sessionStorage.removeItem(storageKey)}catch{}}errorState(error);button.textContent=message({error:error.code})+' Pulsa para reintentar.';button.disabled=false}}
 }
 async function launchOriginalGame(name){
  if(!session){openModal('auth');return}if(openingGame)return;openingGame=true;const generation=sessionEpoch,attempt=++gameLaunchEpoch,immersive=mobileGameView(),button=stage.querySelector(`[data-game="${name}"]`);if(button){button.disabled=true;button.setAttribute('aria-busy','true')}

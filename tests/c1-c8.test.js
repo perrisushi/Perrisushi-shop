@@ -6,7 +6,7 @@ import {PGlite} from '@electric-sql/pglite';
 import {createRepository} from '../backend/repository.mjs';
 import {createBackend} from '../backend/app.mjs';
 import {digest} from '../backend/security.mjs';
-import {renderLiveInventory,renderLiveUsers,renderLiveShop,setPageData} from '../src/services/live-ui.js';
+import {renderLiveInventory,renderLiveUsers,renderLiveShop,renderLiveRaffles,setPageData} from '../src/services/live-ui.js';
 import {itemDetails,itemCatalog,gameDescriptions} from '../src/services/help-content.js';
 
 test('C1-C8 conserva los bloques y elimina solo los rótulos señalados',async()=>{
@@ -16,12 +16,13 @@ test('C1-C8 conserva los bloques y elimina solo los rótulos señalados',async()
  setPageData('users',{status:'ready',items:[{nick:'Real',pc:8,logoId:'buho-1',achievements:['Logro']}]});
  setPageData('inventory',{status:'ready',inventory:{pc:2,monedas:3,pechera_sushi:4}});
  setPageData('shop',{status:'ready',randomKey:{inventoryRandomKey:1,tickets:{items:[]},claims:{items:[]}},raffles:{tickets:{boleto_sorteo1:0,boleto_sorteo2:2,mini_sorteo:0},operationsEnabled:true,policy:{price:3500,max:3}}});
- const users=renderLiveUsers(),inventory=renderLiveInventory(),shop=renderLiveShop();
+ setPageData('raffles',{status:'ready',raffles:{tickets:{boleto_sorteo1:0,boleto_sorteo2:2,mini_sorteo:0},operationsEnabled:true,policy:{price:3500,max:3}}});
+ const users=renderLiveUsers(),inventory=renderLiveInventory(),shop=renderLiveShop(),raffles=renderLiveRaffles();
  assert.ok(!users.includes('SALA DE USUARIOS'));assert.ok(users.includes('Logro'));
  for(const text of ['MI INVENTARIO','Mis objetos','Selecciona un objeto','pw04-item-info'])assert.ok(!inventory.includes(text));
  assert.ok(inventory.includes('data-live-item="pechera_sushi"'));assert.ok(inventory.includes('>4</span>'));
  assert.ok(!shop.includes('TIENDA DE PERRISUSHI'));assert.ok(!shop.includes('<h2>Tienda'));assert.ok(!shop.includes('Se muestran el estado'));
- assert.ok(shop.includes('Boleto de Sorteo 2: 2'));assert.ok(!shop.includes('Boleto de Sorteo 1:'));assert.ok(!shop.includes('MiniSorteo:'));assert.ok(shop.includes('Comprar boleto'));
+ assert.match(raffles,/Boleto de Sorteo 2/);assert.match(raffles,/<strong>2<\/strong>/);assert.ok(!raffles.includes('Boleto de Sorteo 1'));assert.ok(!raffles.includes('MiniSorteo'));assert.ok(raffles.includes('Comprar boleto'));assert.ok(!shop.includes('Comprar boleto'));
 });
 
 test('descripciones verificadas no se inventan para objetos desconocidos',async()=>{

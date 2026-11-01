@@ -432,3 +432,46 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 /* Estado vacío: sin relleno adicional que provoque un desbordamiento artificial. */
 .notification-cards-ready .notification-list:has(> .notification-empty:only-child) {display:block;padding:0}
 .notification-cards-ready .notification-empty {margin:12px 0 0}
+/* Sexto acceso: ocupa la casilla libre del tablero de PC. */
+.art-menu-button[data-route="raffles"] img {aspect-ratio:1048/350;object-fit:contain}
+@media(max-width:700px) and (orientation:portrait) {
+ .home-menu .home-links {inset:25% 19% 6%;grid-template-rows:repeat(6,minmax(0,1fr))}
+ .home-menu .home-links .art-menu-button {height:100%;width:auto;max-width:100%;max-height:100%;aspect-ratio:1048/350}
+ .home-menu .home-links .art-menu-button img {width:100%;height:100%;max-height:none;object-fit:contain}
+}
+.raffles-summary {display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.raffles-summary > img {width:60px;height:60px;object-fit:contain;flex:none}
+.raffles-tickets {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:12px 0 22px}
+.raffles-tickets article {padding:16px;border:1px solid #aa7946;border-radius:9px;background:#fff1cf65;box-shadow:inset 0 0 0 2px #f6d9a660}
+.raffles-tickets article h3 {font-size:16px!important}
+.raffles-tickets article strong {display:block;margin-top:12px;font-size:26px;color:#68401f}
+.raffles-purchase {padding-top:18px;border-top:2px double #ad7d4b}
+.raffles-purchase button {min-height:44px}
+
+/* Sorteos: una ventana, dos pestañas sobre su borde superior. */
+.raffle-board {border-radius:3px;border-color:#57301b;box-shadow:0 0 0 2px #b38a49,inset 0 0 0 2px #c49a57,0 12px 35px #0009}
+.raffle-board .content-header {gap:12px;min-height:90px;align-items:center;border-bottom:2px solid #9b713e;background:repeating-linear-gradient(0deg,#ffffff03 0 2px,transparent 2px 7px),linear-gradient(#4c2b1d,#2e1a13);padding-bottom:0}
+.raffle-board .content-header h1 {font-size:clamp(22px,2.5vw,32px);align-self:center}
+.raffle-tabs {display:flex;gap:5px;margin-left:auto;align-self:end;position:relative;bottom:-2px}
+.raffle-tabs button {min-height:46px;padding:12px 20px;border:2px solid #9b713e;border-radius:2px 2px 0 0;background:linear-gradient(#51301f,#322016);color:#e4c18a;font:700 14px/1.2 Georgia,serif;cursor:pointer;white-space:nowrap;box-shadow:inset 0 0 0 2px #26170f}
+.raffle-tabs button[aria-selected="true"] {background:#e5be8b;color:#4c2c18;border-bottom-color:#e5be8b;box-shadow:inset 0 2px #f9dfae}
+.raffle-tabs button:focus-visible {outline:2px solid #ffe4a0;outline-offset:-5px}
+.raffle-board .content-scroll {background:#e5be8b;padding:24px!important}
+.raffle-board [data-raffle-panel][hidden] {display:none}
+.raffle-board .pw04-raffles {min-height:100%}
+.raffle-board .raffles-summary {margin-bottom:12px}
+.raffle-board .raffles-tickets article {border-radius:2px;box-shadow:none;background:#edcfa245}
+.raffle-board .raffles-tickets {grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px}
+@media(max-width:700px) {
+ .raffle-board .content-header {flex-wrap:wrap;gap:6px;padding:8px 10px 0;min-height:96px}
+ .raffle-board .content-header h1 {font-size:24px}
+ .raffle-tabs {flex-basis:100%;justify-content:flex-end}
+ .raffle-tabs button {min-height:42px;padding:10px 12px;font-size:12px}
+ .raffle-board .content-scroll {padding:16px!important}
+}
+.raffle-board #raffle-room-panel {min-height:clamp(180px,35vh,360px)}
+
+/* Sorteos en PC: ocultar los enlaces sociales sin variar la geometría. */
+@media (min-width:701px) and (min-height:501px), (min-width:701px) and (pointer:fine) {
+ .scene:has(.raffle-board) .footer-social {visibility:hidden;pointer-events:none}
+}

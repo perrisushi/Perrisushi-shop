@@ -6,7 +6,7 @@ const files=['index.html','privacidad.html','_redirects','_headers','src/main.js
 const {readFile}=await import('node:fs/promises');
 files.push('src/game-window.js','src/game-window.css','src/game-presentation.js','src/game-presentation.css');
 files.push(...JSON.parse(await readFile(resolve(root,'games/manifest.json'),'utf8')).files.map(f=>f.path));
-for(const name of await readdir(resolve(root,'public/assets')))if(/^[\w-]+\.(webp|mp3)$/.test(name))files.push('public/assets/'+name);
+for(const name of await readdir(resolve(root,'public/assets')))if(/^[\w-]+\.(webp|mp3|png)$/.test(name))files.push('public/assets/'+name);
 // Nunca publicar archivos antiguos o ajenos que hayan quedado en dist.
 try{for(const entry of await readdir(resolve(root,'dist'),{recursive:true,withFileTypes:true}))if(entry.isFile()){
  const name=resolve(entry.parentPath,entry.name).slice(resolve(root,'dist').length+1).replaceAll('\\','/');
