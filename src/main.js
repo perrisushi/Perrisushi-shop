@@ -122,13 +122,29 @@ function profileView() {
     <div class="profile-portrait">${avatarMarkup(selectedAvatar)}${renderSelectedAchievement(profileState.profile)}</div>
     <div class="profile-details"><h2>${escapeText(session?.nick)}</h2>
       ${profileState.status==='ready'?'':stateNotice(profileState)}
-      <div class="info-strip"><span>PC · Gemas</span><strong>${escapeText(profileState.balances?.pc??'—')} · ${escapeText(profileState.balances?.gemas??'—')}</strong></div>${renderProfileAchievements(profileState.profile)}
+      <div class="info-strip profile-wallet"><span><span class="wallet-pc-label">PC</span><span class="wallet-separator"> · </span><span class="wallet-gems-label">Gemas</span></span><strong><span class="wallet-pc-value">${escapeText(profileState.balances?.pc??'—')}</span><span class="wallet-separator"> · </span><span class="wallet-gems-value">${escapeText(profileState.balances?.gemas??'—')}</span></strong></div>${renderProfileAchievements(profileState.profile)}
       <div class="info-strip"><span>Karma</span><strong>${escapeText(profileState.profile?.karma??'—')}</strong></div>
       <div class="profile-actions"><button class="textured-button history-button" type="button" data-action="history" aria-label="Historial" title="Historial"><span aria-hidden="true">⌛</span></button><button class="textured-button history-button" type="button" data-action="notification-history" aria-label="Historial de notificaciones" title="Historial de notificaciones"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></button><button class="textured-button" type="button" data-action="album">Cambiar Perrilogos</button></div>
-      ${googleConfig.enabled?`<div class="google-profile">${googleLinked===true?'<p>Google vinculado</p>':googleLinked===null?'<button type="button" class="textured-button" data-action="google-status">Comprobar vinculación de Google</button>':`<button type="button" class="textured-button" data-action="link-google">Vincular Google</button>`}${googleNotice==='linked'?'<p role="status">Tu cuenta de Google se ha vinculado.</p>':''}</div>`:''}
+      ${googleConfig.enabled?`<div class="google-profile">${googleLinked===true?'<p class="google-linked-status">Google vinculado</p>':googleLinked===null?'<button type="button" class="textured-button" data-action="google-status">Comprobar vinculación de Google</button>':`<button type="button" class="textured-button" data-action="link-google">Vincular Google</button>`}${googleNotice==='linked'?'<p role="status">Tu cuenta de Google se ha vinculado.</p>':''}</div>`:''}
     </div>
   </div>`);
 }
+
+// Solo presentación: reubicar los mismos nodos, sin duplicar datos ni controles.
+function fitMobileProfile(){
+ const grid=stage.querySelector('.profile-grid');if(!grid)return;
+ const portrait=grid.querySelector('.profile-portrait'),details=grid.querySelector('.profile-details');
+ let info=portrait.querySelector('.profile-mobile-info');
+ if(matchMedia('(max-width:767px)').matches&&!desktopScaleActive()){
+  if(!info){info=document.createElement('div');info.className='profile-mobile-info';portrait.append(info)}
+  const name=details.querySelector('h2'),title=portrait.querySelector(':scope > .profile-selected-title');
+  if(name)info.prepend(name);if(title)info.append(title);
+ }else if(info){
+  const name=info.querySelector('h2'),title=info.querySelector('.profile-selected-title');
+  if(name)details.prepend(name);if(title)portrait.append(title);info.remove();
+ }
+}
+window.addEventListener('resize',fitMobileProfile);
 
 function usersView() {
   return shellView('users', renderLiveUsers());
@@ -443,7 +459,7 @@ function showLogin(error){
  const status=overlay.querySelector('#login-status');status.textContent=error?message({error}):sessionState.status==='error'?message(sessionState):googleErrorNotice();
  document.title='Entrar | Perrisushi World';
 }
-function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitInteriorPanel();fitInventoryGrid()}
+function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitMobileProfile();fitInteriorPanel();fitInventoryGrid()}
 function resetPrivateState(){
   notificationCenter.stop();notificationObserver?.disconnect();clearTimeout(notificationReadTimer);notificationModalEpoch++;
   inventoryObserver?.disconnect();inventoryObserver=null;

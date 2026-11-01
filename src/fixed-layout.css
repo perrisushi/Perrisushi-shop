@@ -525,6 +525,69 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
  .interior-layout .google-profile p {margin:0;font-size:14px;line-height:1.4}
 }
 
+/* Perfil y Sorteos: composición móvil; el lienzo fijo de PC conserva sus reglas. */
+@container global-design (max-width:767px) {
+ html:not([data-global-scale="true"]) .stage-content.interior-layout:has(.profile-grid),
+ html:not([data-global-scale="true"]) .stage-content.interior-layout:has(.raffle-board) {place-items:start center;inset-inline:10px}
+ html:not([data-global-scale="true"]) .stage-content.interior-layout:has(.raffle-board) {top:calc(var(--panel-top) + 6px)}
+ html:not([data-global-scale="true"]) .interior-layout .content-board:has(.profile-grid),
+ html:not([data-global-scale="true"]) .interior-layout .raffle-board {align-self:start;width:100%;max-width:540px}
+ html:not([data-global-scale="true"]) .interior-layout .content-board:has(.profile-grid) .content-header,
+ html:not([data-global-scale="true"]) .interior-layout .raffle-board .content-header {min-height:0;padding:12px 14px;gap:11px;align-items:center}
+ html:not([data-global-scale="true"]) .content-board:has(.profile-grid) .back-button,
+ html:not([data-global-scale="true"]) .raffle-board .back-button {width:44px;height:44px;min-width:44px;flex:none}
+ html:not([data-global-scale="true"]) .content-board:has(.profile-grid) .content-header h1,
+ html:not([data-global-scale="true"]) .raffle-board .content-header h1 {font-size:25px;margin:0;line-height:1.2}
+ html:not([data-global-scale="true"]) .interior-layout .content-board:has(.profile-grid) .content-scroll {padding:12px}
+ html:not([data-global-scale="true"]) .profile-grid {grid-template-columns:minmax(0,1fr);gap:12px}
+ html:not([data-global-scale="true"]) .interior-layout .profile-portrait {display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;width:100%;padding:12px;min-width:0}
+ html:not([data-global-scale="true"]) .interior-layout .profile-portrait .perrilogo-preview {width:76px;height:76px;flex:none}
+ html:not([data-global-scale="true"]) .profile-mobile-info {min-width:0;flex:1}
+ html:not([data-global-scale="true"]) .profile-mobile-info h2 {font-size:21px;line-height:1.2;margin:0;overflow-wrap:anywhere}
+ html:not([data-global-scale="true"]) .profile-portrait .profile-selected-title {font-size:14px;line-height:1.4;text-align:left;margin:6px 0 0;width:auto;overflow-wrap:anywhere}
+ html:not([data-global-scale="true"]) .profile-details .profile-wallet {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;padding:10px 0}
+ html:not([data-global-scale="true"]) .profile-wallet > span,
+ html:not([data-global-scale="true"]) .profile-wallet > strong {display:contents}
+ html:not([data-global-scale="true"]) .profile-wallet .wallet-separator {display:none}
+ html:not([data-global-scale="true"]) .wallet-pc-label {grid-area:1/1;font-size:13px}
+ html:not([data-global-scale="true"]) .wallet-gems-label {grid-area:1/2;font-size:13px}
+ html:not([data-global-scale="true"]) .wallet-pc-value {grid-area:2/1;font-size:18px;overflow-wrap:anywhere}
+ html:not([data-global-scale="true"]) .wallet-gems-value {grid-area:2/2;font-size:18px;overflow-wrap:anywhere}
+ html:not([data-global-scale="true"]) .interior-layout .profile-achievements {margin:16px 0;padding-top:0;border-top:0}
+ html:not([data-global-scale="true"]) .profile-achievements h3 {font-size:22px;margin-bottom:10px}
+ html:not([data-global-scale="true"]) .profile-achievement {min-height:44px;padding:10px;gap:8px;flex-wrap:nowrap}
+ html:not([data-global-scale="true"]) .achievement-name {font-size:16px}
+ html:not([data-global-scale="true"]) .achievement-state {font-size:12px}
+ html:not([data-global-scale="true"]) .profile-details .info-strip:not(.profile-wallet) {padding:8px 0}
+ html:not([data-global-scale="true"]) .interior-layout .profile-actions {display:flex;flex-wrap:nowrap;gap:8px;margin-top:12px;align-items:stretch}
+ html:not([data-global-scale="true"]) .profile-actions .history-button {width:46px;min-width:46px;flex:0 0 46px}
+ html:not([data-global-scale="true"]) .profile-actions .textured-button {min-height:48px;margin:0;padding:8px;font-size:15px}
+ html:not([data-global-scale="true"]) .profile-actions [data-action="album"] {flex:1 1 0;min-width:0;overflow-wrap:anywhere}
+ html:not([data-global-scale="true"]) .interior-layout .google-profile {margin-top:12px}
+ html:not([data-global-scale="true"]) .google-profile p {font-size:14px;line-height:1.4}
+ html:not([data-global-scale="true"]) .google-linked-status::before {content:'✓ ';}
+ html:not([data-global-scale="true"]) .raffle-board .content-header {display:flex;flex-wrap:wrap;padding-bottom:0}
+ html:not([data-global-scale="true"]) .raffle-board .raffle-tabs {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:100%;flex-basis:100%;margin:0;min-width:0}
+ html:not([data-global-scale="true"]) .raffle-tabs button {width:100%;min-width:0;min-height:44px;padding:8px 6px;font-size:13px;white-space:normal}
+ html:not([data-global-scale="true"]) .raffle-board .content-scroll {padding:14px!important}
+ html:not([data-global-scale="true"]) .raffle-board .pw04-raffles {min-height:0}
+ html:not([data-global-scale="true"]) .raffle-board .raffles-summary {margin-bottom:10px}
+ html:not([data-global-scale="true"]) .raffle-board .raffles-tickets {grid-template-columns:minmax(0,1fr);gap:8px;margin:0 0 22px}
+ html:not([data-global-scale="true"]) .raffle-board .raffles-tickets article {display:flex;align-items:center;justify-content:space-between;min-height:56px;gap:12px;padding:12px}
+ html:not([data-global-scale="true"]) .raffle-board .raffles-tickets article h3 {font-size:18px!important;margin:0;min-width:0;overflow-wrap:anywhere}
+ html:not([data-global-scale="true"]) .raffle-board .raffles-tickets article strong {font-size:21px;flex:none;margin:0}
+ html:not([data-global-scale="true"]) .raffle-board .raffles-purchase {padding-top:0;margin-top:22px}
+ html:not([data-global-scale="true"]) .raffle-board .pw04-raffles h2 {font-size:22px!important;margin:0 0 9px!important}
+ html:not([data-global-scale="true"]) .raffle-board .pw04-raffles p {font-size:15px!important;line-height:1.4!important;overflow-wrap:anywhere}
+ html:not([data-global-scale="true"]) .raffle-board .raffles-purchase button {max-width:100%;white-space:normal}
+ html:not([data-global-scale="true"]) .raffle-board #raffle-room-panel {min-height:180px;min-width:0;overflow-wrap:anywhere}
+}
+@container global-design (max-width:340px) {
+ html:not([data-global-scale="true"]) .interior-layout .profile-actions {flex-wrap:wrap}
+ html:not([data-global-scale="true"]) .profile-actions [data-action="album"] {flex-basis:100%}
+}
+
+
 /* El tablero usa una sola composición. Sus medidas dependen del espacio
    disponible, nunca de cambios de filas, columnas o del tamaño de los botones. */
 @container global-design (min-width: 701px) and (min-height: 501px) {
