@@ -3,7 +3,7 @@ import {createNotificationCenter,mergeNotifications,notificationCard} from './se
 import { normalizeRoute, routeTitles } from './routes.js';
 import {createGameWindow,mobileGameView} from './game-window.js';
 import {createApiClient,oauthCallbackPath} from './services/api-client.js';
-import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,renderLiveRaffles,renderSelectedAchievement,renderProfileAchievements} from './services/live-ui.js';
+import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,renderLiveRaffles,shopSelection,renderSelectedAchievement,renderProfileAchievements} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 initializeGlobalScale();
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
@@ -228,6 +228,14 @@ function rafflesView() {return `<section class="content-board raffle-board" aria
  <button type="button" role="tab" id="raffle-buy-tab" aria-controls="raffle-buy-panel" aria-selected="true" data-raffle-tab="buy">COMPRAR</button>
  <button type="button" role="tab" id="raffle-room-tab" aria-controls="raffle-room-panel" aria-selected="false" tabindex="-1" data-raffle-tab="room">SALA SORTEO</button>
  </div></header><div class="content-scroll">${renderLiveRaffles()}</div></section>`}
+function selectStoreItem(group,value,focus=false){
+ const allowed=group==='tab'?['cosmetics','utility']:['logos','frames','accessory1','accessory2'];if(!allowed.includes(value))return;
+ shopSelection[group==='tab'?'tab':'category']=value;
+ const root=stage.querySelector('.perri-store');if(!root)return;
+ root.querySelectorAll(`[data-store-${group}]`).forEach(button=>{const active=button.dataset[group==='tab'?'storeTab':'storeCategory']===value;button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;if(active&&focus)button.focus({preventScroll:true})});
+ if(group==='tab')root.querySelectorAll('.store-panel').forEach(panel=>panel.hidden=panel.id!=='store-panel-'+value);
+ else root.querySelectorAll('[data-store-items]').forEach(panel=>panel.hidden=panel.dataset.storeItems!==value);
+}
 function selectRaffleTab(value,focus=false){
  const board=stage.querySelector('.raffle-board');if(!board||!['buy','room'].includes(value))return;
  board.querySelectorAll('[data-raffle-tab]').forEach(tab=>{const selected=tab.dataset.raffleTab===value;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;if(selected&&focus)tab.focus()});
@@ -403,6 +411,7 @@ menuToggle.addEventListener('click', () => {
   menuToggle.setAttribute('aria-expanded',String(!sessionOptions.hidden));
 });
 document.addEventListener('click', e => {
+  const store=e.target.closest('[data-store-tab],[data-store-category]');if(store){selectStoreItem(store.hasAttribute('data-store-tab')?'tab':'category',store.dataset.storeTab??store.dataset.storeCategory,true);return}
   const raffleTab=e.target.closest('[data-raffle-tab]');if(raffleTab){selectRaffleTab(raffleTab.dataset.raffleTab);return}
   const help=e.target.closest('[data-game-help]')?.dataset.gameHelp;if(help&&Object.hasOwn(gameDescriptions,help)){openModal('game-help:'+help);return}
   const game=e.target.closest('[data-game]')?.dataset.game;if(game&&Object.hasOwn(gameRoutes,game)){void launchOriginalGame(game);return}
@@ -437,6 +446,7 @@ document.addEventListener('click', e => {
   else if (!e.target.closest('#session-options,.nav-toggle')) closeMenu();
 });
 document.addEventListener('keydown', e => {
+  const store=e.target.closest('[data-store-tab],[data-store-category]');if(store&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const group=store.hasAttribute('data-store-tab')?'tab':'category',tabs=[...store.parentElement.querySelectorAll('[role=tab]')],current=tabs.indexOf(store),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(current+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;selectStoreItem(group,tabs[next].dataset.storeTab??tabs[next].dataset.storeCategory,true);return}
   const raffleTab=e.target.closest('[data-raffle-tab]');if(raffleTab&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();selectRaffleTab(e.key==='Home'?'buy':e.key==='End'?'room':raffleTab.dataset.raffleTab==='buy'?'room':'buy',true);return}
   if (e.key === 'Escape') {if(modalKind?.startsWith('game:')&&(gameWindow.isFullscreen()||gameWindow.recentlyExited())){if(gameWindow.isFullscreen())void gameWindow.toggle();return}if(!overlay.hidden) closeModal();else if (!sessionOptions.hidden) { closeMenu(); menuToggle.focus(); }}
   if (e.key === 'Tab' && !overlay.hidden) {
@@ -465,6 +475,7 @@ function resetPrivateState(){
   inventoryObserver?.disconnect();inventoryObserver=null;
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
+  shopSelection.tab='cosmetics';shopSelection.category='logos';
   session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
   for(const kind of ['users','inventory','shop','raffles'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
@@ -494,10 +505,10 @@ async function loadCurrentRoute(route){
  if(!session){if(route!=='profile')setPageData(route,sessionState.status!=='ready'?sessionState:{status:'signedOut'});paintStage();return}
  if(route!=='profile')setPageData(route,{status:'loading'});paintStage();
  try{
-  const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await api.listRandomKeys():await api.listRaffles();
+  const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await Promise.all([api.listRandomKeys(),api.getProfile()]):await api.listRaffles();
   if(sequence!==routeEpoch||generation!==sessionEpoch)return;
   if(route==='profile'){profileState={status:'ready',...result};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId??result.profile?.selectedLogoId})}
-  else setPageData(route,{status:'ready',...(route==='shop'?{randomKey:result}:route==='raffles'?{raffles:result}:result)});
+  else setPageData(route,{status:'ready',...(route==='shop'?{randomKey:result[0],balances:result[1].balances}:route==='raffles'?{raffles:result}:result)});
  }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
