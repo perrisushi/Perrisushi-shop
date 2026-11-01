@@ -132,6 +132,24 @@ function usersView() {
   return shellView('users', renderLiveUsers());
 }
 
+// El panel utiliza el hueco real entre cabecera y redes, sin modificar ninguno de ellos.
+function fitInteriorPanel(){
+ const scene=stage.closest('.scene'),board=stage.querySelector('.content-board');
+ const active=Boolean(board&&!board.querySelector('.pw04-inventory')&&!stage.classList.contains('show-home'));
+ stage.classList.toggle('interior-layout',active);if(!active)return;
+ const r=scene.getBoundingClientRect(),gap=12;
+ const header=scene.querySelector('.topbar').getBoundingClientRect();
+ const social=[...scene.querySelectorAll('.social-preview')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+ const bottom=social.length?Math.min(...social.map(el=>el.getBoundingClientRect().top)):r.bottom-24;
+ stage.style.setProperty('--panel-top',Math.max(0,header.bottom-r.top-scene.clientTop+gap)+'px');
+ stage.style.setProperty('--panel-bottom',Math.max(24,r.bottom-bottom-scene.clientTop+gap)+'px');
+}
+let panelFrame=0;
+function scheduleInteriorFit(){cancelAnimationFrame(panelFrame);panelFrame=requestAnimationFrame(fitInteriorPanel)}
+const panelSpaceObserver=new ResizeObserver(scheduleInteriorFit);
+for(const element of document.querySelectorAll('.scene,.topbar,.scene-footer'))panelSpaceObserver.observe(element);
+window.addEventListener('resize',scheduleInteriorFit);
+
 function fitInventoryGrid(){
  inventoryObserver?.disconnect();inventoryObserver=null;
  const board=stage.querySelector('.content-board:has(.pw04-inventory)'),panel=board?.querySelector('.pw04-inventory'),main=panel?.querySelector('.pw04-inventory-main'),grid=main?.querySelector('.pw04-inventory-grid');if(!grid)return;
@@ -209,8 +227,8 @@ function render() {
   document.body.dataset.access='ready';
   const route = normalizeRoute(location.hash);
   stage.innerHTML = views[route]();
-  fitInventoryGrid();
   stage.classList.toggle('show-home', route === 'home');
+  fitInteriorPanel();fitInventoryGrid();
   document.title = `${routeTitles[route]} | Perrisushi World`;
   closeMenu();
   stage.scrollTop = 0;
@@ -422,7 +440,7 @@ function showLogin(error){
  const status=overlay.querySelector('#login-status');status.textContent=error?message({error}):sessionState.status==='error'?message(sessionState):googleErrorNotice();
  document.title='Entrar | Perrisushi World';
 }
-function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitInventoryGrid()}
+function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitInteriorPanel();fitInventoryGrid()}
 function resetPrivateState(){
   notificationCenter.stop();notificationObserver?.disconnect();clearTimeout(notificationReadTimer);notificationModalEpoch++;
   inventoryObserver?.disconnect();inventoryObserver=null;

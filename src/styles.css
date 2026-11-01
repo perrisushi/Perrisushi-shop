@@ -496,3 +496,31 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
  .profile-achievement {padding:8px;gap:8px;flex-wrap:wrap}
  .achievement-state {font-size:11px}
 }
+
+/* Ventanas interiores: altura de contenido limitada por el espacio real disponible.
+   Inicio, escenario, redes y el scroll propio del inventario conservan sus reglas. */
+.scene .stage-content.interior-layout {
+ position:absolute;inset:var(--panel-top) 3% var(--panel-bottom);height:auto;min-height:0;padding:0;
+ display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;
+ container:interior-space / size;
+}
+.stage-content.interior-layout .content-board {width:min(100%,1100px);height:auto;min-height:0;max-height:100%;align-self:center}
+.stage-content.interior-layout .content-header {flex:none}
+.stage-content.interior-layout .content-scroll {flex:0 1 auto;min-height:0;overflow-y:auto;padding:clamp(14px,2vw,28px)}
+@media(max-width:700px), (pointer:coarse) and (max-height:500px) {
+ .stage-content.interior-layout .content-board {width:min(100%,540px)}
+}
+@container interior-space (max-height:520px) {
+ .interior-layout .content-header {min-height:60px;padding:6px 12px}
+ .interior-layout .back-button {width:44px;height:44px}
+ .stage-content.interior-layout .content-scroll {padding:12px}
+ .interior-layout .profile-portrait {padding:10px}
+ .interior-layout .profile-portrait .perrilogo-preview {width:84px;height:84px}
+ .interior-layout .profile-details h2 {font-size:24px;margin:0 0 8px}
+ .interior-layout .profile-details .info-strip {padding:8px 0}
+ .interior-layout .profile-achievements {margin:8px 0;padding-top:8px}
+ .interior-layout .profile-actions {margin-top:10px}
+ .interior-layout .profile-details .textured-button {margin-top:0}
+ .interior-layout .google-profile {margin-top:8px}
+ .interior-layout .google-profile p {margin:0;font-size:14px;line-height:1.4}
+}

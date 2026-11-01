@@ -56,6 +56,8 @@ try{
    const path=new URL(route.request().url()).pathname;assert.equal(route.request().method(),'GET','Ninguna acción de apertura en esta comprobación');
    if(path==='/api/session')return route.fulfill({json:{authenticated:true,nick:'Local'}});
    if(path==='/api/profile')return route.fulfill({json:{profile:{selectedLogoId:'buho-1',ownedLogoIds:['buho-1']},balances:{pc:123,monedas:4}}});
+   if(path==='/api/auth/google/config')return route.fulfill({json:{enabled:false}});
+   if(path==='/api/notifications')return route.fulfill({json:{items:[],nextCursor:null}});
    assert.equal(path,'/api/inventory');return route.fulfill({json:fixture()});
   });
   for(count of [0,1,6,14,24,57]){
