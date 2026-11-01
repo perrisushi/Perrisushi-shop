@@ -92,12 +92,12 @@ const imageButton = (image, route, label, extension = 'webp') => `
 function homeView() {
   return `<section class="home-menu" aria-label="Menú principal">
       <div class="home-links">
-        ${imageButton('boton-miperfil','profile','Mi perfil')}
-        ${imageButton('boton-usuarios','users','Usuarios')}
-        ${imageButton('boton-inventario','inventory','Inventario')}
-        ${imageButton('boton-minijuegos','games','Minijuegos')}
-        ${imageButton('boton-tienda','shop','Tienda')}
-        ${imageButton('boton-sorteo','raffles','Sorteo','png')}
+        ${imageButton('menu-boton-perfil','profile','Mi perfil','png')}
+        ${imageButton('menu-boton-usuarios','users','Usuarios','png')}
+        ${imageButton('menu-boton-inventario','inventory','Inventario','png')}
+        ${imageButton('menu-boton-minijuegos','games','Minijuegos','png')}
+        ${imageButton('menu-boton-tienda','shop','Tienda','png')}
+        ${imageButton('menu-boton-sorteo','raffles','Sorteo','png')}
       </div>
   </section>`;
 }

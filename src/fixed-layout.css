@@ -436,7 +436,7 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
 /* Sexto acceso: ocupa la casilla libre del tablero de PC. */
 .art-menu-button[data-route="raffles"] img {aspect-ratio:1048/350;object-fit:contain}
 @container global-design (max-width:700px) and (orientation:portrait) {
- .home-menu .home-links {inset:25% 19% 6%;grid-template-rows:repeat(6,minmax(0,1fr))}
+ .home-menu .home-links {inset:26% 19% calc(6% + 20px);grid-template-rows:repeat(6,minmax(0,1fr));row-gap:clamp(6px,calc(1 * var(--design-vh)),10px)}
  .home-menu .home-links .art-menu-button {height:100%;width:auto;max-width:100%;max-height:100%;aspect-ratio:1048/350}
  .home-menu .home-links .art-menu-button img {width:100%;height:100%;max-height:none;object-fit:contain}
 }
