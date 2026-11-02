@@ -632,3 +632,7 @@ html[data-global-scale="true"] .interior-layout .raffle-board .pw04-raffles {wid
 html[data-global-scale="true"] .interior-layout .content-scroll:has(> .games-grid) {display:flex;flex-direction:column}
 html[data-global-scale="true"] .interior-layout .games-grid {width:100%;flex:1 0 330px;grid-template-rows:repeat(2,minmax(150px,1fr))}
 html[data-global-scale="true"] .interior-layout .games-grid .game-launch {height:100%}
+
+/* Perfil de PC: mantener los saldos junto a sus etiquetas. */
+html[data-global-scale="true"] .profile-details .profile-wallet {justify-content:flex-start;gap:16px}
+

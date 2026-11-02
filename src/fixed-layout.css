@@ -634,6 +634,10 @@ html[data-global-scale="true"] .interior-layout .content-scroll:has(> .games-gri
 html[data-global-scale="true"] .interior-layout .games-grid {width:100%;flex:1 0 330px;grid-template-rows:repeat(2,minmax(150px,1fr))}
 html[data-global-scale="true"] .interior-layout .games-grid .game-launch {height:100%}
 
+/* Perfil de PC: mantener los saldos junto a sus etiquetas. */
+html[data-global-scale="true"] .profile-details .profile-wallet {justify-content:flex-start;gap:16px}
+
+
 /* El tablero usa una sola composición. Sus medidas dependen del espacio
    disponible, nunca de cambios de filas, columnas o del tamaño de los botones. */
 @container global-design (min-width: 701px) and (min-height: 501px) {
