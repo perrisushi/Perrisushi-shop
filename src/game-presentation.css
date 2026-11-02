@@ -1,7 +1,23 @@
 html[data-pw2-game],html[data-pw2-game] body {width:100%;height:100%;min-width:0!important;min-height:0!important;margin:0;overflow:hidden;background:#101010!important;background-image:none!important}
 html[data-pw2-game] body.perripet-embedded #root {display:grid;place-items:center;width:100%;height:100%;min-height:0;background:#101010!important;overflow:hidden}
 html[data-pw2-game] .perripet-app-root--pet {width:min(100vw,calc(100dvh * 760 / 540))!important;max-width:none!important;max-height:100dvh}
-html[data-pw2-game] .perripet-app-root--wide {width:min(1152px,100vw)!important;max-width:none!important;max-height:100dvh;overflow:auto}
+/* El iframe ya descuenta la cabecera exterior. Las tres escenas anchas comparten 3:2.
+   Limitar ambos ejes conserva el escenario completo, también al ampliar o girar. */
+html[data-pw2-game] body.perripet-embedded .perripet-app-root--wide {
+ width:min(1152px,100vw,150dvh)!important;
+ max-width:none!important;max-height:none;overflow:visible
+}
+/* Las tarjetas de riego tenían un mínimo de 14rem incluso en un iframe bajo.
+   Su imagen cede espacio antes que los textos y el botón de cancelar. */
+html[data-pw2-game] body.perripet-embedded [aria-labelledby="watering-picker-title"] {
+ padding:clamp(12px,3dvh,24px)
+}
+html[data-pw2-game] body.perripet-embedded [aria-labelledby="watering-picker-title"] > .grid > button {
+ min-height:min(14rem,50dvh);padding:clamp(6px,1.5dvh,12px)
+}
+html[data-pw2-game] body.perripet-embedded [aria-labelledby="watering-picker-title"] > .grid > button > span:first-child {
+ height:clamp(44px,16dvh,112px)
+}
 @media(orientation:landscape) and (max-height:600px){
  html[data-pw2-game] .catalog-layout {grid-template-columns:minmax(0,1fr) minmax(190px,30%);grid-template-rows:minmax(0,1fr)}
  html[data-pw2-game] .rpg-detail {max-height:none}
