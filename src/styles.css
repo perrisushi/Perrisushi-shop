@@ -613,3 +613,22 @@ body:not([data-access="ready"]) .modal-backdrop {display:none}
  html:not([data-global-scale="true"]) .profile-actions [data-action="album"] {flex-basis:100%}
 }
 
+/* Paneles RPG de PC: proporciones propias dentro del hueco ya calculado.
+   No modifica escenario, escalado, cabecera global, redes ni estilos móviles. */
+html[data-global-scale="true"] .interior-layout .content-board:has(.profile-grid) {--rpg-panel-width:900px;--rpg-panel-ratio:1.5}
+html[data-global-scale="true"] .interior-layout .raffle-board {--rpg-panel-width:840px;--rpg-panel-ratio:1.6}
+html[data-global-scale="true"] .interior-layout .content-board:has(.perri-store) {--rpg-panel-width:900px;--rpg-panel-ratio:1.5}
+html[data-global-scale="true"] .interior-layout .content-board:has(.games-grid) {--rpg-panel-width:860px;--rpg-panel-ratio:1.6}
+html[data-global-scale="true"] .interior-layout .content-board:has(.pw04-users) {--rpg-panel-width:920px;--rpg-panel-ratio:1.45}
+html[data-global-scale="true"] .interior-layout .content-board:is(:has(.profile-grid),.raffle-board,:has(.perri-store),:has(.games-grid),:has(.pw04-users)) {
+ width:min(100%,var(--rpg-panel-width),calc(100cqh * var(--rpg-panel-ratio)));
+ height:auto;aspect-ratio:var(--rpg-panel-ratio);max-height:100%;min-height:0;justify-self:center;align-self:center;
+}
+html[data-global-scale="true"] .interior-layout .content-board:is(:has(.profile-grid),.raffle-board,:has(.perri-store),:has(.games-grid),:has(.pw04-users)) > .content-scroll {flex:1 1 auto;min-width:0}
+html[data-global-scale="true"] .interior-layout .content-scroll:has(> .profile-grid),
+html[data-global-scale="true"] .interior-layout .raffle-board > .content-scroll {display:flex;flex-direction:column}
+html[data-global-scale="true"] .interior-layout .profile-grid {width:100%;margin-block:auto;flex:none;grid-template-columns:minmax(180px,30%) minmax(0,1fr);gap:28px;align-items:center}
+html[data-global-scale="true"] .interior-layout .raffle-board .pw04-raffles {width:100%;min-height:0;margin-block:auto;flex:none}
+html[data-global-scale="true"] .interior-layout .content-scroll:has(> .games-grid) {display:flex;flex-direction:column}
+html[data-global-scale="true"] .interior-layout .games-grid {width:100%;flex:1 0 330px;grid-template-rows:repeat(2,minmax(150px,1fr))}
+html[data-global-scale="true"] .interior-layout .games-grid .game-launch {height:100%}
