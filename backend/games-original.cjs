@@ -2349,7 +2349,7 @@ function buildRandomSpecialItemReward() {
 
 function listUnknownLogos(profile, logoCatalog) {
   const ownedLogoIds = new Set(Array.isArray(profile?.ownedLogoIds) ? profile.ownedLogoIds : []);
-  return (Array.isArray(logoCatalog) ? logoCatalog : []).filter((logo) => logo && logo.id && !ownedLogoIds.has(logo.id));
+  return (Array.isArray(logoCatalog) ? logoCatalog : []).filter((logo) => logo && logo.id && !['logo-perriweb1','logo-perrisushi-adm'].includes(logo.id) && !ownedLogoIds.has(logo.id));
 }
 
 function buildPerriChestGuaranteedRewards() {

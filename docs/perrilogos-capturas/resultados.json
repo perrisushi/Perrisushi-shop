@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "pc: seis productos, compra con precio real y propiedad sin equipar automáticamente",
+    "pc: previsualización sin persistir, equipamiento independiente, capas alineadas y Twitch/YouTube intactos",
+    "pc: selección conservada al recargar y composición pública en Usuarios",
+    "26 PNG comprobados mediante Canvas del navegador: transparencia y tamaño originales",
+    "movil: seis productos, compra con precio real y propiedad sin equipar automáticamente",
+    "movil: previsualización sin persistir, equipamiento independiente, capas alineadas y Twitch/YouTube intactos",
+    "movil: selección conservada al recargar y composición pública en Usuarios",
+    "móvil 320: selector y tienda sin desbordamiento horizontal",
+    "móvil 360: selector y tienda sin desbordamiento horizontal",
+    "móvil 430: selector y tienda sin desbordamiento horizontal",
+    "Perrisushi posee el exclusivo y puede equiparlo o elegir otro libremente"
+  ],
+  "errors": [],
+  "external": [],
+  "productionTested": false,
+  "realPhoneTested": false
+}

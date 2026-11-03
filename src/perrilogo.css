@@ -1,0 +1,13 @@
+.perrilogo-composition{display:inline-block;position:relative;isolation:isolate;aspect-ratio:1;width:120px;height:120px;flex:none;vertical-align:middle}
+.perrilogo-composition>img.perrilogo-layer{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;object-fit:contain;transform:none;transform-origin:50% 50%;filter:none;pointer-events:none}
+.perrilogo-composition>[data-layer=background]{z-index:1}.perrilogo-composition>[data-layer=logo]{z-index:2}.perrilogo-composition>[data-layer=frame]{z-index:3}
+.profile-badge>.perrilogo-composition{width:100%;height:100%}.pw04-user-name>.user-perrilogo{width:44px;height:44px}
+.cosmetic-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.cosmetic-tabs button,.cosmetic-preview-button{border:1px solid #95622e;border-radius:8px;background:#59341f;color:#ffe2ad;min-height:44px;padding:8px;font:inherit}
+.cosmetic-tabs [aria-selected=true]{outline:2px solid #744015;background:#885125}
+.cosmetic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px}
+.cosmetic-choice{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;text-align:center;min-width:0}
+.cosmetic-choice strong{font-size:14px;overflow-wrap:anywhere}.cosmetic-choice>.textured-button{min-height:44px;width:100%;padding:8px}
+.cosmetic-preview-button{padding:4px;background:transparent}.cosmetic-thumbnail.perrilogo-composition{width:88px;height:88px}
+.store-product>.perrilogo-composition{width:100px;height:100px;margin:auto}.cosmetic-status{font-size:14px;line-height:1.4}
+@media(max-width:767px){.perrilogo-customizer .album-selected .perrilogo-composition{width:104px;height:104px}.cosmetic-tabs{gap:6px}.cosmetic-tabs button{font-size:13px;padding:6px}.cosmetic-grid{gap:10px}}

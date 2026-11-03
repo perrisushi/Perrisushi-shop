@@ -90,7 +90,7 @@ export function createBackend({repository,economy,games,google,administration,mo
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
-   const known=[...ADMIN_ROUTES,'/api/store','/api/store/buy','/api/raffles','/api/raffles/register','/api/community','/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
+   const known=[...ADMIN_ROUTES,'/api/store','/api/store/buy','/api/raffles','/api/raffles/register','/api/community','/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/cosmetics','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
    if(!['GET','POST'].includes(req.method))fail(405,'method_not_allowed');
    if(!reads.take(clientIP))fail(429,'too_many_requests');
@@ -180,7 +180,7 @@ export function createBackend({repository,economy,games,google,administration,mo
     }});
     detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':google?[cookie(token),google.cookie('',true)]:cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
-   if(req.method==='POST'&&!['/api/store/buy','/api/raffles/register'].includes(route)&&!route.startsWith('/api/admin/')&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
+   if(req.method==='POST'&&!['/api/store/buy','/api/raffles/register'].includes(route)&&!route.startsWith('/api/admin/')&&!['/api/inventory/open','/api/auth/logout','/api/profile/cosmetics','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
    if(!repository.configured)fail(503,'backend_not_configured');
    const user=await identity(req,route==='/api/session');
@@ -232,7 +232,10 @@ export function createBackend({repository,economy,games,google,administration,mo
     }
     if(route==='/api/games/action'){if(!games)fail(503,'games_not_configured');send(200,await games.execute(user,body));return}
     if(route==='/api/shop/raffles/buy'){send(200,await economy.execute(user.nick,'raffle-buy',body));return}
+    if(route==='/api/profile/cosmetics'){if(!community?.cosmeticsEnabled)fail(403,'operation_disabled');send(200,await community.equip(user,body));return}
     if(route==='/api/profile/avatar'){
+     if(body.avatarId==='logo-perrisushi-adm'){const role=await repository.adminAccess?.(user.nick);if(user.nick!=='Perrisushi'||role?.is_admin!==true)fail(403,'exclusive_cosmetic')}
+     if(community?.cosmeticsEnabled){if(Object.keys(body).join(',')!=='avatarId')fail(400,'invalid_request');send(200,await community.equip(user,{layer:'logo',id:body.avatarId}));return}
      if(Object.keys(body).join(',')!=='avatarId'||typeof body.avatarId!=='string'||body.avatarId.length>100)fail(400,'invalid_request');
      const [profile,logos]=await Promise.all([repository.profile(user.nick),repository.logos()]);
      if(!Array.isArray(profile?.owned_logo_ids)||!profile.owned_logo_ids.includes(body.avatarId)||!logos.some(l=>l.logo_id===body.avatarId&&logoAsset(l)))fail(403,'avatar_not_owned');
@@ -260,7 +263,7 @@ export function createBackend({repository,economy,games,google,administration,mo
     const [profile,logos,inventory]=await Promise.all([repository.profile(user.nick),repository.logos(),repository.inventory(user.nick)]);
     const owned=Array.isArray(profile?.owned_logo_ids)?profile.owned_logo_ids.filter(id=>typeof id==='string'):[];
     // No se concede propiedad implícita por is_default ni se confía en rutas de assets de BD.
-    send(200,{nick:user.nick,balances:inventory?{pc:inventory.pc,gemas:inventory.polvo_gema,monedas:inventory.monedas}:null,profile:profile?{selectedLogoId:owned.includes(profile.selected_logo_id)?profile.selected_logo_id:null,selectedLogoAssetId:owned.includes(profile.selected_logo_id)?logoAsset(logos.find(l=>l.logo_id===profile.selected_logo_id)):null,ownedLogoIds:owned,karma:profile.karma,achievements:profile.achievements,selectedTitleId:profile.selected_title_id}:null,logos:logos.map(l=>({id:l.logo_id,name:l.name,assetId:logoAsset(l),owned:owned.includes(l.logo_id)})),collectionTruncated:false});return;
+    send(200,{nick:user.nick,balances:inventory?{pc:inventory.pc,gemas:inventory.polvo_gema,monedas:inventory.monedas}:null,profile:profile?{selectedLogoId:owned.includes(profile.selected_logo_id)?profile.selected_logo_id:null,selectedLogoAssetId:owned.includes(profile.selected_logo_id)?logoAsset(logos.find(l=>l.logo_id===profile.selected_logo_id)):null,ownedLogoIds:owned,karma:profile.karma,achievements:profile.achievements,selectedTitleId:profile.selected_title_id}:null,logos:logos.map(l=>({id:l.logo_id,name:l.name,assetId:logoAsset(l),owned:owned.includes(l.logo_id)})),collectionTruncated:false,...(community?.cosmeticsEnabled?{cosmetics:await community.read(user,'cosmetics')}:{})});return;
    }
    if(route==='/api/inventory'){
     const [row,state]=await Promise.all([repository.inventory(user.nick),games?.containerState?.(user)??Promise.resolve({available:false})]);
@@ -268,9 +271,10 @@ export function createBackend({repository,economy,games,google,administration,mo
    }
    if(['/api/history','/api/users','/api/notifications'].includes(route)){
     const kind=route.split('/').pop(),options=pagination(url);const rows=await repository.page(kind,user.nick,options);
+    const compositions=kind==='users'&&community?.cosmeticsEnabled?await community.compositions(user,rows.map(r=>r.nick)):null;
     const safe=rows.map(row=>{if(kind==='notifications'){
      const {payload,...note}=row;return {...note,payload:{...(typeof payload?.itemId==='string'&&payload.itemId.length<=80?{itemId:payload.itemId}:{}),...(typeof payload?.amount==='number'&&Number.isFinite(payload.amount)?{amount:payload.amount}:{})}};
-    }if(kind!=='users')return row;return {nick:row.nick,pc:row.pc,logoId:row.logo_id,karma:row.karma,achievements:row.achievements,selectedTitleId:row.selected_title_id}});
+    }if(kind!=='users')return row;return {nick:row.nick,pc:row.pc,logoId:row.logo_id,karma:row.karma,achievements:row.achievements,selectedTitleId:row.selected_title_id,...(compositions?{perrilogo:compositions[row.nick]}:{})}});
     send(200,pageDTO(safe,options,kind));return;
    }
    if(route==='/api/shop/random-key'){

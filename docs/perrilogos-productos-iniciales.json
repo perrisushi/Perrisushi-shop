@@ -1,0 +1,50 @@
+[
+  [
+    "3249e82a-b4cb-5ada-85be-936f3fb9d574",
+    "Fondo básico",
+    "backgrounds",
+    "background",
+    "fondo-logo-basico",
+    500
+  ],
+  [
+    "b2dc1bf6-e552-51ac-bee7-921b4607ecc0",
+    "Fondo cuadrícula",
+    "backgrounds",
+    "background",
+    "fondo-logo-cuadricula",
+    500
+  ],
+  [
+    "58e06399-87c1-5526-a186-d4a951f10103",
+    "Fondo piedra",
+    "backgrounds",
+    "background",
+    "fondo-logo-piedra",
+    500
+  ],
+  [
+    "3214e233-911c-5d25-aba4-20827e6984fb",
+    "Marco metálico",
+    "frames",
+    "frame",
+    "marco-logo-metalico",
+    1500
+  ],
+  [
+    "e7b224c8-7d91-58ea-b601-f89386cab6f6",
+    "Marco morado gema",
+    "frames",
+    "frame",
+    "marco-logo-morado-gema",
+    1500
+  ],
+  [
+    "559b83d7-a591-5d03-b6ee-8fc714aad9bb",
+    "Marco planta",
+    "frames",
+    "frame",
+    "marco-logo-planta",
+    1500
+  ]
+]

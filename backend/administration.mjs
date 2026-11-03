@@ -43,7 +43,7 @@ export function validateAdminOperation(body){
  }
  return op;
 }
-export function createAdministration({pool,sourceCompatible=true,moderation,onDiagnostic=()=>{}}={}){
+export function createAdministration({pool,sourceCompatible=true,moderation,cosmeticsEnabled=false,onDiagnostic=()=>{}}={}){
  const configured=Boolean(pool&&sourceCompatible);
  async function transaction(user,write,task){
   if(!configured)error(503,'admin_unavailable');let client;
@@ -66,7 +66,7 @@ export function createAdministration({pool,sourceCompatible=true,moderation,onDi
   const allowed={users:['after','search'],account:['target'],sanctions:['target','after'],controls:[],records:['after'],store:[],raffles:[]};
   if(!Object.hasOwn(allowed,kind)||[...params.keys()].some(k=>!allowed[kind].includes(k)||params.getAll(k).length!==1))error(400,'invalid_request');
   return transaction(user,false,async c=>{
-   if(moderation?.enabled&&['store','raffles','controls'].includes(kind))return managementRead(c,kind,EDITABLE_RESOURCES);
+   if(moderation?.enabled&&['store','raffles','controls'].includes(kind))return managementRead(c,kind,EDITABLE_RESOURCES,cosmeticsEnabled);
    if(kind==='controls')error(403,'operation_disabled');
    if(kind==='users'){
     const after=params.get('after')??'',search=params.get('search')??'';if(after.length>100||search.length>100)error(400,'invalid_request');
@@ -100,7 +100,7 @@ export function createAdministration({pool,sourceCompatible=true,moderation,onDi
    const existing=(await c.query('SELECT nick,action,response FROM public.shop_operations WHERE operation_id=$1',[id])).rows[0];
    if(existing){if(existing.nick!==user.nick||existing.action!=='admin:'+op.action||existing.response?.fingerprint!==fingerprint)error(409,'operation_conflict');return existing.response.result}
    let audit={reason:op.reason},result={ok:true,operationId:op.operationId};
-   if(['product','raffle','control'].includes(op.action)){const change=await managementOperation(c,user.nick,op,{enabled:moderation?.enabled,resources:EDITABLE_RESOURCES});Object.assign(result,change.result);audit={...audit,...change.audit};
+   if(['product','raffle','control'].includes(op.action)){const change=await managementOperation(c,user.nick,op,{enabled:moderation?.enabled,resources:EDITABLE_RESOURCES,cosmeticsEnabled});Object.assign(result,change.result);audit={...audit,...change.audit};
    }else if(op.action==='resource'){
     // Interpolación limitada a la lista constante anterior; valores siempre parametrizados.
     const before=(await c.query('SELECT "'+op.field+'" AS value FROM public.shop_inventories WHERE nick=$1 FOR UPDATE',[op.target])).rows[0];
@@ -114,6 +114,7 @@ export function createAdministration({pool,sourceCompatible=true,moderation,onDi
     audit={...audit,target:op.target,field:op.field,before:previous,after,mode:op.mode};
    }else if(op.action==='moderation'){const change=await moderationOperation(c,user.nick,op,moderation);Object.assign(result,change.result);audit={...audit,...change.audit};
    }else if(op.action==='logo'){
+    if(['logo-perrisushi-adm','logo-perriweb1'].includes(op.logoId))error(403,'exclusive_cosmetic');
     const catalog=(await c.query('SELECT enabled FROM public.shop_logo_catalog WHERE logo_id=$1',[op.logoId])).rows[0];if(!catalog||op.grant&&!catalog.enabled)error(400,'invalid_request');
     const profile=(await c.query('SELECT owned_logo_ids,selected_logo_id FROM public.shop_profiles WHERE nick=$1 FOR UPDATE',[op.target])).rows[0];if(!profile||!Array.isArray(profile.owned_logo_ids))error(409,'inventory_missing');
     const owned=profile.owned_logo_ids.includes(op.logoId);if(owned!==op.expectedOwned)error(409,'admin_stale');if(owned===op.grant)error(409,'operation_conflict');

@@ -27,7 +27,7 @@ test('Usuarios muestra solo el logro seleccionado y conserva el avatar',()=>{
  const users=[{nick:'Usuario',logoId:'buho-1',selectedTitleId:'me_gusta_el_marisco',achievements:['Perrilogo aleatorio del pase diario','me_gusta_el_marisco','otro_logro']},{nick:'Sin selección',logoId:'panda-1',selectedTitleId:null,achievements:['Perrilogo aleatorio del pase diario','me_gusta_el_marisco']}];
  const before=JSON.stringify(users),html=renderUserRows(users);
  assert.match(html,/Me gusta el marisco/);assert.doesNotMatch(html,/Perrilogo aleatorio|otro_logro|me_gusta_el_marisco/);
- assert.match(html,/logo-buho-1\.webp/);assert.match(html,/logo-panda-1\.webp/);
+ assert.match(html,/logo-buho-1\.png/);assert.match(html,/data-layer="background"/);assert.match(html,/data-layer="frame"/);assert.match(html,/logo-panda-1\.png/);
  const empty=html.slice(html.indexOf('Sin selección'));
  assert.match(empty,/class="pw04-user-achievements" role="cell" hidden><\/div>/);
  assert.equal(JSON.stringify(users),before);

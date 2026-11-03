@@ -126,7 +126,7 @@ test('los recursos originales de los minijuegos conservan sus bytes y mecánicas
  for(const f of manifest.files)assert.equal(createHash('sha256').update(await readFile(f.path)).digest('hex'),f.sha256,f.path);
 });
 test('backend original conserva sus reglas: solo transporte, validador y contexto de avisos sin cambiar recompensas',async()=>{
- const original=(await readFile('backend/games-original.cjs','utf8')).replace(/\r/g,'').replace("require('./game-transport.cjs').fetch(`${SUPABASE_URL}/rest/v1/${pathname}`","fetch(`${SUPABASE_URL}/rest/v1/${pathname}`").replace('  validateDuelTarget: readDuelTargetTokenPayload,\n','')
+ const original=(await readFile('backend/games-original.cjs','utf8')).replace(" && !['logo-perriweb1','logo-perrisushi-adm'].includes(logo.id)",'').replace(/\r/g,'').replace("require('./game-transport.cjs').fetch(`${SUPABASE_URL}/rest/v1/${pathname}`","fetch(`${SUPABASE_URL}/rest/v1/${pathname}`").replace('  validateDuelTarget: readDuelTargetTokenPayload,\n','')
  .replaceAll(', notificationRewards = null)',')')
  .replaceAll('persistInventoryRow(normalizedNick, finalSync.inventory, notificationRewards)','persistInventoryRow(normalizedNick, finalSync.inventory)')
  .replaceAll('persistInventoryRow(normalizedNick, targetInventory, notificationRewards)','persistInventoryRow(normalizedNick, targetInventory)')

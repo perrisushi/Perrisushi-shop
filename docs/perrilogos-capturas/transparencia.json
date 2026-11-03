@@ -1,0 +1,184 @@
+[
+  {
+    "id": "fondo-logo-basico",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "fondo-logo-cuadricula",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "fondo-logo-negro",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "fondo-logo-piedra",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-abeja-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-abuela-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-amparo-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-buho-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-cabra-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-cami-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-croqueta-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-esq-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-estresario-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-gato-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-panda-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-pelusa-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-perrisushi-adm",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-perriweb1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-slime-1",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "logo-slime-2",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "marco-basico",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "marco-logo-2026",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "marco-logo-metalg",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "marco-logo-metalico",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "marco-logo-morado-gema",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  },
+  {
+    "id": "marco-logo-planta",
+    "width": 850,
+    "height": 850,
+    "min": 0,
+    "max": 255
+  }
+]

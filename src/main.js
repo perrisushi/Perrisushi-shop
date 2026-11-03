@@ -1,3 +1,4 @@
+import {renderPerrilogo,renderCosmeticCollection} from './services/perrilogo.js';
 import {createAdminTools} from './services/admin-ui.js';
 import {initializeGlobalScale,designRect,designHeight,desktopScaleActive} from './global-scale.js';
 import {createNotificationCenter,mergeNotifications,notificationCard} from './services/notifications.js';
@@ -56,18 +57,17 @@ const sessionOptions = document.querySelector('#session-options');
 const musicButton = document.querySelector('[data-action="music"]');
 const backgroundMusic = document.querySelector('#background-music');
 const profileBadge = document.querySelector('.profile-badge');
-const avatarImage = document.querySelector('.avatar-image');
+let selectedComposition={},cosmeticTab='logo',cosmeticDraft=null;
 // Solo identificadores del catálogo. Nunca construir una URL de avatar con un valor sin validar.
-const ALLOWED_AVATARS = new Set(['abeja-1','abuela-1','amparo-1','buho-1','cabra-1','cami-1','croqueta-1','esq-1','estresario-1','gato-1','panda-1','pelusa-1','perriweb1','slime-1','slime-2']);
+const ALLOWED_AVATARS = new Set(['abeja-1','abuela-1','amparo-1','buho-1','cabra-1','cami-1','croqueta-1','esq-1','estresario-1','gato-1','panda-1','pelusa-1','perriweb1','slime-1','slime-2','perrisushi-adm']);
 let selectedAvatar = 'perriweb1';
-function avatarMarkup(id, className = '') {
-  return `<span class="perrilogo-preview ${className}"><img class="perrilogo-frame" src="${ASSETS}marco-logo.webp" alt="" /><img class="perrilogo-icon" src="${ASSETS}logo-${id}.webp" alt="Perrilogo seleccionado" /></span>`;
-}
+function avatarMarkup(id,className='') {return renderPerrilogo({...selectedComposition,logo:'logo-'+id},'perrilogo-preview '+className)}
 /** Se llamará después de autenticar la sesión y leer el avatar verificado del usuario. */
 export function setAuthenticatedProfile(profile) {
-  const id = profile?.authenticated === true ? profile.avatarId : null;
+  const id = profile?.authenticated === true ? (profileState.cosmetics?.selected?.logo?.replace(/^logo-/,'')??profile.avatarId) : null;
   selectedAvatar = ALLOWED_AVATARS.has(id) ? id : 'perriweb1';
-  avatarImage.src = ASSETS + 'logo-' + (ALLOWED_AVATARS.has(id) ? id : 'perriweb1') + '.webp';
+  selectedComposition=profile?.authenticated===true?(profileState.cosmetics?.selected??{logo:'logo-'+selectedAvatar}):{logo:'logo-perriweb1'};
+  profileBadge.querySelectorAll('.avatar-image,.avatar-frame,.perrilogo-composition').forEach(el=>el.remove());profileBadge.insertAdjacentHTML('afterbegin',renderPerrilogo(selectedComposition));
   profileBadge.setAttribute('aria-label', profile?.authenticated === true && profile?.displayName ? 'Perfil de ' + String(profile.displayName).slice(0,80) : 'Entrar en tu cuenta');
   profileBadge.dataset.authenticated = profile?.authenticated === true ? 'true' : 'false';
 }
@@ -232,7 +232,7 @@ function rafflesView() {return `<section class="content-board raffle-board" aria
  <button type="button" role="tab" id="raffle-room-tab" aria-controls="raffle-room-panel" aria-selected="false" tabindex="-1" data-raffle-tab="room">SALA SORTEO</button>
  </div></header><div class="content-scroll">${renderLiveRaffles()}</div></section>`}
 function selectStoreItem(group,value,focus=false){
- const allowed=group==='tab'?['cosmetics','utility']:['logos','frames','accessory1','accessory2'];if(!allowed.includes(value))return;
+ const allowed=group==='tab'?['cosmetics','utility']:['backgrounds','frames'];if(!allowed.includes(value))return;
  shopSelection[group==='tab'?'tab':'category']=value;
  const root=stage.querySelector('.perri-store');if(!root)return;
  root.querySelectorAll(`[data-store-${group}]`).forEach(button=>{const active=button.dataset[group==='tab'?'storeTab':'storeCategory']===value;button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;if(active&&focus)button.focus({preventScroll:true})});
@@ -362,6 +362,7 @@ function modalMarkup(type) {
     const state=remoteStates[type]??{status:'loading'};
     return `<div class="modal-head"><h2 id="modal-title">Historial</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`${(state.items??[]).map(item=>`<article class="info-strip"><div><strong>${escapeText(item.title??item.game??'Actividad')}</strong><p>${escapeText(item.message??item.result??'')}</p><p>${escapeText(item.details??'')}</p><small>${escapeText(item.created_at??'')}</small></div></article>`).join('')||stateNotice({status:'empty'})}${pager(state.nextCursor,type)}`:stateNotice(state)}`;
   }
+  if(type==='album'&&profileState.cosmetics?.enabled)return `<div class="modal-head"><h2 id="modal-title">Perrilogos</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${renderCosmeticCollection(profileState.cosmetics,cosmeticTab,cosmeticDraft)}`;
   if(type==='album'){
     const s=profileState,logos=s.logos??[],owned=s.profile?.ownedLogoIds??[];
     return `<div class="modal-head"><h2 id="modal-title">Álbum de Perrilogos</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><div class="album-selected">${avatarMarkup(selectedAvatar)}</div>${s.status!=='ready'?stateNotice(s):`<p class="album-note">Selecciona uno de tus Perrilogos encontrados.</p><div class="album-tabs" role="group" aria-label="Colección"><button type="button" data-live-album="found" aria-pressed="true">Encontrados</button><button type="button" data-live-album="unknown" aria-pressed="false">Desconocidos</button></div><div class="album-grid">${logos.map(l=>`<button type="button" ${owned.includes(l.id)&&l.assetId?'':'disabled'} data-avatar-id="${escapeText(l.id)}" data-owned="${owned.includes(l.id)}" ${owned.includes(l.id)?'':'hidden'}><img src="${ASSETS}logo-${logoId(l.assetId??l.id)}.webp" alt=""/><span>${escapeText(l.name)}</span></button>`).join('')}</div>`}`;
@@ -482,8 +483,8 @@ function resetPrivateState(){
   inventoryObserver?.disconnect();inventoryObserver=null;
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
-  communityState={enabled:false};selectedRaffleTab='buy';shopSelection.tab='cosmetics';shopSelection.category='logos';
-  adminTools.reset();session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
+  communityState={enabled:false};selectedRaffleTab='buy';shopSelection.tab='cosmetics';shopSelection.category='backgrounds';
+  adminTools.reset();session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};cosmeticDraft=null;cosmeticTab='logo';economicOperations.clear();economicReceipt=null;
   for(const kind of ['users','inventory','shop','raffles'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
   setAuthenticatedProfile(null);
@@ -524,7 +525,7 @@ async function loadCurrentRoute(route){
   const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await Promise.all([api.getStore(),api.getProfile()]):await Promise.all([api.listRaffles(),api.getRaffleEvents()]);
   if(sequence!==routeEpoch||generation!==sessionEpoch)return;
   if(route==='profile'){profileState={status:'ready',...result};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId??result.profile?.selectedLogoId})}
-  else setPageData(route,{status:'ready',...(route==='shop'?{catalog:result[0],balances:result[1].balances,ownedLogoIds:result[1].profile?.ownedLogoIds??[]}:route==='raffles'?{raffles:result[0],events:result[1]}:result)});
+  else {if(route==='shop'){profileState={status:'ready',...result[1]};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result[1].profile?.selectedLogoAssetId})}setPageData(route,{status:'ready',...(route==='shop'?{catalog:result[0],balances:result[1].balances,ownedLogoIds:result[1].profile?.ownedLogoIds??[],cosmetics:result[1].cosmetics}:route==='raffles'?{raffles:result[0],events:result[1]}:result)});}
  }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
@@ -679,8 +680,8 @@ async function runCommunityOperation(kind,body,button,status){
  try{
   let operation;try{operation=JSON.parse(sessionStorage.getItem(key)??'null')}catch{}
   if(!operation){operation={...body,idempotencyKey:crypto.randomUUID()};sessionStorage.setItem(key,JSON.stringify(operation))}
-  await (kind==='store'?api.buyProduct(operation):api.registerRaffle(operation));if(generation!==sessionEpoch)return;
-  sessionStorage.removeItem(key);await loadCurrentRoute(normalizeRoute(location.hash));
+  const result=await (kind==='store'?api.buyProduct(operation):api.registerRaffle(operation));if(generation!==sessionEpoch)return;
+  sessionStorage.removeItem(key);await loadCurrentRoute(normalizeRoute(location.hash));if(kind==='store'&&result.acquired){const message=stage.querySelector('[data-store-status="'+body.id+'"]');if(message)message.textContent='¡COSMÉTICO ADQUIRIDO!';}
  }catch(error){if(generation!==sessionEpoch)return;if([400,403,404,409].includes(error.status)&&error.code!=='operation_conflict')sessionStorage.removeItem(key);status.textContent=message({error:error.code,expiresAt:error.expiresAt});button.disabled=false}
 }
 document.addEventListener('click',event=>{
@@ -701,3 +702,18 @@ async function refreshCommunity(force=false){
  communityLastCheck=Date.now();const generation=sessionEpoch;
  try{const fresh=await api.getCommunity();if(generation!==sessionEpoch)return;const changed=fresh.announcement!==communityState.announcement;communityState=fresh;if(changed&&normalizeRoute(location.hash)==='home')paintStage()}catch{}
 }
+
+
+document.addEventListener('click',async event=>{
+ const tab=event.target.closest('[data-cosmetic-tab]');if(tab){cosmeticTab=tab.dataset.cosmeticTab;paintRemote('album');return}
+ const preview=event.target.closest('[data-cosmetic-preview]');if(preview){cosmeticDraft={...profileState.cosmetics.selected,[preview.dataset.layer]:preview.dataset.cosmeticPreview};paintRemote('album');return}
+ const equip=event.target.closest('[data-cosmetic-equip]');if(!equip||!session||pendingPersonalChanges.has('cosmetic'))return;
+ const generation=sessionEpoch;pendingPersonalChanges.add('cosmetic');equip.disabled=true;
+ try{await api.equipCosmetic(equip.dataset.layer,equip.dataset.cosmeticEquip);const result=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...result};cosmeticDraft=null;setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album')}
+ catch(error){if(generation===sessionEpoch){const status=overlay.querySelector('.cosmetic-status');if(status)status.textContent=message({error:error.code});equip.disabled=false}}
+ finally{pendingPersonalChanges.delete('cosmetic')}
+});
+
+document.addEventListener('keydown',event=>{
+ const tab=event.target.closest('[data-cosmetic-tab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=['background','logo','frame'],index=tabs.indexOf(cosmeticTab);cosmeticTab=tabs[event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3];paintRemote('album');overlay.querySelector('[data-cosmetic-tab="'+cosmeticTab+'"]').focus({preventScroll:true});
+});

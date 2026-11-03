@@ -1,3 +1,4 @@
+import {installedCosmetics} from './cosmetics.mjs';
 import {gameScopeFromPath} from './service-scopes.mjs';
 import {createCommunity} from './community.mjs';
 import {EDITABLE_RESOURCES} from './administration.mjs';
@@ -32,6 +33,8 @@ const extended=process.env.PW2_ADMIN_EXTENDED_ENABLED==='true'||schemaInstalled;
 if(extended&&!schemaInstalled)throw Error('Revisar y aplicar manualmente 004-administracion-ampliada.sql antes de activar la ampliación');
 economy=createEconomy({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,enabled:process.env.PW2_ECONOMY_ENABLED==='true',rafflePrice:Number(process.env.PW2_RAFFLE_PRICE),raffleMax:extended?Math.min(4,Number(process.env.PW2_RAFFLE_MAX)):Number(process.env.PW2_RAFFLE_MAX)});
 if(extended&&(sources.projectMatch==='different'||sources.keyProjectMatch==='different'))throw Error('Administración ampliada requiere conexiones del mismo proyecto');
+const cosmeticsEnabled=await installedCosmetics(gamePool);
+if(process.env.PW2_COSMETICS_ENABLED==='true'&&!cosmeticsEnabled)throw Error('Aplicar manualmente 005-perrilogos-capas.sql antes de activar Perrilogos');
 const moderation=createModeration({pool:gamePool,enabled:extended,maxDays:Number(process.env.PW2_MODERATION_MAX_DAYS??365)});
 const games=createGames({pool:gamePool,moderation,legacy:legacyGames,enabled:enableGames,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
 if(production&&!process.env.PUBLIC_ORIGIN)throw Error('PUBLIC_ORIGIN obligatorio en producción');
@@ -45,8 +48,8 @@ if(process.env.PW2_GOOGLE_ENABLED==='true'){
  if(!repository.configured||!gamePool||sources.projectMatch==='different'||sources.keyProjectMatch==='different'||!allowSessionWrites||process.env.SESSION_STORE!=='supabase')throw Error('Google requiere PostgreSQL del mismo proyecto y sesiones persistentes habilitadas');
  google=createGoogleAuth({pool:gamePool,moderation,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,registrationEnabled,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY,origin:configuredOrigin,testOnly,testEmail:process.env.PW2_GOOGLE_TEST_EMAIL,onDiagnostic:event=>console.log(JSON.stringify(event))}),onDiagnostic:event=>console.log(JSON.stringify(event))});
 }
-const administration=createAdministration({pool:gamePool,moderation,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
-const community=createCommunity({pool:gamePool,moderation,resources:EDITABLE_RESOURCES});
+const administration=createAdministration({pool:gamePool,moderation,cosmeticsEnabled,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
+const community=createCommunity({pool:gamePool,moderation,cosmeticsEnabled,resources:EDITABLE_RESOURCES});
 const handler=createBackend({repository,economy,games,google,administration,moderation,community,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
 const site=serveSite({authenticate:async req=>{
  const user=await handler.authenticate(req);if(user&&moderation.enabled){const path=new URL(req.url,'http://local').pathname;const scope=gameScopeFromPath(path);if(scope)await moderation.service(scope)}return user;

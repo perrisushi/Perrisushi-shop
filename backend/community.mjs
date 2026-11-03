@@ -1,7 +1,8 @@
+import {cosmeticState,equipCosmetic,normalizedComposition,saleCosmetics} from './cosmetics.mjs';
 import {verifiedRaffleEntries} from './raffle-integrity.mjs';
 import {createHash} from 'node:crypto';import {sessionKey} from './security.mjs';import {BackendError} from './repository.mjs';import {fail} from './moderation.mjs';
 const integer=v=>{const n=Number(v);if(!Number.isSafeInteger(n)||n<0||n>2147483647)fail(409,'invalid_balance');return n};
-export function createCommunity({pool,moderation,resources=[]}={}){
+export function createCommunity({pool,moderation,resources=[],cosmeticsEnabled=false}={}){
  const enabled=moderation?.enabled===true;
  async function tx(user,write,scope,work){
   if(!enabled)fail(403,'operation_disabled');let c;
@@ -13,6 +14,7 @@ export function createCommunity({pool,moderation,resources=[]}={}){
   }catch(e){try{await c?.query('ROLLBACK')}catch{}if(e instanceof BackendError)throw e;fail(503,'community_unavailable')}finally{c?.release()}
  }
  async function read(user,kind){return tx(user,false,null,async c=>{
+  if(kind==='cosmetics'){if(!cosmeticsEnabled)fail(403,'operation_disabled');return cosmeticState(c,user.nick)}
   if(kind==='community')return {announcement:(await c.query("SELECT message FROM public.pw2_community_controls WHERE scope='announcement' AND active=true")).rows[0]?.message??null,maintenance:(await c.query("SELECT scope,message FROM public.pw2_community_controls WHERE scope<>'announcement' AND active=true")).rows};
   const control=(await c.query('SELECT active,message FROM public.pw2_community_controls WHERE scope=$1',[kind==='store'?'shop':'raffles'])).rows[0];
   if(kind==='store')return {maintenance:control?.active===true,message:control?.message??'',items:(await c.query('SELECT id,name,category,reward_type,reward_id,quantity,currency,price,stock,enabled,version FROM public.pw2_store_products WHERE hidden=false ORDER BY created_at,id')).rows};
@@ -28,8 +30,14 @@ export function createCommunity({pool,moderation,resources=[]}={}){
    const inv=(await c.query('SELECT * FROM public.shop_inventories WHERE nick=$1 FOR UPDATE',[user.nick])).rows[0];if(!inv)fail(409,'inventory_missing');let result,reservation=null;
    if(kind==='store-buy'){
     const p=(await c.query('SELECT * FROM public.pw2_store_products WHERE id=$1 FOR UPDATE',[body.id])).rows[0];if(!p||p.hidden||!p.enabled||p.stock===0)fail(409,'product_unavailable');if(p.version!==body.expectedVersion)fail(409,'product_changed');
+    const cosmetic=['background','frame'].includes(p.reward_type);if(cosmeticsEnabled&&(p.reward_type==='logo'||cosmetic&&!saleCosmetics.some(i=>i.id===p.reward_id&&i.layer===p.reward_type)))fail(409,'product_unavailable');
     const updates={[p.currency]:integer(inv[p.currency])-p.price};if(updates[p.currency]<0)fail(409,'insufficient_balance');
-    if(p.reward_type==='logo'){
+    if(cosmetic){
+     if(!cosmeticsEnabled||p.currency!=='pc'||p.quantity!==1)fail(409,'product_unavailable');
+     const profile=(await c.query('SELECT cosmetics FROM public.shop_profiles WHERE nick=$1 FOR UPDATE',[user.nick])).rows[0],key=p.reward_type==='background'?'ownedBackgroundIds':'ownedFrameIds';
+     if(!Array.isArray(profile?.cosmetics?.[key]))fail(409,'inventory_missing');if(profile.cosmetics[key].includes(p.reward_id))fail(409,'already_owned');
+     await c.query('UPDATE public.shop_profiles SET cosmetics=jsonb_set(cosmetics,$1::text[],$2::jsonb),updated_at=now() WHERE nick=$3',[[key],JSON.stringify([...profile.cosmetics[key],p.reward_id]),user.nick]);
+    }else if(p.reward_type==='logo'){
      const cat=(await c.query('SELECT enabled FROM public.shop_logo_catalog WHERE logo_id=$1',[p.reward_id])).rows[0];if(!cat?.enabled)fail(409,'product_unavailable');
      const profile=(await c.query('SELECT owned_logo_ids FROM public.shop_profiles WHERE nick=$1 FOR UPDATE',[user.nick])).rows[0];if(!Array.isArray(profile?.owned_logo_ids))fail(409,'inventory_missing');if(profile.owned_logo_ids.includes(p.reward_id))fail(409,'already_owned');
      await c.query('UPDATE public.shop_profiles SET owned_logo_ids=$1,updated_at=now() WHERE nick=$2',[JSON.stringify([...profile.owned_logo_ids,p.reward_id]),user.nick]);
@@ -37,7 +45,7 @@ export function createCommunity({pool,moderation,resources=[]}={}){
     const fields=Object.keys(updates);if(fields.some(k=>!resources.includes(k)))fail(409,'product_unavailable');await c.query('UPDATE public.shop_inventories SET '+fields.map((k,i)=>'"'+k+'"=$'+(i+1)).join(',')+',updated_at=now() WHERE nick=$'+(fields.length+1),[...fields.map(k=>updates[k]),user.nick]);
     if(Object.hasOwn(updates,'pc'))await c.query('UPDATE public.shop_public_users SET pc=$1,updated_at=now() WHERE nick=$2',[updates.pc,user.nick]);
     if(p.stock!==null)await c.query('UPDATE public.pw2_store_products SET stock=stock-1,version=version+1,updated_at=now() WHERE id=$1',[p.id]);
-    const snapshot={name:p.name,category:p.category,rewardType:p.reward_type,rewardId:p.reward_id,quantity:p.quantity,currency:p.currency,price:p.price,version:p.version};await c.query('INSERT INTO public.pw2_store_purchases(id,product_id,nick,snapshot) VALUES($1,$2,$3,$4)',[body.idempotencyKey,p.id,user.nick,JSON.stringify(snapshot)]);await c.query('INSERT INTO public.shop_activity(nick,game,result,details) VALUES($1,$2,$3,$4)',[user.nick,'PerriTienda','Compra '+p.name,p.quantity+' · '+p.price+' '+(p.currency==='pc'?'PC':'Gemas')]);result={ok:true,operationId:body.idempotencyKey,productId:p.id,purchase:snapshot};
+    const snapshot={name:p.name,category:p.category,rewardType:p.reward_type,rewardId:p.reward_id,quantity:p.quantity,currency:p.currency,price:p.price,version:p.version};await c.query('INSERT INTO public.pw2_store_purchases(id,product_id,nick,snapshot) VALUES($1,$2,$3,$4)',[body.idempotencyKey,p.id,user.nick,JSON.stringify(snapshot)]);await c.query('INSERT INTO public.shop_activity(nick,game,result,details) VALUES($1,$2,$3,$4)',[user.nick,'PerriTienda','Compra '+p.name,p.quantity+' · '+p.price+' '+(p.currency==='pc'?'PC':'Gemas')]);result={ok:true,operationId:body.idempotencyKey,productId:p.id,purchase:snapshot,...(cosmetic?{balances:{pc:updates.pc},acquired:p.reward_id}:{})};
    }else{
     const raffle=(await c.query('SELECT *,now()>=opens_at AND now()<closes_at AS dates_valid FROM public.pw2_raffles WHERE id=$1 FOR UPDATE',[body.id])).rows[0];if(!raffle||raffle.state!=='open'||!raffle.dates_valid)fail(409,'raffle_closed');
     await verifiedRaffleEntries(c,body.id);
@@ -52,5 +60,7 @@ export function createCommunity({pool,moderation,resources=[]}={}){
    if(reservation)await c.query('INSERT INTO public.pw2_raffle_ticket_reservations(operation_id,raffle_id,nick,ticket_field,quantity,available_before,available_after) VALUES($1,$2,$3,$4,$5,$6,$7)',[operation,body.id,user.nick,reservation.ticketField,reservation.quantity,reservation.availableBefore,reservation.availableAfter]);return result;
   });
  }
- return {enabled,read,execute};
+ return {enabled,cosmeticsEnabled,read,execute,equip:(user,body)=>{if(!cosmeticsEnabled)fail(403,'operation_disabled');return tx(user,true,null,c=>equipCosmetic(c,user.nick,body))},compositions:(user,nicks)=>tx(user,false,null,async c=>{
+  if(!cosmeticsEnabled)return {};const rows=(await c.query('SELECT p.nick,p.selected_logo_id,p.owned_logo_ids,p.cosmetics,a.is_admin FROM public.shop_profiles p JOIN public.shop_access a ON a.nick=p.nick WHERE p.nick=ANY($1::text[])',[nicks])).rows;return Object.fromEntries(rows.map(p=>[p.nick,normalizedComposition(p,p.is_admin)]));
+ })};
 }
