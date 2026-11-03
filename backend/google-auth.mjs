@@ -1,3 +1,4 @@
+import {SESSION_TTL_MS} from './session-policy.mjs';
 import {createHash,randomUUID} from 'node:crypto';
 import {BackendError} from './repository.mjs';
 import {newToken,digest,sessionKey,csrfFor,equalText} from './security.mjs';
@@ -61,7 +62,7 @@ export function createGoogleProvider({url,key,origin,testOnly=false,testEmail,on
   }
  };
 }
-export function createGoogleAuth({pool,provider,origin,secret,termsVersion,registrationEnabled=true,sessionTtlMs=8*3600_000,moderation,onDiagnostic=()=>{}}){
+export function createGoogleAuth({pool,provider,origin,secret,termsVersion,registrationEnabled=true,sessionTtlMs=SESSION_TTL_MS,moderation,onDiagnostic=()=>{}}){
  const secure=origin.startsWith('https:');
  const cookie=(token='',clear=false)=>'pw2_oauth='+token+'; Path=/; HttpOnly; SameSite=Lax'+(secure?'; Secure':'')+'; Max-Age='+(clear?0:600);
  const csrf=token=>csrfFor('google:'+token,secret);

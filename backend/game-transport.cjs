@@ -61,7 +61,13 @@ async function request(input,opts={}){
    sql+=' RETURNING *';
   }else if(method==='PATCH'||method==='DELETE'){
    if(!where)throw Error('unbounded_game_write');
-   sql=method==='PATCH'?'UPDATE public.'+ident(table)+' SET '+Object.entries(body??{}).map(([key,value])=>ident(key)+'='+(table==='shop_sessions'&&key==='expires_at'?'LEAST(expires_at,'+param(value)+'::timestamptz)':param(value))).join(',')+where+' RETURNING *':'DELETE FROM public.'+ident(table)+where+' RETURNING *';
+   // El refresco legado de 30 días no debe acortar ni prolongar la sesión propia.
+   // La política común valida y renueva shop_sessions antes de entrar al juego.
+   if(table==='shop_sessions'&&method==='PATCH'){
+    const keys=Object.keys(body??{});if(!keys.length||keys.some(k=>!['expires_at','updated_at'].includes(k)))throw Error('game_session_write_not_allowed');
+    return {ok:true,status:200,text:async()=> '[]'};
+   }
+   sql=method==='PATCH'?'UPDATE public.'+ident(table)+' SET '+Object.entries(body??{}).map(([key,value])=>ident(key)+'='+param(value)).join(',')+where+' RETURNING *':'DELETE FROM public.'+ident(table)+where+' RETURNING *';
   }else throw Error('method_not_allowed');
  }
  // Errores SQL se propagan: no se captura una excepción para continuar una transacción abortada.

@@ -9,7 +9,7 @@ import {itemDetails,gameDescriptions} from './services/help-content.js';
 initializeGlobalScale();
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
 const adminTools=createAdminTools({api,open:type=>openModal(type),repaint:()=>{if(modalKind?.startsWith('admin:')){const card=overlay.querySelector('.modal-card');if(card){card.innerHTML=adminTools.markup();card.querySelector('.modal-close')?.focus({preventScroll:true})}}},onChange:()=>{void refreshCommunity(true);void loadCurrentRoute(normalizeRoute(location.hash));void notificationCenter.refresh()}});
-let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
+let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,logoutError=null,gameBootstrap=null;
 let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='',googleUntil=null;
 let communityState={enabled:false},selectedRaffleTab='buy';
 let openingGame=false,gameLaunchEpoch=0;
@@ -367,6 +367,7 @@ function modalMarkup(type) {
     return `<div class="modal-head"><h2 id="modal-title">Álbum de Perrilogos</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><div class="album-selected">${avatarMarkup(selectedAvatar)}</div>${s.status!=='ready'?stateNotice(s):`<p class="album-note">Selecciona uno de tus Perrilogos encontrados.</p><div class="album-tabs" role="group" aria-label="Colección"><button type="button" data-live-album="found" aria-pressed="true">Encontrados</button><button type="button" data-live-album="unknown" aria-pressed="false">Desconocidos</button></div><div class="album-grid">${logos.map(l=>`<button type="button" ${owned.includes(l.id)&&l.assetId?'':'disabled'} data-avatar-id="${escapeText(l.id)}" data-owned="${owned.includes(l.id)}" ${owned.includes(l.id)?'':'hidden'}><img src="${ASSETS}logo-${logoId(l.assetId??l.id)}.webp" alt=""/><span>${escapeText(l.name)}</span></button>`).join('')}</div>`}`;
   }
   if (type === 'assistance') return `<div class="modal-head"><h2 id="modal-title">Asistencia</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><div class="support-content"><h3>¿Necesitas ayuda con PerriWeb?</h3><p>Si tienes problemas con tu cuenta, inventario, minijuegos, participaciones o cualquier otra función de la web, puedes contactar con nuestro servicio de asistencia.</p><div class="support-contact"><p>Correo oficial:</p><p class="support-email">perriwebasistencia@gmail.com</p></div><a class="support-link textured-button" href="mailto:perriwebasistencia@gmail.com">Enviar correo</a><p class="support-privacy"><a href="/privacidad" target="_blank" rel="noopener">Política de Privacidad</a></p></div>`;
+  if(type==='logout'&&session&&logoutError)return `<div class="modal-head"><h2 id="modal-title">Cerrar sesión</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p role="status">${escapeText(message({error:logoutError}))} Tu sesión sigue abierta. Vuelve a intentarlo.</p><button type="button" class="textured-button modal-primary" data-action="logout">Reintentar cierre de sesión</button>`;
   if (type === 'logout') return `<div class="modal-head"><h2 id="modal-title">Cerrar sesión</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">No hay sesión iniciada.</p>`;
   if (type === 'music-error') return `<div class="modal-head"><h2 id="modal-title">Música</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">El navegador no pudo reproducir la música. Comprueba el sonido y vuelve a intentarlo.</p>`;
   if(type==='google-error')return `<div class="modal-head"><h2 id="modal-title">Acceso con Google</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p role="status">${escapeText(googleErrorNotice())}</p>`;
@@ -505,6 +506,15 @@ async function bootstrapSession(authenticated=null){
   }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
   syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();if(session)notificationCenter.start();
 }
+let sessionRecovery=null;
+function recoverSessionConnection(){
+ if(document.visibilityState!=='visible'||logoutPending||sessionRecovery||sessionState.status!=='error'||!['network_error','timeout','backend_unavailable','backend_not_configured','moderation_unavailable','request_failed','invalid_server_response'].includes(sessionState.error))return;
+ sessionRecovery=bootstrapSession().finally(()=>{sessionRecovery=null});
+}
+window.addEventListener('online',recoverSessionConnection);
+window.addEventListener('focus',recoverSessionConnection);
+document.addEventListener('visibilitychange',recoverSessionConnection);
+
 async function loadCurrentRoute(route){
  const sequence=++routeEpoch,generation=sessionEpoch;
  if(!['profile','users','inventory','shop','raffles'].includes(route))return;
@@ -541,12 +551,17 @@ async function loadMore(kind,cursor,button){
  finally{if(button.isConnected)button.disabled=false}
 }
 async function logoutAccount(){
- if(!session)return;
- logoutPending=true;closeModal();resetPrivateState();sessionState={status:'signedOut'};syncIdentity();showLogin();const button=overlay.querySelector('button[type="submit"]');button.disabled=true;
- try{await api.logout()}
- catch(error){showLogin(error.code)}
- finally{logoutPending=false;if(button.isConnected)button.disabled=false}
+ if(!session||logoutPending)return;
+ logoutPending=true;logoutError=null;closeMenu();
+ try{
+  await api.logout();
+  closeModal();resetPrivateState();sessionState={status:'signedOut'};syncIdentity();showLogin();
+ }catch(error){
+  // No presentar un fallo de red como una revocación confirmada.
+  if(session){logoutError=error.code;openModal('logout')}
+ }finally{logoutPending=false}
 }
+
 document.addEventListener('submit',async event=>{
  if(event.target.id!=='traditional-login')return;event.preventDefault();if(logoutPending)return;const form=event.target,submit=form.querySelector('button'),status=form.querySelector('#login-status');submit.disabled=true;status.textContent='Comprobando acceso…';
  googlePending=null;googleNotice='';const data=new FormData(form);resetPrivateState();sessionState={status:'loading'};syncIdentity();

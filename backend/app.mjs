@@ -1,3 +1,4 @@
+import {SESSION_TTL_MS,sessionNeedsRenewal} from './session-policy.mjs';
 import {ADMIN_ROUTES} from './administration.mjs';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {isIP} from 'node:net';
@@ -10,7 +11,7 @@ import {authenticateTraditional,authDiagnostic} from './traditional-auth.mjs';
 import {oauthToken} from './google-auth.mjs';
 import {matchesPassword} from './security.mjs';
 import {digest,sessionKey,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
-export function createBackend({repository,economy,games,google,administration,moderation,community,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
+export function createBackend({repository,economy,games,google,administration,moderation,community,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=SESSION_TTL_MS,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
  if(proxySecret&&proxySecret.length<32)throw Error('Proxy secret too short');
  const origin=validatePublicOrigin(publicOrigin);
  if(production&&(new URL(origin).protocol!=='https:'||sessionStore!=='supabase'||!allowSessionWrites))throw Error('Production requires HTTPS and approved persistent sessions');
@@ -22,13 +23,34 @@ export function createBackend({repository,economy,games,google,administration,mo
  const sharedProxy=production&&!proxySecret;
  const sessions=new Map();const loginIp=new RateLimiter({max:sharedProxy?120:20,windowMs:sharedProxy?60000:15*60000,now}),loginNick=new RateLimiter({max:8,now}),reads=new RateLimiter({max:sharedProxy?1200:240,windowMs:60000,now}),accountReads=new RateLimiter({max:240,windowMs:60000,now});
  const secure=new URL(origin).protocol==='https:';
- const cookie=(token,clear=false)=>`pw2_session=${clear?'':token}; Path=/; HttpOnly; SameSite=Strict${secure?'; Secure':''}; Max-Age=${clear?0:Math.floor(sessionTtlMs/1000)}`;
+ const cookie=(token,clear=false,ttlMs=sessionTtlMs)=>`pw2_session=${clear?'':token}; Path=/; HttpOnly; SameSite=Strict${secure?'; Secure':''}; Max-Age=${clear?0:Math.max(0,Math.floor(ttlMs/1000))}`;
  // El proveedor Google nunca debe impedir entrar o salir con la cuenta tradicional.
  async function clearGoogleAttempt(req){
   const token=oauthToken(req.headers.cookie);if(!google||!token)return;
   try{await google.cancel(token)}catch{try{onAuthDiagnostic({event:'google_auth',reason:'flow_cleanup_failed'})}catch{}}
  }
+ const requestSessions=new WeakMap(),renewals=new Map();
  const sessionRead=key=>sessionStore==='memory'?Promise.resolve(sessions.get(key)??null):repository.session(key);
+ async function renewSession(key,row){
+  if(!sessionNeedsRenewal(Date.parse(row.expires_at),now(),sessionTtlMs))return row;
+  if(sessionStore==='supabase'&&(!allowSessionWrites||typeof repository.renewSession!=='function'))return row;
+  if(renewals.has(key))return renewals.get(key);
+  const pending=(async()=>{
+   if(Date.parse(row.expires_at)<=now())return null;
+   const instant=now(),expiresAt=new Date(instant+sessionTtlMs).toISOString();
+   if(sessionStore==='memory'){
+    const current=sessions.get(key);if(!current||current.nick!==row.nick||Date.parse(current.expires_at)<=instant)return null;
+    if(current.expires_at!==row.expires_at)return current;
+    const updated={...current,expires_at:expiresAt,updated_at:new Date(instant).toISOString()};sessions.set(key,updated);return updated;
+   }
+   // PATCH condicional, nunca UPSERT. Una expulsión concurrente no puede ser deshecha.
+   const updated=await repository.renewSession({token:key,nick:row.nick,expectedExpiresAt:row.expires_at,expiresAt,now:new Date(instant).toISOString()});
+   if(updated)return updated;
+   // Otra pestaña/instancia puede haber renovado antes: volver a leer, sin recrear la sesión.
+   return typeof repository.authenticatedSession==='function'?repository.authenticatedSession(key):repository.session(key);
+  })();
+  renewals.set(key,pending);try{return await pending}finally{if(renewals.get(key)===pending)renewals.delete(key)}
+ }
  async function identity(req,diagnose=false){
   const token=cookieToken(req.headers.cookie);
   const finish=(user,reason)=>{if(diagnose)try{onAuthDiagnostic({event:'session_auth',requestId:randomUUID(),stage:'session_restore',outcome:user?'success':'failure',reason,cookiePresent:Boolean(token)})}catch{};return user};
@@ -37,6 +59,15 @@ export function createBackend({repository,economy,games,google,administration,mo
   let row;try{row=await (joined?repository.authenticatedSession(sessionKey(token)):sessionRead(sessionKey(token)))}catch(error){try{onAuthDiagnostic({event:'traditional_auth',requestId:randomUUID(),stage:'session_restore',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}if(!row)return finish(null,'session_not_found_or_inactive');if(typeof row.nick!=='string'||!row.nick||!Number.isFinite(Date.parse(row.expires_at)))return finish(null,'invalid_session_record');if(Date.parse(row.expires_at)<=now())return finish(null,'session_expired');
   if(!joined){const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);if(!access||!player||access.active===false||player.active===false)return finish(null,'account_inactive')}
   await moderation?.check(row.nick);
+  const refreshed=await renewSession(sessionKey(token),row);
+  if(!refreshed||refreshed.nick!==row.nick||!Number.isFinite(Date.parse(refreshed.expires_at))||Date.parse(refreshed.expires_at)<=now())return finish(null,'session_revoked');
+  // Revalidar tras una escritura/espera de renovación; un error temporal no borra la cookie.
+  if(refreshed!==row){
+   const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);
+   if(!access||!player||access.active===false||player.active===false)return finish(null,'account_inactive');
+   await moderation?.check(row.nick);
+  }
+  requestSessions.set(req,{token,expiresAt:Date.parse(refreshed.expires_at)});
   return finish({nick:row.nick,token},'session_valid');
  }
  function pagination(url,cursorField='cursor'){
@@ -54,7 +85,7 @@ export function createBackend({repository,economy,games,google,administration,mo
  const fail=(status,code)=>{throw new BackendError(status,code)};
  const handle=function handle(req,res){return metricsContext.run({queries:0},async()=>{
   const started=now(),monotonicStart=performance.now();let route='unknown',status=500,detailedTiming=false;
-  const send=(code,data,headers={})=>{status=code;res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",'Server-Timing':detailedTiming?timingHeader(monotonicStart):`app;dur=${Math.max(0,performance.now()-monotonicStart).toFixed(1)}`,...headers});res.end(JSON.stringify(data))};
+  const send=(code,data,headers={})=>{const authenticated=requestSessions.get(req);if(code<400&&authenticated&&!Object.hasOwn(headers,'Set-Cookie'))headers={...headers,'Set-Cookie':cookie(authenticated.token,false,Math.min(sessionTtlMs,authenticated.expiresAt-now()))};status=code;res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",'Server-Timing':detailedTiming?timingHeader(monotonicStart):`app;dur=${Math.max(0,performance.now()-monotonicStart).toFixed(1)}`,...headers});res.end(JSON.stringify(data))};
   try{
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');

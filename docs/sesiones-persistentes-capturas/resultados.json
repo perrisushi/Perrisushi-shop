@@ -1,0 +1,38 @@
+{
+  "checks": [
+    "Cookie persistente HttpOnly/Strict, sin credencial accesible a JavaScript",
+    "Recarga y nueva pestaña mantienen la sesión",
+    "Cierre completo y reapertura de Edge con el mismo perfil, y reinicio del backend, conservan la sesión",
+    "PC y móvil emulado mantienen credenciales independientes",
+    "Regreso simulado tras 1 días sin introducir credenciales",
+    "Regreso simulado tras 7 días sin introducir credenciales",
+    "Regreso simulado tras 30 días sin introducir credenciales",
+    "Error temporal al restaurar no borra la cookie; online restaura acceso sin contraseña",
+    "Pérdida y recuperación de red conservan la credencial",
+    "Logout con fallo de red no se presenta como una revocación confirmada",
+    "Logout confirmado borra cookie y sesión del PC, sin desconectar el móvil",
+    "Expulsión administrativa revoca también el otro dispositivo",
+    "Tras expulsión se permite iniciar una sesión nueva",
+    "Administración de Perrisushi disponible con la misma política de persistencia"
+  ],
+  "errors": [],
+  "external": [],
+  "realBrowserRestart": true,
+  "controlledClock": true,
+  "productionTested": false,
+  "realPhoneTested": false,
+  "automatedTests": {
+    "passed": 326,
+    "failed": 0,
+    "skipped": 0
+  },
+  "build": {
+    "ok": true,
+    "publicFiles": 500
+  },
+  "adminBrowserChecks": 16,
+  "economyBodyUnchangedMD5": "10a0758a39ca77c04cb0301e447bfe9c",
+  "productionSQLExecuted": false,
+  "realGoogleOAuthTested": false,
+  "commitPushDeploy": false
+}
