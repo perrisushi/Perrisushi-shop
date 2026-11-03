@@ -1,0 +1,18 @@
+/* Solo herramientas autorizadas; no altera el diseño de las secciones normales. */
+.admin-entry{margin-left:auto;flex:0 1 auto;font-size:14px;padding:8px 12px;min-height:42px}
+.modal-card:has(.admin-body){width:min(720px,calc(100% - 24px));max-height:min(100%,85dvh);display:flex;flex-direction:column;overflow:hidden}
+.admin-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:4px;scrollbar-color:#93602c #e1bc88;scrollbar-width:thin}
+.admin-body h3{margin:16px 0 10px}.admin-body p{line-height:1.45}.admin-status:empty{display:none}
+.admin-body form{display:grid;gap:12px;margin:16px 0;padding-bottom:16px;border-bottom:1px solid #a17745}
+.admin-body label{display:grid;gap:5px;font-weight:600;min-width:0}
+.admin-body input,.admin-body select,.admin-body textarea{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:9px;font:inherit;color:#4e301b;background:#f8e3bd;border:1px solid #98642e;border-radius:5px}
+.admin-body button{min-height:44px;white-space:normal}.admin-body button:focus-visible,.admin-body input:focus-visible,.admin-body select:focus-visible,.admin-body textarea:focus-visible{outline:3px solid #875322;outline-offset:2px}
+.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.admin-actions button{flex:1 1 180px}
+.admin-list{display:grid;gap:10px;margin:12px 0}.admin-list article{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px;border:1px solid #ad7f45;background:#e7c18c;border-radius:5px;overflow-wrap:anywhere}
+.admin-list article strong{flex:1 1 140px}.admin-list article span{font-size:14px}.admin-list article p{flex-basis:100%;margin:0}.admin-list article button{margin-left:auto}
+.admin-inventory{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px;margin:12px 0}
+.admin-inventory>div{display:flex;gap:8px;justify-content:space-between;min-width:0;border-bottom:1px solid #b78b58;padding:6px}.admin-inventory dt{overflow-wrap:anywhere}.admin-inventory dd{margin:0;font-weight:bold}
+.admin-content[inert]{opacity:.6}
+
+html[data-global-scale="true"] .modal-card:has(.admin-body){max-height:min(100%,calc(85 * var(--design-vh)))}
+.content-header:has(.admin-entry){flex-wrap:wrap}

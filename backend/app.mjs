@@ -1,3 +1,4 @@
+import {ADMIN_ROUTES} from './administration.mjs';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {isIP} from 'node:net';
 import {metricsContext,timingHeader} from './metrics.mjs';
@@ -9,7 +10,7 @@ import {authenticateTraditional,authDiagnostic} from './traditional-auth.mjs';
 import {oauthToken} from './google-auth.mjs';
 import {matchesPassword} from './security.mjs';
 import {digest,sessionKey,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
-export function createBackend({repository,economy,games,google,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
+export function createBackend({repository,economy,games,google,administration,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
  if(proxySecret&&proxySecret.length<32)throw Error('Proxy secret too short');
  const origin=validatePublicOrigin(publicOrigin);
  if(production&&(new URL(origin).protocol!=='https:'||sessionStore!=='supabase'||!allowSessionWrites))throw Error('Production requires HTTPS and approved persistent sessions');
@@ -57,7 +58,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
-   const known=['/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
+   const known=[...ADMIN_ROUTES,'/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
    if(!['GET','POST'].includes(req.method))fail(405,'method_not_allowed');
    if(!reads.take(clientIP))fail(429,'too_many_requests');
@@ -146,7 +147,7 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
     }});
     detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':google?[cookie(token),google.cookie('',true)]:cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
-   if(req.method==='POST'&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
+   if(req.method==='POST'&&!route.startsWith('/api/admin/')&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
    if(!repository.configured)fail(503,'backend_not_configured');
    const user=await identity(req,route==='/api/session');
@@ -154,6 +155,24 @@ export function createBackend({repository,economy,games,google,legalPublished=fa
    if(user&&!accountReads.take(user.nick))fail(429,'too_many_requests');
    if(route==='/api/session'&&req.method==='GET'){send(200,{authenticated:Boolean(user),...(user?{nick:user.nick,sessionPersistence:sessionStore}:{})},user?{'X-CSRF-Token':csrfFor(user.token,csrfSecret)}:{});return}
    if(!user)fail(401,'session_expired');
+   if(ADMIN_ROUTES.includes(route)){
+    // La cookie identifica al actor; el permiso se lee de nuevo en servidor.
+    const role=await repository.adminAccess?.(user.nick);
+    const isAdmin=role?.nick===user.nick&&role.active!==false&&role.is_admin===true;
+    if(route==='/api/admin/context'){
+     if(req.method!=='GET'||url.searchParams.size)fail(400,'invalid_request');
+     send(200,{isAdmin,available:isAdmin&&administration?.configured===true});return;
+    }
+    if(!isAdmin)fail(403,'admin_required');
+    if(!administration?.configured)fail(503,'admin_unavailable');
+    if(route==='/api/admin/execute'){
+     if(req.method!=='POST'||url.searchParams.size)fail(405,'method_not_allowed');
+     if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
+     send(200,await administration.execute(user,await jsonBody(req)));return;
+    }
+    if(req.method!=='GET')fail(405,'method_not_allowed');
+    send(200,await administration.read(user,route.split('/').pop(),url.searchParams));return;
+   }
    if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const [inventory,readiness]=await Promise.all([repository.inventory(user.nick),games?.availability?games.availability(user):Promise.resolve(games?.availableFor?.(user)).then(available=>({available:available===true}))]);send(200,{...readiness,available:inventory!==null&&readiness.available===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))},{'X-CSRF-Token':csrfFor(user.token,csrfSecret)});return}
    // La identidad siempre deriva de la cookie; los parámetros privados ajenos se rechazan.
    for(const field of url.searchParams.keys())if(!(route==='/api/inventory/open/status'?['id','itemId']:route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:route==='/api/notifications'?['limit','cursor','state']:['limit','cursor']).includes(field))fail(400,'invalid_request');

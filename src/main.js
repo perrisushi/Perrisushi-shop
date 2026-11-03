@@ -1,3 +1,4 @@
+import {createAdminTools} from './services/admin-ui.js';
 import {initializeGlobalScale,designRect,designHeight,desktopScaleActive} from './global-scale.js';
 import {createNotificationCenter,mergeNotifications,notificationCard} from './services/notifications.js';
 import { normalizeRoute, routeTitles } from './routes.js';
@@ -7,6 +8,7 @@ import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,render
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 initializeGlobalScale();
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
+const adminTools=createAdminTools({api,open:type=>openModal(type),repaint:()=>{if(modalKind?.startsWith('admin:')){const card=overlay.querySelector('.modal-card');if(card){card.innerHTML=adminTools.markup();card.querySelector('.modal-close')?.focus({preventScroll:true})}}},onChange:()=>{void loadCurrentRoute(normalizeRoute(location.hash));void notificationCenter.refresh()}});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
 let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='';
 let openingGame=false,gameLaunchEpoch=0;
@@ -106,7 +108,7 @@ function shellView(route, content) {
   return `<section class="content-board" aria-label="${routeTitles[route]}">
     <header class="content-header">
       <button type="button" class="back-button" data-route="home" aria-label="Volver al inicio"><img src="${ASSETS}boton-atras.webp" alt="" /></button>
-      <div><h1>${routeTitles[route]}</h1></div>
+      <div><h1>${routeTitles[route]}</h1></div>${adminTools.entry(route)}
     </header>
     <div class="content-scroll">${content}</div>
   </section>`;
@@ -223,7 +225,7 @@ function shopView() {
 }
 
 function rafflesView() {return `<section class="content-board raffle-board" aria-label="Sorteos">
- <header class="content-header"><button type="button" class="back-button" data-route="home" aria-label="Volver al inicio"><img src="${ASSETS}boton-atras.webp" alt="" /></button><h1>Sorteos</h1>
+ <header class="content-header"><button type="button" class="back-button" data-route="home" aria-label="Volver al inicio"><img src="${ASSETS}boton-atras.webp" alt="" /></button><h1>Sorteos</h1>${adminTools.entry('raffles')}
  <div class="raffle-tabs" role="tablist" aria-label="Sorteos">
  <button type="button" role="tab" id="raffle-buy-tab" aria-controls="raffle-buy-panel" aria-selected="true" data-raffle-tab="buy">COMPRAR</button>
  <button type="button" role="tab" id="raffle-room-tab" aria-controls="raffle-room-panel" aria-selected="false" tabindex="-1" data-raffle-tab="room">SALA SORTEO</button>
@@ -340,6 +342,7 @@ async function openInventoryContainer(id,button){
  }
 }
 function modalMarkup(type) {
+  if(type.startsWith('admin:'))return adminTools.markup();
   if(type.startsWith('item:'))return inventoryItemMarkup(type.slice(5));
   if(type.startsWith('game-help:')){
     const name=type.slice(10);return `<div class="modal-head"><h2 id="modal-title">${escapeText(name)}</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p class="modal-intro">${escapeText(gameDescriptions[name])}</p>`;
@@ -476,7 +479,7 @@ function resetPrivateState(){
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
   shopSelection.tab='cosmetics';shopSelection.category='logos';
-  session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
+  adminTools.reset();session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
   for(const kind of ['users','inventory','shop','raffles'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
   setAuthenticatedProfile(null);
@@ -494,7 +497,7 @@ function syncIdentity(){const el=document.querySelector('.identity-chip strong')
 async function bootstrapSession(authenticated=null){
   resetPrivateState();const generation=sessionEpoch;sessionState={status:'loading'};profileState={status:'loading'};
   try{const result=authenticated??await api.getSession();if(generation!==sessionEpoch)return;session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
-   if(session){googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
+   if(session){await adminTools.recognize();if(generation!==sessionEpoch)return;googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
    else {profileState={status:'signedOut'};if(['login','linked'].includes(googleNotice))googleNotice='google_session_missing'}
   }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
   syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();if(session)notificationCenter.start();

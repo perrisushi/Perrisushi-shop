@@ -11,12 +11,12 @@ export function createRepository({url,key,fetchImpl=globalThis.fetch,allowSessio
  const configured=Boolean(origin&&key);
  const inventoryOmissions=new Set();
  let joinedSessionSupported=true;
- async function query(table,{nick,filters={},order,limit=1,cursor,column,method='GET',body,publicList=false,statusOnly=false,omitLegacy=false,joinedSession=false}={}){
+ async function query(table,{nick,filters={},order,limit=1,cursor,column,method='GET',body,publicList=false,statusOnly=false,omitLegacy=false,joinedSession=false,adminRole=false}={}){
   if(!configured)throw new BackendError(503,'backend_not_configured');
   if(!Object.hasOwn(SELECT,table))throw new BackendError(403,'operation_disabled');
   const safePatch=method==='PATCH'&&nick!==undefined&&((table==='shop_profiles'&&Object.keys(body??{}).join(',')==='selected_logo_id'&&filters.owned_logo_ids)||(table==='shop_public_users'&&Object.keys(body??{}).join(',')==='logo_id')||(table==='shop_notifications'&&Object.keys(body??{}).join(',')==='read_at'&&filters.id&&filters.read_at==='is.null'));
   if(method!=='GET'&&!safePatch&&(table!=='shop_sessions'||!allowSessionWrites||!['POST','DELETE'].includes(method)))throw new BackendError(403,'session_writes_disabled');
-  const target=new URL('/rest/v1/'+table,origin);target.searchParams.set('select',joinedSession&&table==='shop_sessions'?'nick,expires_at,shop_players!inner(active,shop_access!inner(active))':publicList&&table==='shop_players'?'nick,shop_access!inner(active),shop_public_users!inner(pc,logo_id,karma,achievements,selected_title_id)':statusOnly&&table==='shop_access'?'nick,active':SELECT[table]);
+  const target=new URL('/rest/v1/'+table,origin);target.searchParams.set('select',adminRole&&table==='shop_access'?'nick,active,is_admin':joinedSession&&table==='shop_sessions'?'nick,expires_at,shop_players!inner(active,shop_access!inner(active))':publicList&&table==='shop_players'?'nick,shop_access!inner(active),shop_public_users!inner(pc,logo_id,karma,achievements,selected_title_id)':statusOnly&&table==='shop_access'?'nick,active':SELECT[table]);
   if(method==='GET')target.searchParams.set('limit',String(Math.min(51,Math.max(1,limit))));
   if(table==='shop_inventories')target.searchParams.set('select',INVENTORY_FIELDS.split(',').filter(f=>!inventoryOmissions.has(f)).join(','));
   if(nick!==undefined)target.searchParams.set('nick','eq.'+String(nick));
@@ -64,6 +64,7 @@ export function createRepository({url,key,fetchImpl=globalThis.fetch,allowSessio
    if(rows.length>1)throw new BackendError(503,'backend_unavailable',{source:'supabase',table:'shop_access',method:'GET',failure:'ambiguous_nick'});
    return rows.length===1&&typeof rows[0].nick==='string'&&rows[0].nick.toLowerCase()===nick.toLowerCase()?rows[0]:null;
   },
+  adminAccess:nick=>one('shop_access',{nick,adminRole:true}),
   accessStatus:nick=>one('shop_access',{nick,statusOnly:true}),player:nick=>one('shop_players',{nick}),
   // Exclusivo del comprobador manual; no existe una ruta pública de diagnóstico.
   probeAccessLookup:async nick=>{
