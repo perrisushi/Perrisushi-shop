@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "pc: alta y consulta de producto desde PerriTienda",
+    "pc: compra pública, gasto y entrega comprobados en PostgreSQL local",
+    "pc: inscripción con tres boletos, reserva y límite conservados",
+    "pc: ganador registrado y resultado archivado desde la interfaz",
+    "pc: usuario sancionado pierde acceso y recibe fecha sin notas privadas",
+    "pc: conversión a permanente, historial y retirada permiten volver a entrar",
+    "pc: mantenimiento visible, catálogo consultable y ventas bloqueadas",
+    "pc: aviso compacto abre el mensaje íntegro y se cierra por teclado",
+    "movil: alta y consulta de producto desde PerriTienda",
+    "movil: compra pública, gasto y entrega comprobados en PostgreSQL local",
+    "movil: inscripción con tres boletos, reserva y límite conservados",
+    "movil: ganador registrado y resultado archivado desde la interfaz",
+    "movil: usuario sancionado pierde acceso y recibe fecha sin notas privadas",
+    "movil: conversión a permanente, historial y retirada permiten volver a entrar",
+    "movil: mantenimiento visible, catálogo consultable y ventas bloqueadas",
+    "movil: aviso compacto abre el mensaje íntegro y se cierra por teclado"
+  ],
+  "errors": [],
+  "external": [],
+  "productionTested": false,
+  "realPhoneTested": false
+}

@@ -30,7 +30,7 @@ export function serveSite({root=resolve(import.meta.dirname,'../dist'),authentic
   if(!publicPattern.test(path)&&!isGame){res.writeHead(404);res.end();return}
   if(isGame){
    try{if(!await authenticate(req)){res.writeHead(303,{'Location':'/','Cache-Control':'no-store'});res.end();return}}
-   catch{res.writeHead(503,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end('No se pudo comprobar tu sesión. Vuelve a intentarlo.');return}
+   catch(error){res.writeHead(503,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(error?.code==='service_maintenance'?'Este minijuego está en mantenimiento. Inténtalo más tarde.':'No se pudo comprobar tu sesión. Vuelve a intentarlo.');return}
   }
   try{
    const entry=await load(path,isGame),compressed=entry.zipped&&/\bgzip\b(?!\s*;\s*q=0(?:\.0*)?(?:\s|,|$))/i.test(req.headers?.['accept-encoding']??''),file=compressed?entry.zipped:entry.file;

@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import http from 'node:http';
 import {adminFixture} from './helpers/admin-fixture.mjs';import {createAdministration,validateAdminOperation,ADMIN_ROUTES} from '../backend/administration.mjs';import {createBackend} from '../backend/app.mjs';import {sessionKey,csrfFor} from '../backend/security.mjs';import {createRepository} from '../backend/repository.mjs';
-const resource=(overrides={})=>({action:'resource',operationId:randomUUID(),target:'Usuario',field:'pc',expected:100,value:145,reason:'Corrección comprobada',...overrides});
+const resource=(overrides={})=>({action:'resource',confirmed:true,operationId:randomUUID(),target:'Usuario',field:'pc',expected:100,value:145,reason:'Corrección comprobada',...overrides});
 const fail=(code)=>e=>e.code===code;
 async function use(task){const f=await adminFixture();try{await task(f)}finally{await f.db.close()}}
 async function apiFixture(task){await use(async f=>{const origin='http://127.0.0.1:4173',secret='s'.repeat(40);const server=http.createServer(createBackend({repository:f.repository,administration:f.administration,sessionStore:'supabase',allowSessionWrites:true,publicOrigin:origin,csrfSecret:secret}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;const request=async(path,{actor=f.admin,body,csrf=true,...headers}={})=>{const r=await fetch(base+path,{method:body?'POST':'GET',headers:{Origin:origin,...(actor?{Cookie:'pw2_session='+actor.token}:{}),...(body?{'Content-Type':'application/json',...(csrf&&actor?{'X-CSRF-Token':csrfFor(actor.token,secret)}:{})}:{}),...headers},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,data:await r.json()}};try{await task({...f,request})}finally{server.closeAllConnections();await new Promise(r=>server.close(r))}})}
@@ -32,7 +32,7 @@ test('admin: corrige PC una sola vez, sincroniza listado, conserva datos ajenos 
  assert.deepEqual(await f.administration.execute(f.admin,op),await f.administration.execute(f.admin,op));
  const inv=(await f.db.query("SELECT pc,polvo_gema FROM shop_inventories WHERE nick='Usuario'")).rows[0];assert.deepEqual(inv,{pc:145,polvo_gema:25});
  assert.equal((await f.db.query("SELECT pc FROM shop_public_users WHERE nick='Usuario'")).rows[0].pc,145);
- const records=await f.administration.read(f.admin,'records',new URLSearchParams());assert.equal(records.items.length,1);assert.deepEqual(records.items[0].audit,{reason:op.reason,target:'Usuario',field:'pc',before:100,after:145});
+ const records=await f.administration.read(f.admin,'records',new URLSearchParams());assert.equal(records.items.length,1);assert.deepEqual(records.items[0].audit,{reason:op.reason,target:'Usuario',field:'pc',before:100,after:145,mode:'set'});
  assert.equal((await f.db.query("SELECT is_admin FROM shop_access WHERE nick='Perrisushi'")).rows[0].is_admin,true);
  await assert.rejects(f.administration.execute(f.admin,{...op,value:200}),fail('operation_conflict'));
  await assert.rejects(f.administration.execute(f.admin,resource()),fail('admin_stale'));

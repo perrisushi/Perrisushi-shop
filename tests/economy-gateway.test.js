@@ -16,8 +16,8 @@ test('precio, identidad y acción del RPC provienen del servidor; IDs ajenos se 
  await api.execute('A','raffle-buy',{idempotencyKey:id,raffleId:'boletoSorteo2'});assert.deepEqual(JSON.parse(calls.at(-1)[1].body),{p_nick:'A',p_operation:id,p_action:'raffle-buy',p_price:3500,p_max:3});
 });
 test('errores SQL se reducen a códigos públicos y respuestas ambiguas no confirman compras',async()=>{
- const api=createEconomy({url:'https://example.invalid',key:'fake',enabled:true,fetchImpl:async(_url,opts)=>Response.json(opts.method==='GET'?{version:1,transactional:true}:{message:'SECRET CONNECTION DETAILS'},{status:opts.method==='GET'?200:500})});
- await assert.rejects(api.execute('A','random-redeem',{idempotencyKey:id}),e=>e.code==='economy_unavailable'&&!e.message.includes('SECRET'));
+ const api=createEconomy({url:'https://example.invalid',key:'fake',enabled:true,rafflePrice:1,raffleMax:4,fetchImpl:async(_url,opts)=>Response.json(opts.method==='GET'?{version:1,transactional:true}:{message:'SECRET CONNECTION DETAILS'},{status:opts.method==='GET'?200:500})});
+ await assert.rejects(api.execute('A','raffle-buy',{idempotencyKey:id,raffleId:'boletoSorteo2'}),e=>e.code==='economy_unavailable'&&!e.message.includes('SECRET'));
 });
 test('columnas antiguas opcionales: omite solo las ausentes, sin perder cantidades existentes',async()=>{
  const calls=[];const repo=createRepository({url:'https://example.invalid',key:'fake',fetchImpl:async(url)=>{const columns=new URL(url).searchParams.get('select');calls.push(columns);return columns.includes('saco_chatarra')?Response.json({code:'42703',message:'column saco_chatarra does not exist'},{status:400}):Response.json([{nick:'A',boleto_sorteo1:7,monedas:0,llaves:-2}])}});

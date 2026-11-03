@@ -5,11 +5,11 @@ import {createHash} from 'node:crypto';
 import {renderLiveShop,renderLiveRaffles,setPageData} from '../src/services/live-ui.js';
 import {normalizeRoute} from '../src/routes.js';
 import {serveSite} from '../backend/site.mjs';
-test('Tienda conserva Random Key; Sorteos tiene los boletos y la compra existentes',()=>{
+test('Tienda no recupera Random Key; Sorteos conserva boletos y compras',()=>{
  setPageData('shop',{status:'ready',randomKey:{inventoryRandomKey:2,tickets:{items:[{status:'active',expires_at:'2026-12-01'}]},claims:{items:[{game:'Juego',key:'OWN-KEY'}]},operationsEnabled:true}});
  setPageData('raffles',{status:'ready',raffles:{tickets:{boleto_sorteo1:0,boleto_sorteo2:2,mini_sorteo:1},policy:{price:3500,max:3},operationsEnabled:true}});
  const shop=renderLiveShop(),raffles=renderLiveRaffles();
- assert.match(shop,/Random Key/);assert.match(shop,/OWN-KEY/);assert.match(shop,/data-economy="redeem"/);assert.doesNotMatch(shop,/Comprar boleto|data-economy="buy"|Sorteos/);
+ assert.doesNotMatch(shop,/Random Key|OWN-KEY|data-economy="redeem"/);assert.doesNotMatch(shop,/Comprar boleto|data-economy="buy"|Sorteos/);
  assert.match(raffles,/data-economy="buy"/);assert.match(raffles,/3500/);assert.match(raffles,/Máximo 3/);assert.match(raffles,/Boleto de Sorteo 2/);assert.doesNotMatch(raffles,/OWN-KEY|data-economy="redeem"|Boleto de Sorteo 1/);
  assert.equal(normalizeRoute('#raffles'),'raffles');
  setPageData('raffles',{status:'ready',raffles:{tickets:{boleto_sorteo2:2},operationsEnabled:false}});assert.doesNotMatch(renderLiveRaffles(),/data-economy="buy"/);assert.match(renderLiveRaffles(),/No hay venta de boletos disponible/);

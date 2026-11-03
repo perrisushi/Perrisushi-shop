@@ -8,9 +8,10 @@ import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,render
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 initializeGlobalScale();
 const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
-const adminTools=createAdminTools({api,open:type=>openModal(type),repaint:()=>{if(modalKind?.startsWith('admin:')){const card=overlay.querySelector('.modal-card');if(card){card.innerHTML=adminTools.markup();card.querySelector('.modal-close')?.focus({preventScroll:true})}}},onChange:()=>{void loadCurrentRoute(normalizeRoute(location.hash));void notificationCenter.refresh()}});
+const adminTools=createAdminTools({api,open:type=>openModal(type),repaint:()=>{if(modalKind?.startsWith('admin:')){const card=overlay.querySelector('.modal-card');if(card){card.innerHTML=adminTools.markup();card.querySelector('.modal-close')?.focus({preventScroll:true})}}},onChange:()=>{void refreshCommunity(true);void loadCurrentRoute(normalizeRoute(location.hash));void notificationCenter.refresh()}});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,gameBootstrap=null;
-let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='';
+let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='',googleUntil=null;
+let communityState={enabled:false},selectedRaffleTab='buy';
 let openingGame=false,gameLaunchEpoch=0;
 const containerOperations=new Map();
 let inventoryObserver=null;
@@ -18,7 +19,7 @@ const openableContainers=['perri_cofres','perri_cofres_minijuego','bolsa_gemas',
 const remoteStates={};
 let notificationObserver=null,notificationReadTimer=null,notificationModalEpoch=0;
 const notificationCenter=createNotificationCenter({api,isActive:()=>Boolean(session)&&document.visibilityState==='visible',onPending:pending=>{
- const bell=document.querySelector('.notification-trigger');bell.classList.toggle('has-unread',pending);bell.setAttribute('aria-label',pending?'Notificaciones nuevas pendientes':'Notificaciones');
+ void refreshCommunity();const bell=document.querySelector('.notification-trigger');bell.classList.toggle('has-unread',pending);bell.setAttribute('aria-label',pending?'Notificaciones nuevas pendientes':'Notificaciones');
 },onViewed:id=>{const state=remoteStates.notifications;if(state?.items)state.items=state.items.map(item=>item.id===id?{...item,read_at:new Date().toISOString()}:item)},onError:()=>{
  const status=overlay.querySelector('.notification-status');if(status){status.innerHTML='No se pudo guardar la lectura. <button type="button" class="textured-button" data-action="retry-notifications">Reintentar</button>';}
 }});
@@ -92,7 +93,7 @@ const imageButton = (image, route, label, extension = 'webp') => `
   </button>`;
 
 function homeView() {
-  return `<section class="home-menu" aria-label="Menú principal">
+  return `<section class="home-menu" aria-label="Menú principal">${communityState.announcement?`<aside class="community-announcement" role="status"><span>${escapeText(communityState.announcement.length>40?communityState.announcement.slice(0,37)+'…':communityState.announcement)}</span><button type="button" class="textured-button" data-action="community-notice" aria-label="Leer aviso completo de la comunidad">Leer</button></aside>`:''}
       <div class="home-links">
         ${imageButton('menu-boton-perfil','profile','Mi perfil','png')}
         ${imageButton('menu-boton-usuarios','users','Usuarios','png')}
@@ -239,7 +240,7 @@ function selectStoreItem(group,value,focus=false){
  else root.querySelectorAll('[data-store-items]').forEach(panel=>panel.hidden=panel.dataset.storeItems!==value);
 }
 function selectRaffleTab(value,focus=false){
- const board=stage.querySelector('.raffle-board');if(!board||!['buy','room'].includes(value))return;
+ const board=stage.querySelector('.raffle-board');if(!board||!['buy','room'].includes(value))return;selectedRaffleTab=value;
  board.querySelectorAll('[data-raffle-tab]').forEach(tab=>{const selected=tab.dataset.raffleTab===value;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;if(selected&&focus)tab.focus()});
  board.querySelectorAll('[data-raffle-panel]').forEach(panel=>panel.hidden=panel.dataset.rafflePanel!==value);
 }
@@ -255,7 +256,7 @@ function render() {
   if(!session){stage.replaceChildren();if(sessionState.status!=='loading')showLogin();return}
   document.body.dataset.access='ready';
   const route = normalizeRoute(location.hash);
-  stage.innerHTML = views[route]();
+  stage.innerHTML = views[route]();selectRaffleTab(selectedRaffleTab);
   stage.classList.toggle('show-home', route === 'home');
   fitInteriorPanel();fitInventoryGrid();
   document.title = `${routeTitles[route]} | Perrisushi World`;
@@ -342,6 +343,7 @@ async function openInventoryContainer(id,button){
  }
 }
 function modalMarkup(type) {
+  if(type==='community-notice')return `<div class="modal-head"><h2 id="modal-title">Aviso de la comunidad</h2><button type="button" class="modal-close" data-action="close-modal" aria-label="Cerrar">×</button></div><p>${escapeText(communityState.announcement)}</p>`;
   if(type.startsWith('admin:'))return adminTools.markup();
   if(type.startsWith('item:'))return inventoryItemMarkup(type.slice(5));
   if(type.startsWith('game-help:')){
@@ -433,6 +435,7 @@ document.addEventListener('click', e => {
   if (route) { closeModal(); navigate(route); return; }
   if(action==='google-status'){void refreshGoogleStatus(e.target.closest('button'));return}
   if(action==='google-login'){void beginGoogle(e.target.closest('button'));return}
+  if(action==='community-notice'){openModal('community-notice');return}
   if(action==='link-google'){openModal('link-google');return}
   if(action==='google-cancel'){void cancelGoogleRegistration(e.target.closest('button'));return}
   if (action === 'auth') openModal('auth');
@@ -472,13 +475,13 @@ function showLogin(error){
  const status=overlay.querySelector('#login-status');status.textContent=error?message({error}):sessionState.status==='error'?message(sessionState):googleErrorNotice();
  document.title='Entrar | Perrisushi World';
 }
-function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();fitMobileProfile();fitInteriorPanel();fitInventoryGrid()}
+function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();selectRaffleTab(selectedRaffleTab);fitMobileProfile();fitInteriorPanel();fitInventoryGrid()}
 function resetPrivateState(){
   notificationCenter.stop();notificationObserver?.disconnect();clearTimeout(notificationReadTimer);notificationModalEpoch++;
   inventoryObserver?.disconnect();inventoryObserver=null;
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
-  shopSelection.tab='cosmetics';shopSelection.category='logos';
+  communityState={enabled:false};selectedRaffleTab='buy';shopSelection.tab='cosmetics';shopSelection.category='logos';
   adminTools.reset();session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};economicOperations.clear();economicReceipt=null;
   for(const kind of ['users','inventory','shop','raffles'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
@@ -497,7 +500,7 @@ function syncIdentity(){const el=document.querySelector('.identity-chip strong')
 async function bootstrapSession(authenticated=null){
   resetPrivateState();const generation=sessionEpoch;sessionState={status:'loading'};profileState={status:'loading'};
   try{const result=authenticated??await api.getSession();if(generation!==sessionEpoch)return;session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
-   if(session){await adminTools.recognize();if(generation!==sessionEpoch)return;googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
+   if(session){await adminTools.recognize();if(generation!==sessionEpoch)return;googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();try{communityState=await api.getCommunity()}catch{communityState={enabled:false}}if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
    else {profileState={status:'signedOut'};if(['login','linked'].includes(googleNotice))googleNotice='google_session_missing'}
   }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
   syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();if(session)notificationCenter.start();
@@ -508,10 +511,10 @@ async function loadCurrentRoute(route){
  if(!session){if(route!=='profile')setPageData(route,sessionState.status!=='ready'?sessionState:{status:'signedOut'});paintStage();return}
  if(route!=='profile')setPageData(route,{status:'loading'});paintStage();
  try{
-  const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await Promise.all([api.listRandomKeys(),api.getProfile()]):await api.listRaffles();
+  const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await Promise.all([api.getStore(),api.getProfile()]):await Promise.all([api.listRaffles(),api.getRaffleEvents()]);
   if(sequence!==routeEpoch||generation!==sessionEpoch)return;
   if(route==='profile'){profileState={status:'ready',...result};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId??result.profile?.selectedLogoId})}
-  else setPageData(route,{status:'ready',...(route==='shop'?{randomKey:result[0],balances:result[1].balances}:route==='raffles'?{raffles:result}:result)});
+  else setPageData(route,{status:'ready',...(route==='shop'?{catalog:result[0],balances:result[1].balances,ownedLogoIds:result[1].profile?.ownedLogoIds??[]}:route==='raffles'?{raffles:result[0],events:result[1]}:result)});
  }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
@@ -548,7 +551,7 @@ document.addEventListener('submit',async event=>{
  if(event.target.id!=='traditional-login')return;event.preventDefault();if(logoutPending)return;const form=event.target,submit=form.querySelector('button'),status=form.querySelector('#login-status');submit.disabled=true;status.textContent='Comprobando acceso…';
  googlePending=null;googleNotice='';const data=new FormData(form);resetPrivateState();sessionState={status:'loading'};syncIdentity();
  try{const authenticated=await api.login(data.get('nick'),data.get('password'));form.reset();history.replaceState(null,'','#home');await bootstrapSession(authenticated)}
- catch(error){sessionState={status:'error',error:error.code};profileState=sessionState;syncIdentity();showLogin(error.code);const login=overlay.querySelector('#traditional-login');login.elements.nick.value=String(data.get('nick')??'');login.elements.password.focus()}
+ catch(error){sessionState={status:'error',error:error.code};profileState=sessionState;syncIdentity();showLogin(error.code);overlay.querySelector('#login-status').textContent=message({error:error.code,expiresAt:error.expiresAt});const login=overlay.querySelector('#traditional-login');login.elements.nick.value=String(data.get('nick')??'');login.elements.password.focus()}
  finally{if(submit.isConnected)submit.disabled=false}
 });
 const pendingPersonalChanges=new Set();
@@ -586,7 +589,7 @@ async function launchOriginalGame(name){
 
 function googleErrorNotice(){
  const messages={google_session_missing:'Google ha respondido, pero no se pudo recuperar la sesión. Vuelve a intentarlo.',google_cancelled:'Has cancelado el acceso con Google.',google_expired:'El acceso con Google ha caducado. Vuelve a intentarlo.',google_conflict:'Esta cuenta de Google ya está vinculada a otra cuenta, o tu usuario tiene otra vinculación.',account_inactive:'Esta cuenta no tiene el acceso habilitado.',session_expired:'Tu sesión ha caducado. Vuelve a entrar para vincular Google.',google_unavailable:'No se pudo conectar con Google. Vuelve a intentarlo.',google_failed:'No se pudo completar el acceso con Google. Vuelve a intentarlo.',google_not_allowed:'Esta cuenta de Google no tiene el acceso habilitado.',registration_unavailable:'Entra con tu usuario y contraseña y vincula Google desde Mi perfil.'};
- return messages[googleNotice]??'';
+ return ['account_suspended','account_banned','moderation_unavailable'].includes(googleNotice)?message({error:googleNotice,expiresAt:googleUntil}):messages[googleNotice]??'';
 }
 function legalLinks(){
  return '<p class="access-legal"><a href="/privacidad" target="_blank" rel="noopener">Política de Privacidad</a>'+ (googleConfig.legalPublished?' · <a href="/api/legal/terms" target="_blank" rel="noopener">Condiciones del Servicio</a>':'')+'</p>';
@@ -608,7 +611,7 @@ function accessMarkup(){
 async function initializeGoogleAccess(){
  const callback=oauthCallbackPath(location);
  if(callback){location.replace(callback);return}
- const query=new URLSearchParams(location.search);googleNotice=query.get('google')??'';
+ const query=new URLSearchParams(location.search);googleNotice=query.get('google')??'';googleUntil=query.get('until');query.delete('until');
  if(query.has('google')){query.delete('google');history.replaceState(null,'',location.pathname+(query.size?'?'+query:'')+location.hash)}
  googlePending=null;googleLinked=null;
  try{googleConfig=await api.googleConfig();if(googleConfig.enabled){const pending=await api.googlePending();if(pending.pending)googlePending=pending}}catch{googleConfig={enabled:false,legalPublished:false}}
@@ -653,4 +656,33 @@ async function refreshGoogleStatus(button){
  }catch(error){
   if(generation===sessionEpoch&&button.isConnected){button.textContent='No se pudo comprobar. Reintentar';button.disabled=false}
  }
+}
+
+async function runCommunityOperation(kind,body,button,status){
+ const generation=sessionEpoch,key='pw2:public:'+session.nick+':'+kind+':'+body.id;
+ if(button.disabled)return;button.disabled=true;
+ try{
+  let operation;try{operation=JSON.parse(sessionStorage.getItem(key)??'null')}catch{}
+  if(!operation){operation={...body,idempotencyKey:crypto.randomUUID()};sessionStorage.setItem(key,JSON.stringify(operation))}
+  await (kind==='store'?api.buyProduct(operation):api.registerRaffle(operation));if(generation!==sessionEpoch)return;
+  sessionStorage.removeItem(key);await loadCurrentRoute(normalizeRoute(location.hash));
+ }catch(error){if(generation!==sessionEpoch)return;if([400,403,404,409].includes(error.status)&&error.code!=='operation_conflict')sessionStorage.removeItem(key);status.textContent=message({error:error.code,expiresAt:error.expiresAt});button.disabled=false}
+}
+document.addEventListener('click',event=>{
+ const b=event.target.closest('[data-store-buy]');if(!b||!session)return;
+ const p=dataState.shop.catalog?.items?.find(p=>p.id===b.dataset.storeBuy);if(!p)return;
+ if(!confirm('Comprar '+p.name+' por '+p.price+' '+(p.currency==='pc'?'PC':'Gemas')+'?'))return;
+ void runCommunityOperation('store',{id:p.id,expectedVersion:p.version},b,b.closest('article').querySelector('[role=status]'));
+});
+document.addEventListener('submit',event=>{
+ const form=event.target;if(!form.matches('[data-raffle-register]')||!session)return;event.preventDefault();const quantity=Number(new FormData(form).get('quantity'));
+ if(!confirm('Asignar '+quantity+' boleto(s) a este sorteo? Los boletos inscritos se reservan para este evento.'))return;
+ void runCommunityOperation('raffle',{id:form.dataset.raffleRegister,quantity},form.querySelector('button'),form.querySelector('[role=status]'));
+});
+
+let communityLastCheck=0;
+async function refreshCommunity(force=false){
+ if(!session||document.visibilityState!=='visible'||!force&&Date.now()-communityLastCheck<30000)return;
+ communityLastCheck=Date.now();const generation=sessionEpoch;
+ try{const fresh=await api.getCommunity();if(generation!==sessionEpoch)return;const changed=fresh.announcement!==communityState.announcement;communityState=fresh;if(changed&&normalizeRoute(location.hash)==='home')paintStage()}catch{}
 }

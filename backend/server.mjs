@@ -1,3 +1,7 @@
+import {gameScopeFromPath} from './service-scopes.mjs';
+import {createCommunity} from './community.mjs';
+import {EDITABLE_RESOURCES} from './administration.mjs';
+import {createModeration,installedAdminSchema} from './moderation.mjs';
 import {createAdministration} from './administration.mjs';
 import http from 'node:http';
 import {randomBytes} from 'node:crypto';
@@ -18,12 +22,18 @@ const allowSessionWrites=process.env.ALLOW_SUPABASE_SESSION_WRITES==='true';
 const production=process.env.NODE_ENV==='production';
 const googleTestOnly=process.env.PW2_GOOGLE_ENABLED==='true'&&process.env.PW2_GOOGLE_TEST_MODE!=='false';
 const repository=createRepository({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,allowSessionWrites});
-const economy=createEconomy({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,enabled:process.env.PW2_ECONOMY_ENABLED==='true',rafflePrice:Number(process.env.PW2_RAFFLE_PRICE),raffleMax:Number(process.env.PW2_RAFFLE_MAX)});
+let economy;
 let gamePool;
 const enableGames=gamesEnabled(process.env.PW2_GAMES_ENABLED,Boolean(process.env.DATABASE_URL));
 const sources=connectionDiagnostics({supabaseUrl:process.env.SUPABASE_URL,databaseUrl:process.env.DATABASE_URL,serviceKey:process.env.SUPABASE_SERVICE_ROLE_KEY});
 if(process.env.DATABASE_URL){gamePool=new pg.Pool(databasePoolOptions(process.env));gamePool.on('error',()=>console.error('La conexión de juegos no está disponible'))}
-const games=createGames({pool:gamePool,legacy:legacyGames,enabled:enableGames,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
+const schemaInstalled=await installedAdminSchema(gamePool);
+const extended=process.env.PW2_ADMIN_EXTENDED_ENABLED==='true'||schemaInstalled;
+if(extended&&!schemaInstalled)throw Error('Revisar y aplicar manualmente 004-administracion-ampliada.sql antes de activar la ampliación');
+economy=createEconomy({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_ROLE_KEY,enabled:process.env.PW2_ECONOMY_ENABLED==='true',rafflePrice:Number(process.env.PW2_RAFFLE_PRICE),raffleMax:extended?Math.min(4,Number(process.env.PW2_RAFFLE_MAX)):Number(process.env.PW2_RAFFLE_MAX)});
+if(extended&&(sources.projectMatch==='different'||sources.keyProjectMatch==='different'))throw Error('Administración ampliada requiere conexiones del mismo proyecto');
+const moderation=createModeration({pool:gamePool,enabled:extended,maxDays:Number(process.env.PW2_MODERATION_MAX_DAYS??365)});
+const games=createGames({pool:gamePool,moderation,legacy:legacyGames,enabled:enableGames,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
 if(production&&!process.env.PUBLIC_ORIGIN)throw Error('PUBLIC_ORIGIN obligatorio en producción');
 const configuredOrigin=publicOrigin(process.env.PUBLIC_ORIGIN??'http://127.0.0.1:4173');
 const legal=createLegalPages({enabled:process.env.PW2_LEGAL_PUBLISHED==='true'&&!googleTestOnly,directory:process.env.PW2_LEGAL_DIRECTORY});
@@ -33,11 +43,14 @@ if(process.env.PW2_GOOGLE_ENABLED==='true'){
  const testOnly=googleTestOnly;
  const registrationEnabled=!testOnly&&process.env.PW2_GOOGLE_REGISTRATION_ENABLED==='true';
  if(!repository.configured||!gamePool||sources.projectMatch==='different'||sources.keyProjectMatch==='different'||!allowSessionWrites||process.env.SESSION_STORE!=='supabase')throw Error('Google requiere PostgreSQL del mismo proyecto y sesiones persistentes habilitadas');
- google=createGoogleAuth({pool:gamePool,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,registrationEnabled,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY,origin:configuredOrigin,testOnly,testEmail:process.env.PW2_GOOGLE_TEST_EMAIL,onDiagnostic:event=>console.log(JSON.stringify(event))}),onDiagnostic:event=>console.log(JSON.stringify(event))});
+ google=createGoogleAuth({pool:gamePool,moderation,origin:configuredOrigin,secret:authSecret,termsVersion:legal.version,registrationEnabled,provider:createGoogleProvider({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY,origin:configuredOrigin,testOnly,testEmail:process.env.PW2_GOOGLE_TEST_EMAIL,onDiagnostic:event=>console.log(JSON.stringify(event))}),onDiagnostic:event=>console.log(JSON.stringify(event))});
 }
-const administration=createAdministration({pool:gamePool,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
-const handler=createBackend({repository,economy,games,google,administration,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
-const site=serveSite({authenticate:handler.authenticate});
+const administration=createAdministration({pool:gamePool,moderation,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
+const community=createCommunity({pool:gamePool,moderation,resources:EDITABLE_RESOURCES});
+const handler=createBackend({repository,economy,games,google,administration,moderation,community,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
+const site=serveSite({authenticate:async req=>{
+ const user=await handler.authenticate(req);if(user&&moderation.enabled){const path=new URL(req.url,'http://local').pathname;const scope=gameScopeFromPath(path);if(scope)await moderation.service(scope)}return user;
+}});
 const server=http.createServer((req,res)=>{
  if(req.url==='/healthz'){res.writeHead(repository.configured?200:503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ready:repository.configured}));return}
  if(legal.matches(req.url))return legal.handle(req,res);

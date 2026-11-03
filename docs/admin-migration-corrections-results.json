@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-03",
+  "source": "user-provided Supabase function export",
+  "sourceBodyMD5": "2aa000dbbb080f04b029e2fd687f39eb",
+  "correctedBodyMD5": "10a0758a39ca77c04cb0301e447bfe9c",
+  "npm_test": {
+    "passed": 310,
+    "failed": 0,
+    "skipped": 0
+  },
+  "build": {
+    "ok": true,
+    "publicFiles": 500
+  },
+  "browser": {
+    "extendedChecks": 16,
+    "compatibilityChecks": 27,
+    "pageErrors": 0,
+    "externalRequests": 0
+  },
+  "productionSQLExecuted": false,
+  "productionFunctionQueriedByAgent": false,
+  "realOAuthTested": false,
+  "realPhoneTested": false,
+  "multiProcessPostgresTested": false,
+  "commitPushDeploy": false
+}

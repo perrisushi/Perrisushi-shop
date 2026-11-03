@@ -10,7 +10,7 @@ import {authenticateTraditional,authDiagnostic} from './traditional-auth.mjs';
 import {oauthToken} from './google-auth.mjs';
 import {matchesPassword} from './security.mjs';
 import {digest,sessionKey,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
-export function createBackend({repository,economy,games,google,administration,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
+export function createBackend({repository,economy,games,google,administration,moderation,community,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=8*3600_000,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
  if(proxySecret&&proxySecret.length<32)throw Error('Proxy secret too short');
  const origin=validatePublicOrigin(publicOrigin);
  if(production&&(new URL(origin).protocol!=='https:'||sessionStore!=='supabase'||!allowSessionWrites))throw Error('Production requires HTTPS and approved persistent sessions');
@@ -36,6 +36,7 @@ export function createBackend({repository,economy,games,google,administration,le
   const joined=sessionStore==='supabase'&&typeof repository.authenticatedSession==='function';
   let row;try{row=await (joined?repository.authenticatedSession(sessionKey(token)):sessionRead(sessionKey(token)))}catch(error){try{onAuthDiagnostic({event:'traditional_auth',requestId:randomUUID(),stage:'session_restore',outcome:'failure',reason:'session_read_failed',...authDiagnostic(error)})}catch{};throw error}if(!row)return finish(null,'session_not_found_or_inactive');if(typeof row.nick!=='string'||!row.nick||!Number.isFinite(Date.parse(row.expires_at)))return finish(null,'invalid_session_record');if(Date.parse(row.expires_at)<=now())return finish(null,'session_expired');
   if(!joined){const [access,player]=await Promise.all([(repository.accessStatus??repository.access)(row.nick),repository.player(row.nick)]);if(!access||!player||access.active===false||player.active===false)return finish(null,'account_inactive')}
+  await moderation?.check(row.nick);
   return finish({nick:row.nick,token},'session_valid');
  }
  function pagination(url,cursorField='cursor'){
@@ -58,7 +59,7 @@ export function createBackend({repository,economy,games,google,administration,le
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
-   const known=[...ADMIN_ROUTES,'/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
+   const known=[...ADMIN_ROUTES,'/api/store','/api/store/buy','/api/raffles','/api/raffles/register','/api/community','/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
    if(!['GET','POST'].includes(req.method))fail(405,'method_not_allowed');
    if(!reads.take(clientIP))fail(429,'too_many_requests');
@@ -88,8 +89,8 @@ export function createBackend({repository,economy,games,google,administration,le
       if(result.outcome==='register')cookies=[google.cookie(flowToken)];
       target='/?google='+result.outcome+'#'+(result.outcome==='linked'?'profile':'home');
      }catch(error){
-      const allowed=['google_cancelled','google_expired','google_conflict','account_inactive','session_expired','google_unavailable','google_not_allowed','registration_unavailable'];
-      target='/?google='+(allowed.includes(error?.code)?error.code:'google_failed')+'#home';
+      const allowed=['account_suspended','account_banned','moderation_unavailable','google_cancelled','google_expired','google_conflict','account_inactive','session_expired','google_unavailable','google_not_allowed','registration_unavailable'];
+      target='/?google='+(allowed.includes(error?.code)?error.code:'google_failed')+(error?.publicDetails?.expiresAt?'&until='+encodeURIComponent(error.publicDetails.expiresAt):'')+'#home';
       try{await google?.cancel(flowToken)}catch{}
      }
      status=303;res.writeHead(303,{'Location':target,'Set-Cookie':cookies,'X-Request-ID':requestId,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});res.end();return;
@@ -135,19 +136,20 @@ export function createBackend({repository,economy,games,google,administration,le
     }
     fail(405,'method_not_allowed');
    }
-   if(req.method==='POST'&&['/api/shop/random-key/redeem','/api/shop/raffles/buy'].includes(route)&&!economy)fail(403,'operation_disabled');
+   if(req.method==='POST'&&route==='/api/shop/random-key/redeem')fail(403,'operation_disabled');
+   if(req.method==='POST'&&route==='/api/shop/raffles/buy'&&!economy)fail(403,'operation_disabled');
    if(req.method==='POST'&&route==='/api/auth/login'){
     const data=await jsonBody(req);if(typeof data.nick!=='string'||!data.nick.length||data.nick.length>80||/[\x00-\x1f]/.test(data.nick)||typeof data.password!=='string'||!data.password.length||data.password.length>1024)fail(400,'invalid_request');
     if(!loginIp.take(clientIP)||!loginNick.take(digest(data.nick.trim().toLowerCase())))fail(429,'too_many_requests');
     const requestId=randomUUID();res.setHeader?.('X-Request-ID',requestId);
     await clearGoogleAttempt(req);
-    const {token,row}=await authenticateTraditional({repository,nick:data.nick,password:data.password,sessionStore,allowSessionWrites,sessionTtlMs,now,requestId,onDiagnostic:onAuthDiagnostic,createMemorySession:row=>{
+    const {token,row}=await authenticateTraditional({repository,nick:data.nick,password:data.password,sessionStore,allowSessionWrites,sessionTtlMs,now,requestId,onDiagnostic:onAuthDiagnostic,checkAccount:nick=>moderation?.check(nick),createMemorySession:row=>{
      for(const [key,value]of sessions)if(Date.parse(value.expires_at)<=now())sessions.delete(key);
      if(sessions.size>=5000)fail(503,'session_capacity');sessions.set(row.token,row);
     }});
     detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':google?[cookie(token),google.cookie('',true)]:cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
-   if(req.method==='POST'&&!route.startsWith('/api/admin/')&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
+   if(req.method==='POST'&&!['/api/store/buy','/api/raffles/register'].includes(route)&&!route.startsWith('/api/admin/')&&!['/api/inventory/open','/api/auth/logout','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
    if(!repository.configured)fail(503,'backend_not_configured');
    const user=await identity(req,route==='/api/session');
@@ -155,13 +157,19 @@ export function createBackend({repository,economy,games,google,administration,le
    if(user&&!accountReads.take(user.nick))fail(429,'too_many_requests');
    if(route==='/api/session'&&req.method==='GET'){send(200,{authenticated:Boolean(user),...(user?{nick:user.nick,sessionPersistence:sessionStore}:{})},user?{'X-CSRF-Token':csrfFor(user.token,csrfSecret)}:{});return}
    if(!user)fail(401,'session_expired');
+   if(['/api/store','/api/raffles','/api/community','/api/store/buy','/api/raffles/register'].includes(route)){
+    if(url.searchParams.size)fail(400,'invalid_request');
+    if(!community?.enabled){if(req.method==='GET'){send(200,{enabled:false});return}fail(403,'operation_disabled')}
+    if(route.endsWith('/buy')||route.endsWith('/register')){if(req.method!=='POST')fail(405,'method_not_allowed');if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');send(200,await community.execute(user,route.endsWith('/buy')?'store-buy':'raffle-register',await jsonBody(req)));return}
+    if(req.method!=='GET')fail(405,'method_not_allowed');send(200,{enabled:true,...await community.read(user,route.split('/').pop())});return;
+   }
    if(ADMIN_ROUTES.includes(route)){
     // La cookie identifica al actor; el permiso se lee de nuevo en servidor.
     const role=await repository.adminAccess?.(user.nick);
     const isAdmin=role?.nick===user.nick&&role.active!==false&&role.is_admin===true;
     if(route==='/api/admin/context'){
      if(req.method!=='GET'||url.searchParams.size)fail(400,'invalid_request');
-     send(200,{isAdmin,available:isAdmin&&administration?.configured===true});return;
+     send(200,{isAdmin,available:isAdmin&&administration?.configured===true,...(isAdmin&&administration?.moderationEnabled?{moderationEnabled:true}:{})});return;
     }
     if(!isAdmin)fail(403,'admin_required');
     if(!administration?.configured)fail(503,'admin_unavailable');
@@ -192,7 +200,7 @@ export function createBackend({repository,economy,games,google,administration,le
      send(200,{rewards:result.rewardBundle?.rewards??(result.reward?[result.reward]:[])});return;
     }
     if(route==='/api/games/action'){if(!games)fail(503,'games_not_configured');send(200,await games.execute(user,body));return}
-    if(route==='/api/shop/random-key/redeem'||route==='/api/shop/raffles/buy'){send(200,await economy.execute(user.nick,route.endsWith('/buy')?'raffle-buy':'random-redeem',body));return}
+    if(route==='/api/shop/raffles/buy'){send(200,await economy.execute(user.nick,'raffle-buy',body));return}
     if(route==='/api/profile/avatar'){
      if(Object.keys(body).join(',')!=='avatarId'||typeof body.avatarId!=='string'||body.avatarId.length>100)fail(400,'invalid_request');
      const [profile,logos]=await Promise.all([repository.profile(user.nick),repository.logos()]);
@@ -236,11 +244,11 @@ export function createBackend({repository,economy,games,google,administration,le
    }
    if(route==='/api/shop/random-key'){
     const ticketOptions=pagination(url,'ticketCursor'),claimOptions=pagination(url,'claimCursor');const [tickets,claims,inventory]=await Promise.all([repository.page('tickets',user.nick,ticketOptions),repository.page('claims',user.nick,claimOptions),repository.inventory(user.nick)]);
-    send(200,{tickets:pageDTO(tickets,ticketOptions,'tickets'),claims:pageDTO(claims,claimOptions,'claims'),inventoryRandomKey:inventory?.random_key??null,operationsEnabled:(await economy?.status())?.enabled===true,statusRulesVerified:true});return;
+    send(200,{tickets:pageDTO(tickets,ticketOptions,'tickets'),claims:pageDTO(claims,claimOptions,'claims'),inventoryRandomKey:inventory?.random_key??null,operationsEnabled:false,statusRulesVerified:true});return;
    }
-   if(route==='/api/shop/raffles'){const inventory=await repository.inventory(user.nick),policy=await economy?.status();send(200,{available:policy?.raffleEnabled===true,reason:policy?.raffleEnabled?'verified_policy':'rules_not_verified',policy:policy?.raffleEnabled?{price:policy.price,max:policy.max}:null,operationsEnabled:policy?.raffleEnabled===true,tickets:inventory?{boleto_sorteo1:inventory.boleto_sorteo1,boleto_sorteo2:inventory.boleto_sorteo2,mini_sorteo:inventory.mini_sorteo}:null});return}
+   if(route==='/api/shop/raffles'){let maintenance=false;try{await moderation?.service('raffles')}catch(e){if(e.code!=='service_maintenance')throw e;maintenance=true}const inventory=await repository.inventory(user.nick),policy=await economy?.status();send(200,{available:!maintenance&&policy?.raffleEnabled===true,reason:policy?.raffleEnabled?'verified_policy':'rules_not_verified',policy:policy?.raffleEnabled?{price:policy.price,max:policy.max}:null,operationsEnabled:!maintenance&&policy?.raffleEnabled===true,tickets:inventory?{boleto_sorteo1:inventory.boleto_sorteo1,boleto_sorteo2:inventory.boleto_sorteo2,mini_sorteo:inventory.mini_sorteo}:null});return}
    fail(405,'method_not_allowed');
-  }catch(error){send(error instanceof BackendError?error.status:500,{error:error instanceof BackendError?error.code:'request_failed'})}
+  }catch(error){send(error instanceof BackendError?error.status:500,{error:error instanceof BackendError?error.code:'request_failed',...(error instanceof BackendError&&['account_suspended','account_banned'].includes(error.code)?error.publicDetails??{}:{})})}
   finally{try{const metric=metricsContext.getStore();onMetric({route,method:req.method,status,durationMs:Math.max(0,now()-started),queries:metric.queries,restMs:metric.restMs??0,sqlQueries:metric.sqlQueries??0,sqlMs:metric.sqlMs??0,poolMs:metric.poolMs??0,lockMs:metric.lockMs??0})}catch{}}
  })};
  // Solo agrupa verificaciones de recursos simultáneas con la misma cookie.

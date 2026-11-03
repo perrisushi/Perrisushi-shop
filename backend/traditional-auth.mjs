@@ -14,7 +14,7 @@ export function authDiagnostic(error){
  return result;
 }
 
-export async function authenticateTraditional({repository,nick,password,sessionStore,allowSessionWrites,sessionTtlMs,now,createMemorySession,requestId,onDiagnostic=()=>{}}){
+export async function authenticateTraditional({repository,nick,password,sessionStore,allowSessionWrites,sessionTtlMs,now,createMemorySession,requestId,onDiagnostic=()=>{},checkAccount=async()=>{}}){
  let stage='access_lookup',reason='query_failed';
  const emit=(outcome,error)=>{try{onDiagnostic({event:'traditional_auth',requestId,stage,outcome,reason,...authDiagnostic(error)})}catch{}};
  const reject=(status,code,why)=>{reason=why;throw new BackendError(status,code)};
@@ -35,6 +35,7 @@ export async function authenticateTraditional({repository,nick,password,sessionS
   if(!player)reject(503,'backend_unavailable','player_missing');
   if(player.active===false)reject(401,'invalid_credentials','player_disabled');
   if(player.active!=null&&typeof player.active!=='boolean')reject(503,'backend_unavailable','invalid_active_field');
+  stage='account_moderation';await checkAccount(access.nick);
   const token=newToken(),row={token:sessionKey(token),nick:access.nick,expires_at:new Date(now()+sessionTtlMs).toISOString(),created_at:new Date(now()).toISOString(),updated_at:new Date(now()).toISOString()};
   stage='session_create';reason='session_write_failed';
   if(sessionStore==='supabase'){
@@ -44,6 +45,7 @@ export async function authenticateTraditional({repository,nick,password,sessionS
    const saved=await repository.session(row.token);
    if(!saved||saved.token!==row.token||saved.nick!==row.nick||Date.parse(saved.expires_at)!==Date.parse(row.expires_at))reject(503,'backend_unavailable','session_not_recoverable');
   }else createMemorySession(row);
+  try{await checkAccount(access.nick)}catch(error){if(sessionStore==='supabase')try{await repository.deleteSession(row.token)}catch{};throw error}
   stage='complete';reason='authenticated';emit('success');return {token,row};
  }catch(error){
   emit('failure',error);

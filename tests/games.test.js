@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
+import {createModeration} from '../backend/moderation.mjs';
 import {createGames} from '../backend/games.mjs';
 import {sessionKey} from '../backend/security.mjs';
 import {createHash,randomUUID} from 'node:crypto';
@@ -10,7 +11,7 @@ import {gamesEnabled,inspectGameStorage} from '../backend/game-readiness.mjs';
 import {checkGames} from '../scripts/check-games.mjs';
 process.env.SUPABASE_URL='https://only-local.invalid';process.env.SUPABASE_SERVICE_ROLE_KEY='LOCAL-TEST-NOT-A-CREDENTIAL';
 const {default:legacy}=await import('../backend/games-original.cjs');
-async function fixture(){
+async function fixture({extended=false}={}){
  const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role;');
  await db.exec((await readFile('tests/fixtures/game-schema.sql','utf8')).replace('create extension if not exists pgcrypto;',''));
  await db.exec(await readFile('tests/fixtures/game-rpg.sql','utf8'));
@@ -22,7 +23,8 @@ async function fixture(){
  await db.query("insert into shop_profiles(nick,selected_logo_id,owned_logo_ids) values('LocalA','logo-buho-1','[\"logo-buho-1\"]')");
  await db.query('insert into shop_sessions(token,nick,expires_at) values($1,$2,now()+interval \'1 day\')',[sessionKey(user.token),user.nick]);
  const pool={connect:async()=>({query:(...args)=>db.query(...args),release:()=>{}})};
- return {db,user,pool,games:createGames({pool,legacy,enabled:true})};
+ if(extended){await db.exec(await readFile('sql/001-economia-atomica.sql','utf8'));await db.exec(await readFile('sql/004-administracion-ampliada.sql','utf8'));}
+ return {db,user,pool,games:createGames({pool,legacy,enabled:true,moderation:createModeration({pool,enabled:extended})})};
 }
 
 test('arranque de juegos automático con conexión existente; apagado explícito conservado',()=>{
@@ -415,5 +417,22 @@ test('una fila auxiliar cuyo UPDATE no se confirma impide confirmar premios y re
   const before=(await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,id=randomUUID();
   await assert.rejects(f.games.execute(f.user,{action:'publicShopOpenInventoryChest',chestType:'perriCofres',chestOpenId:'server',idempotencyKey:id}),e=>e.code==='operation_conflict');
   assert.deepEqual((await f.db.query("select * from shop_inventories where nick='LocalA'")).rows,before);assert.deepEqual(await f.games.containerReceipt(f.user,{itemId:'perri_cofres',idempotencyKey:id}),{status:'not_found'});assert.equal((await f.db.query('select count(*)::int n from shop_activity')).rows[0].n,0);
+ }finally{await f.db.close()}
+});
+// Integración con la implementación original, no un simulador de recompensas.
+test('SQL 004: mantenimiento de tienda permite coste y recompensa reales de Casillas y compras RPG',async()=>{
+ const f=await fixture({extended:true});try{
+  await f.db.exec("INSERT INTO pw2_community_controls(scope,active,message) VALUES('shop',true,'Pausa local')");
+  await f.games.execute(f.user,{action:'publicShopGetPerriCasillas',idempotencyKey:randomUUID()});
+  const id=randomUUID(),body={action:'publicShopOpenPerriCasilla',cellIndex:0,openId:id,idempotencyKey:id};
+  const first=await f.games.execute(f.user,body);assert.equal(first.ok,true,JSON.stringify(first));
+  const after=(await f.db.query("SELECT to_jsonb(i) AS inv FROM shop_inventories i WHERE nick='LocalA'")).rows;
+  assert.deepEqual(await f.games.execute(f.user,body),first);
+  assert.deepEqual((await f.db.query("SELECT to_jsonb(i) AS inv FROM shop_inventories i WHERE nick='LocalA'")).rows,after);
+  await f.games.execute(f.user,{action:'publicShopRpgState',idempotencyKey:randomUUID()});
+  const before=(await f.db.query("SELECT polvo_gema FROM shop_inventories WHERE nick='LocalA'")).rows[0].polvo_gema;
+  const price=(await f.db.query("SELECT price_pg FROM shop_rpg_catalog WHERE item_id='potion-weak'")).rows[0].price_pg;
+  assert.equal((await f.games.execute(f.user,{action:'publicShopRpgPurchase',itemId:'potion-weak',quantity:1,idempotencyKey:randomUUID()})).ok,true);
+  assert.equal((await f.db.query("SELECT polvo_gema FROM shop_inventories WHERE nick='LocalA'")).rows[0].polvo_gema,before-price);
  }finally{await f.db.close()}
 });

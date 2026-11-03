@@ -65,9 +65,9 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
         if(!response.ok) {
           if(response.status===401) { csrfToken=''; clearCache();if(path!=='/auth/login')onSessionExpired(); }
           const fallback=response.status===401?'session_expired':response.status===403?'forbidden':response.status===429?'too_many_requests':'request_failed';
-          let code=fallback;
-          try{const data=await response.json();if(['admin_required','admin_unavailable','admin_stale','admin_protected','admin_recipient_limit','origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','chest_unavailable','invalid_request','inventory_mismatch','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable','google_unavailable','google_not_allowed','google_failed','google_expired','google_conflict','google_already_signed_in','registration_unavailable','nick_invalid','nick_unavailable','legal_changed'].includes(data?.error))code=data.error}catch{}
-          throw new ApiError(response.status,code);
+          let code=fallback,expiresAt;
+          try{const data=await response.json();if(['product_changed','product_unavailable','already_owned','raffle_closed','raffle_integrity_error','insufficient_tickets','community_unavailable','unsupported_product','invalid_reward','raffle_state','raffle_dates','no_participants','account_suspended','account_banned','moderation_unavailable','service_maintenance','invalid_sanction_date','sanction_not_active','not_found','admin_required','admin_unavailable','admin_stale','admin_protected','admin_recipient_limit','origin_mismatch','proxy_auth_required','cross_site_request','csrf_invalid','unsupported_media_type','backend_not_configured','backend_unavailable','invalid_credentials','operation_disabled','session_writes_disabled','chest_unavailable','invalid_request','inventory_mismatch','item_not_owned','avatar_not_owned','avatar_not_changed','operation_conflict','insufficient_balance','invalid_balance','ticket_limit','no_stock','no_active_ticket','account_inactive','inventory_missing','economy_unavailable','games_not_configured','games_unavailable','google_unavailable','google_not_allowed','google_failed','google_expired','google_conflict','google_already_signed_in','registration_unavailable','nick_invalid','nick_unavailable','legal_changed'].includes(data?.error))code=data.error;if(typeof data?.expiresAt==='string'&&Number.isFinite(Date.parse(data.expiresAt)))expiresAt=data.expiresAt}catch{}
+          const error=new ApiError(response.status,code);if(expiresAt)error.expiresAt=expiresAt;throw error;
         }
         let result;
         try { result=await response.json(); }
@@ -101,8 +101,10 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
   return Object.freeze({
     clearCache,
     getCsrfToken:()=>csrfToken,
+    getStore:()=>request('/store'),getRaffleEvents:()=>request('/raffles'),getCommunity:()=>request('/community'),
+    buyProduct:body=>request('/store/buy',{method:'POST',body}),registerRaffle:body=>request('/raffles/register',{method:'POST',body}),
     adminContext:()=>request('/admin/context'),
-    adminRead:(section,params={})=>{if(!['users','account','records','store','raffles'].includes(section))throw new TypeError('Sección incorrecta');return request('/admin/'+section,{params})},
+    adminRead:(section,params={})=>{if(!['users','account','sanctions','controls','records','store','raffles'].includes(section))throw new TypeError('Sección incorrecta');return request('/admin/'+section,{params})},
     adminExecute:body=>request('/admin/execute',{method:'POST',body}),
     getSession: ()=>request(ENDPOINTS.session,{cacheMs:0}),
     googleConfig: ()=>request('/auth/google/config'),

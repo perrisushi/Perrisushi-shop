@@ -61,13 +61,14 @@ export function createGoogleProvider({url,key,origin,testOnly=false,testEmail,on
   }
  };
 }
-export function createGoogleAuth({pool,provider,origin,secret,termsVersion,registrationEnabled=true,sessionTtlMs=8*3600_000,onDiagnostic=()=>{}}){
+export function createGoogleAuth({pool,provider,origin,secret,termsVersion,registrationEnabled=true,sessionTtlMs=8*3600_000,moderation,onDiagnostic=()=>{}}){
  const secure=origin.startsWith('https:');
  const cookie=(token='',clear=false)=>'pw2_oauth='+token+'; Path=/; HttpOnly; SameSite=Lax'+(secure?'; Secure':'')+'; Max-Age='+(clear?0:600);
  const csrf=token=>csrfFor('google:'+token,secret);
  async function tx(work){
   let client;try{
    client=await pool.connect();await client.query('BEGIN');await client.query("SET LOCAL lock_timeout='5s'");await client.query("SET LOCAL statement_timeout='10s'");
+   if(moderation?.enabled)await client.query("SELECT pg_advisory_xact_lock(hashtextextended('pw2:shared-games-economy',0))");
    const result=await work(client);await client.query('COMMIT');return result;
   }catch(error){try{await client?.query('ROLLBACK')}catch{}
    if(error instanceof BackendError)throw error;
@@ -83,6 +84,7 @@ export function createGoogleAuth({pool,provider,origin,secret,termsVersion,regis
  async function account(client,nick){
   const row=(await client.query('SELECT a.nick,a.active AS access_active,p.active AS player_active FROM public.shop_access a JOIN public.shop_players p ON p.nick=a.nick WHERE a.nick=$1 FOR SHARE OF a,p',[nick])).rows[0];
   if(!row||row.access_active===false||row.player_active===false)fail(403,'account_inactive');
+  await moderation?.enforceWithClient(client,nick);
   return row.nick;
  }
  async function issue(client,nick){

@@ -1,3 +1,4 @@
+import {gameScopeFromAction} from './service-scopes.mjs';
 import {createHash} from 'node:crypto';
 import {sessionKey} from './security.mjs';
 import {BackendError} from './repository.mjs';
@@ -8,7 +9,7 @@ const actions={publicShopOpenInventoryChest:["chestType","chestOpenId"],publicSh
 // No copiar estados completos por cada consulta/autoguardado. Pet ya valida
 // serverRevision dentro de esta misma transacción: repetir una revisión no gasta dos veces.
 const revisionOrRead=new Set(['publicShopGetNotifications','publicShopRefresh','publicShopGetProfile','publicShopListUsers','publicShopPerriPetState','publicShopPerriPetSave','publicShopRpgState','publicShopGetDuelTarget','publicShopExpireDuelTarget','publicShopGetPerriCasillas']);
-export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onError=()=>{},onDiagnostic=()=>{}}={}){
+export function createGames({pool,legacy,enabled=false,sourceCompatible=true,moderation,onError=()=>{},onDiagnostic=()=>{}}={}){
  const emptyGames=()=>Object.fromEntries(gameNames.map(name=>[name,false]));
  const emit=(reason,extra={})=>{try{onDiagnostic({event:'games_runtime',reason,...extra})}catch{}};
  let cachedSchema,pendingSchema;
@@ -16,6 +17,7 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
  const validUser=user=>typeof user?.nick==='string'&&user.nick.length>0&&typeof user.token==='string'&&/^[\w-]{43}$/.test(user.token);
  const sharedSession=async(client,user)=>{
   if(!validUser(user))return null;
+  await moderation?.enforceWithClient(client,user.nick);
   const rows=(await client.query("SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE",[sessionKey(user.token),user.nick])).rows;
   return rows.length===1?rows[0]:null;
  };
@@ -59,7 +61,8 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
    client=measuredClient(await timed('poolMs',()=>pool.connect()));if(!await sharedSession(client,user))return reject('session_not_shared');
    const checked=await schema(client),available=Object.values(checked.games).some(Boolean);
    if(!Object.values(checked.games).every(Boolean))emit('schema_incomplete',checked);
-   return {available,games:checked.games,reason:available?'ready':'schema_incomplete'};
+   const games={...checked.games};if(moderation?.enabled)for(const name of gameNames){try{await moderation.serviceWithClient(client,name)}catch(e){if(e.code!=='service_maintenance')throw e;games[name]=false}}
+   const ready=Object.values(games).some(Boolean);return {available:ready,games,reason:ready?'ready':'service_maintenance'};
   }catch(error){emit('database_unavailable',{failure:gameFailure(error)});return {available:false,games:emptyGames(),reason:'database_unavailable'}}finally{client?.release()}
  },async availableFor(user){
   return (await runtime.availability(user)).available;
@@ -80,6 +83,8 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,onE
    await client.query('BEGIN');await client.query("SELECT set_config('lock_timeout','5s',true),set_config('statement_timeout','10s',true)");
    await timed('lockMs',()=>client.query("SELECT pg_advisory_xact_lock(hashtextextended('pw2:shared-games-economy',0))"));
    // Revalidar también antes de devolver un recibo ya registrado, nunca solo al abrir.
+   const service=gameScopeFromAction(body.action);
+   if(service)await moderation?.serviceWithClient(client,service);
    const verified=await sharedSession(client,user);if(!verified)throw new BackendError(401,'session_expired');
    const op='pw2:game:'+operationId;
    const existing=recordOperation?(await client.query('SELECT nick,action,response FROM public.shop_operations WHERE operation_id=$1',[op])).rows[0]:null;
