@@ -6,7 +6,7 @@ import {gameHtml} from '../backend/public-paths.mjs';
 const root=resolve(import.meta.dirname,'..');
 const files=['index.html','privacidad.html','_redirects','_headers','src/main.js','src/routes.js','src/styles.css','src/global-scale.css','src/fixed-layout.css','src/global-scale.js','src/desktop-layout-fix.css','src/preview-pages.css','src/services/api-client.js','src/services/live-ui.js','src/services/help-content.js','src/services/notifications.js','src/game-bridge.js','src/casillas-host.js','games/manifest.json'];
 const {readFile}=await import('node:fs/promises');
-files.push('src/services/admin-ui.js','src/admin.css','src/services/perrilogo.js','src/services/perrilogo-catalog.js','src/perrilogo.css');
+files.push('src/services/admin-ui.js','src/admin.css','src/services/startup.js','src/services/perrilogo.js','src/services/perrilogo-catalog.js','src/perrilogo.css');
 for(const name of await readdir(resolve(root,'public/assets/perrilogos'),{recursive:true}))if(/^(fondo-logo|logo|marco-basico)[\\/][\w-]+\.png$/.test(name))files.push('public/assets/perrilogos/'+name.replaceAll('\\','/'));
 files.push('src/game-window.js','src/game-window.css','src/game-presentation.js','src/game-presentation.css');
 files.push(...JSON.parse(await readFile(resolve(root,'games/manifest.json'),'utf8')).files.map(f=>f.path));

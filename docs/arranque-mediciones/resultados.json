@@ -1,0 +1,1135 @@
+{
+  "baseline": "08e628888256d218a32b8e1b6b82f0cf2c66e68a",
+  "mode": "LOCAL: Edge real + PGlite; latencias simuladas; no producción",
+  "latencies": {
+    "/api/session": 60,
+    "/api/admin/context": 180,
+    "/api/auth/google/status": 160,
+    "/api/profile": 140,
+    "/api/community": 220,
+    "/api/notifications": 280
+  },
+  "cosmeticsLatency": 300,
+  "secondaryFailureMobilePassed": true,
+  "invertedProfileCosmeticsOrderPassed": true,
+  "summary": [
+    {
+      "route": "home",
+      "before": {
+        "screen": 1162.9000000059605,
+        "profile": null,
+        "cosmetics": 1162.9000000059605
+      },
+      "after": {
+        "screen": 127.59999999403954,
+        "profile": null,
+        "cosmetics": 443.80000001192093
+      }
+    },
+    {
+      "route": "profile",
+      "before": {
+        "screen": 1176.0999999940395,
+        "profile": 1176.0999999940395,
+        "cosmetics": 1176.0999999940395
+      },
+      "after": {
+        "screen": 141.7000000178814,
+        "profile": 291.2000000178814,
+        "cosmetics": 453.90000000596046
+      }
+    }
+  ],
+  "results": [
+    {
+      "mode": "before",
+      "route": "home",
+      "sample": 0,
+      "times": {
+        "screen": 1175.699999988079,
+        "cosmetics": 1175.800000011921
+      },
+      "resources": [
+        {
+          "path": "/api/auth/google/config",
+          "start": 65.5,
+          "duration": 1.699999988079071
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 70.59999999403954,
+          "duration": 2.2000000178813934
+        },
+        {
+          "path": "/api/session",
+          "start": 74.19999998807907,
+          "duration": 67.80000001192093
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 142.90000000596046,
+          "duration": 184.5
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 328.09999999403954,
+          "duration": 161.5
+        },
+        {
+          "path": "/api/profile",
+          "start": 490.19999998807907,
+          "duration": 451.30000001192093
+        },
+        {
+          "path": "/api/community",
+          "start": 942.3000000119209,
+          "duration": 225.19999998807907
+        },
+        {
+          "path": "/api/community",
+          "start": 1175.199999988079,
+          "duration": 232.40000000596046
+        },
+        {
+          "path": "/api/notifications",
+          "start": 1175.4000000059605,
+          "duration": 291.09999999403954
+        }
+      ],
+      "measures": [],
+      "counts": {
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/session": 1,
+        "/api/admin/context": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile": 1,
+        "/api/community": 2,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "before",
+      "route": "home",
+      "sample": 1,
+      "times": {
+        "screen": 1149,
+        "cosmetics": 1149
+      },
+      "resources": [
+        {
+          "path": "/api/auth/google/config",
+          "start": 44,
+          "duration": 2.5
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 48.30000001192093,
+          "duration": 2.7999999821186066
+        },
+        {
+          "path": "/api/session",
+          "start": 53.099999994039536,
+          "duration": 65
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 118.90000000596046,
+          "duration": 183.90000000596046
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 303.5,
+          "duration": 160.59999999403954
+        },
+        {
+          "path": "/api/profile",
+          "start": 464.80000001192093,
+          "duration": 449.19999998807907
+        },
+        {
+          "path": "/api/community",
+          "start": 914.8000000119209,
+          "duration": 226.5
+        },
+        {
+          "path": "/api/community",
+          "start": 1148.5999999940395,
+          "duration": 236.59999999403954
+        },
+        {
+          "path": "/api/notifications",
+          "start": 1148.699999988079,
+          "duration": 295.7000000178814
+        }
+      ],
+      "measures": [],
+      "counts": {
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/session": 1,
+        "/api/admin/context": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile": 1,
+        "/api/community": 2,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "before",
+      "route": "home",
+      "sample": 2,
+      "times": {
+        "screen": 1162.9000000059605,
+        "cosmetics": 1162.9000000059605
+      },
+      "resources": [
+        {
+          "path": "/api/auth/google/config",
+          "start": 57.599999994039536,
+          "duration": 2.5
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 62.30000001192093,
+          "duration": 2.5
+        },
+        {
+          "path": "/api/session",
+          "start": 65.90000000596046,
+          "duration": 63.30000001192093
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 130.2000000178814,
+          "duration": 183.39999997615814
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 314.40000000596046,
+          "duration": 161.59999999403954
+        },
+        {
+          "path": "/api/profile",
+          "start": 476.59999999403954,
+          "duration": 448.40000000596046
+        },
+        {
+          "path": "/api/community",
+          "start": 925.7000000178814,
+          "duration": 229.19999998807907
+        },
+        {
+          "path": "/api/community",
+          "start": 1162.300000011921,
+          "duration": 236.90000000596046
+        },
+        {
+          "path": "/api/notifications",
+          "start": 1162.5,
+          "duration": 293.30000001192093
+        }
+      ],
+      "measures": [],
+      "counts": {
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/session": 1,
+        "/api/admin/context": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile": 1,
+        "/api/community": 2,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "before",
+      "route": "profile",
+      "sample": 0,
+      "times": {
+        "screen": 1176.0999999940395,
+        "profile": 1176.0999999940395,
+        "cosmetics": 1176.0999999940395
+      },
+      "resources": [
+        {
+          "path": "/api/auth/google/config",
+          "start": 50.30000001192093,
+          "duration": 3.0999999940395355
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 54.80000001192093,
+          "duration": 2.399999976158142
+        },
+        {
+          "path": "/api/session",
+          "start": 65.90000000596046,
+          "duration": 63.900000005960464
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 130.5,
+          "duration": 184.40000000596046
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 315.80000001192093,
+          "duration": 161.2999999821186
+        },
+        {
+          "path": "/api/profile",
+          "start": 477.80000001192093,
+          "duration": 448.19999998807907
+        },
+        {
+          "path": "/api/community",
+          "start": 926.8000000119209,
+          "duration": 225.5
+        },
+        {
+          "path": "/api/community",
+          "start": 1175.800000011921,
+          "duration": 226.5
+        },
+        {
+          "path": "/api/notifications",
+          "start": 1176,
+          "duration": 284.09999999403954
+        }
+      ],
+      "measures": [],
+      "counts": {
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/session": 1,
+        "/api/admin/context": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile": 1,
+        "/api/community": 2,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "before",
+      "route": "profile",
+      "sample": 1,
+      "times": {
+        "screen": 1177.0999999940395,
+        "profile": 1177.2000000178814,
+        "cosmetics": 1177.2000000178814
+      },
+      "resources": [
+        {
+          "path": "/api/auth/google/config",
+          "start": 54.5,
+          "duration": 2.7000000178813934
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 59.20000001788139,
+          "duration": 1.7999999821186066
+        },
+        {
+          "path": "/api/session",
+          "start": 62.900000005960464,
+          "duration": 65.09999999403954
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 128.90000000596046,
+          "duration": 185.80000001192093
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 315.59999999403954,
+          "duration": 161.10000002384186
+        },
+        {
+          "path": "/api/profile",
+          "start": 477.59999999403954,
+          "duration": 449
+        },
+        {
+          "path": "/api/community",
+          "start": 927.5999999940395,
+          "duration": 226.30000001192093
+        },
+        {
+          "path": "/api/community",
+          "start": 1176.7000000178814,
+          "duration": 227.7999999821186
+        },
+        {
+          "path": "/api/notifications",
+          "start": 1177,
+          "duration": 284.40000000596046
+        }
+      ],
+      "measures": [],
+      "counts": {
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/session": 1,
+        "/api/admin/context": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile": 1,
+        "/api/community": 2,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "before",
+      "route": "profile",
+      "sample": 2,
+      "times": {
+        "screen": 1160.5999999940395,
+        "profile": 1160.5999999940395,
+        "cosmetics": 1160.5999999940395
+      },
+      "resources": [
+        {
+          "path": "/api/auth/google/config",
+          "start": 43.79999998211861,
+          "duration": 3.300000011920929
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 47.79999998211861,
+          "duration": 1.4000000059604645
+        },
+        {
+          "path": "/api/session",
+          "start": 50.19999998807907,
+          "duration": 63.30000001192093
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 114.59999999403954,
+          "duration": 183.80000001192093
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 299.2999999821186,
+          "duration": 160.90000000596046
+        },
+        {
+          "path": "/api/profile",
+          "start": 460.90000000596046,
+          "duration": 448.39999997615814
+        },
+        {
+          "path": "/api/community",
+          "start": 910.0999999940395,
+          "duration": 228.19999998807907
+        },
+        {
+          "path": "/api/community",
+          "start": 1160.2999999821186,
+          "duration": 228.40000000596046
+        },
+        {
+          "path": "/api/notifications",
+          "start": 1160.5,
+          "duration": 284.59999999403954
+        }
+      ],
+      "measures": [],
+      "counts": {
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/session": 1,
+        "/api/admin/context": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile": 1,
+        "/api/community": 2,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "after",
+      "route": "home",
+      "sample": 0,
+      "times": {
+        "screen": 130.80000001192093,
+        "cosmetics": 448.59999999403954
+      },
+      "resources": [
+        {
+          "path": "/api/session",
+          "start": 57.099999994039536,
+          "duration": 65.90000000596046
+        },
+        {
+          "path": "/api/auth/google/config",
+          "start": 57.30000001192093,
+          "duration": 4.699999988079071
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 63,
+          "duration": 2.5
+        },
+        {
+          "path": "/api/profile",
+          "start": 130.19999998807907,
+          "duration": 153.90000000596046
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 130.19999998807907,
+          "duration": 317.40000000596046
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 130.30000001192093,
+          "duration": 193.5
+        },
+        {
+          "path": "/api/community",
+          "start": 130.30000001192093,
+          "duration": 234.5
+        },
+        {
+          "path": "/api/notifications",
+          "start": 130.40000000596046,
+          "duration": 293.2999999821186
+        }
+      ],
+      "measures": [
+        {
+          "name": "pw2:session",
+          "start": 56.099999994039536,
+          "duration": 67.7000000178814
+        },
+        {
+          "name": "pw2:startup-to-screen",
+          "start": 56.099999994039536,
+          "duration": 73.7000000178814
+        },
+        {
+          "name": "pw2:screen",
+          "start": 123.90000000596046,
+          "duration": 5.9000000059604645
+        },
+        {
+          "name": "pw2:profile",
+          "start": 129.80000001192093,
+          "duration": 155.09999999403954
+        },
+        {
+          "name": "pw2:notifications",
+          "start": 129.90000000596046,
+          "duration": 0.5
+        },
+        {
+          "name": "pw2:profile",
+          "start": 129.90000000596046,
+          "duration": 154.7999999821186
+        },
+        {
+          "name": "pw2:admin",
+          "start": 129.90000000596046,
+          "duration": 194.5
+        },
+        {
+          "name": "pw2:community",
+          "start": 129.90000000596046,
+          "duration": 235.90000000596046
+        },
+        {
+          "name": "pw2:cosmetics",
+          "start": 129.90000000596046,
+          "duration": 318.19999998807907
+        }
+      ],
+      "counts": {
+        "/api/session": 1,
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/profile/cosmetics": 1,
+        "/api/profile": 1,
+        "/api/admin/context": 1,
+        "/api/community": 1,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "after",
+      "route": "home",
+      "sample": 1,
+      "times": {
+        "screen": 122.5,
+        "cosmetics": 443.80000001192093
+      },
+      "resources": [
+        {
+          "path": "/api/session",
+          "start": 50.099999994039536,
+          "duration": 64
+        },
+        {
+          "path": "/api/auth/google/config",
+          "start": 50.19999998807907,
+          "duration": 2.7000000178813934
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 54.599999994039536,
+          "duration": 1.5
+        },
+        {
+          "path": "/api/profile",
+          "start": 121.80000001192093,
+          "duration": 156.39999997615814
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 121.80000001192093,
+          "duration": 195.09999999403954
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 121.80000001192093,
+          "duration": 318.09999999403954
+        },
+        {
+          "path": "/api/community",
+          "start": 121.90000000596046,
+          "duration": 235.90000000596046
+        },
+        {
+          "path": "/api/notifications",
+          "start": 122,
+          "duration": 297.40000000596046
+        }
+      ],
+      "measures": [
+        {
+          "name": "pw2:startup-to-screen",
+          "start": 49.30000001192093,
+          "duration": 72.09999999403954
+        },
+        {
+          "name": "pw2:session",
+          "start": 49.400000005960464,
+          "duration": 65.40000000596046
+        },
+        {
+          "name": "pw2:screen",
+          "start": 114.90000000596046,
+          "duration": 6.4000000059604645
+        },
+        {
+          "name": "pw2:profile",
+          "start": 121.40000000596046,
+          "duration": 157.69999998807907
+        },
+        {
+          "name": "pw2:profile",
+          "start": 121.5,
+          "duration": 157.40000000596046
+        },
+        {
+          "name": "pw2:admin",
+          "start": 121.5,
+          "duration": 196
+        },
+        {
+          "name": "pw2:community",
+          "start": 121.5,
+          "duration": 237.19999998807907
+        },
+        {
+          "name": "pw2:cosmetics",
+          "start": 121.5,
+          "duration": 319
+        },
+        {
+          "name": "pw2:notifications",
+          "start": 121.59999999403954,
+          "duration": 0.4000000059604645
+        }
+      ],
+      "counts": {
+        "/api/session": 1,
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/profile/cosmetics": 1,
+        "/api/profile": 1,
+        "/api/admin/context": 1,
+        "/api/community": 1,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "after",
+      "route": "home",
+      "sample": 2,
+      "times": {
+        "screen": 127.59999999403954,
+        "cosmetics": 443
+      },
+      "resources": [
+        {
+          "path": "/api/session",
+          "start": 53.5,
+          "duration": 65.7999999821186
+        },
+        {
+          "path": "/api/auth/google/config",
+          "start": 53.599999994039536,
+          "duration": 3.9000000059604645
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 58.69999998807907,
+          "duration": 3
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 126.90000000596046,
+          "duration": 315.09999999403954
+        },
+        {
+          "path": "/api/profile",
+          "start": 127,
+          "duration": 152.5
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 127.09999999403954,
+          "duration": 194.09999999403954
+        },
+        {
+          "path": "/api/community",
+          "start": 127.09999999403954,
+          "duration": 236.80000001192093
+        },
+        {
+          "path": "/api/notifications",
+          "start": 127.19999998807907,
+          "duration": 294.30000001192093
+        }
+      ],
+      "measures": [
+        {
+          "name": "pw2:session",
+          "start": 52.900000005960464,
+          "duration": 67.19999998807907
+        },
+        {
+          "name": "pw2:startup-to-screen",
+          "start": 52.900000005960464,
+          "duration": 73.69999998807907
+        },
+        {
+          "name": "pw2:screen",
+          "start": 120.19999998807907,
+          "duration": 6.4000000059604645
+        },
+        {
+          "name": "pw2:profile",
+          "start": 126.59999999403954,
+          "duration": 153.80000001192093
+        },
+        {
+          "name": "pw2:profile",
+          "start": 126.69999998807907,
+          "duration": 153.59999999403954
+        },
+        {
+          "name": "pw2:admin",
+          "start": 126.69999998807907,
+          "duration": 195.2000000178814
+        },
+        {
+          "name": "pw2:community",
+          "start": 126.69999998807907,
+          "duration": 238.09999999403954
+        },
+        {
+          "name": "pw2:cosmetics",
+          "start": 126.69999998807907,
+          "duration": 316
+        },
+        {
+          "name": "pw2:notifications",
+          "start": 126.7999999821186,
+          "duration": 0.4000000059604645
+        }
+      ],
+      "counts": {
+        "/api/session": 1,
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/profile/cosmetics": 1,
+        "/api/profile": 1,
+        "/api/admin/context": 1,
+        "/api/community": 1,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "after",
+      "route": "profile",
+      "sample": 0,
+      "times": {
+        "screen": 144.5,
+        "profile": 292.30000001192093,
+        "cosmetics": 454
+      },
+      "resources": [
+        {
+          "path": "/api/auth/google/config",
+          "start": 54.10000002384186,
+          "duration": 3.199999988079071
+        },
+        {
+          "path": "/api/session",
+          "start": 54.10000002384186,
+          "duration": 66.59999999403954
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 59.5,
+          "duration": 3
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 143.90000000596046,
+          "duration": 161.5
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 143.90000000596046,
+          "duration": 307.7000000178814
+        },
+        {
+          "path": "/api/profile",
+          "start": 144,
+          "duration": 145.30000001192093
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 144.2000000178814,
+          "duration": 188.69999998807907
+        },
+        {
+          "path": "/api/community",
+          "start": 144.30000001192093,
+          "duration": 229.09999999403954
+        },
+        {
+          "path": "/api/notifications",
+          "start": 144.40000000596046,
+          "duration": 298
+        }
+      ],
+      "measures": [
+        {
+          "name": "pw2:startup-to-screen",
+          "start": 53.30000001192093,
+          "duration": 90.69999998807907
+        },
+        {
+          "name": "pw2:session",
+          "start": 53.400000005960464,
+          "duration": 68
+        },
+        {
+          "name": "pw2:screen",
+          "start": 121.5,
+          "duration": 22.5
+        },
+        {
+          "name": "pw2:google-status",
+          "start": 143.60000002384186,
+          "duration": 162.39999997615814
+        },
+        {
+          "name": "pw2:profile",
+          "start": 143.7000000178814,
+          "duration": 146.40000000596046
+        },
+        {
+          "name": "pw2:cosmetics",
+          "start": 143.7000000178814,
+          "duration": 308.40000000596046
+        },
+        {
+          "name": "pw2:profile",
+          "start": 144,
+          "duration": 148.30000001192093
+        },
+        {
+          "name": "pw2:admin",
+          "start": 144,
+          "duration": 189.80000001192093
+        },
+        {
+          "name": "pw2:community",
+          "start": 144,
+          "duration": 229.90000000596046
+        },
+        {
+          "name": "pw2:notifications",
+          "start": 144.10000002384186,
+          "duration": 0.19999998807907104
+        }
+      ],
+      "counts": {
+        "/api/session": 1,
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile/cosmetics": 1,
+        "/api/profile": 1,
+        "/api/admin/context": 1,
+        "/api/community": 1,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "after",
+      "route": "profile",
+      "sample": 1,
+      "times": {
+        "screen": 141.7000000178814,
+        "profile": 291.2000000178814,
+        "cosmetics": 453.90000000596046
+      },
+      "resources": [
+        {
+          "path": "/api/session",
+          "start": 52.5,
+          "duration": 66.09999999403954
+        },
+        {
+          "path": "/api/auth/google/config",
+          "start": 52.599999994039536,
+          "duration": 3.2000000178813934
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 57,
+          "duration": 2
+        },
+        {
+          "path": "/api/profile",
+          "start": 141,
+          "duration": 146.09999999403954
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 141,
+          "duration": 161.90000000596046
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 141,
+          "duration": 308.40000000596046
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 141.40000000596046,
+          "duration": 187.69999998807907
+        },
+        {
+          "path": "/api/community",
+          "start": 141.40000000596046,
+          "duration": 231.40000000596046
+        },
+        {
+          "path": "/api/notifications",
+          "start": 141.59999999403954,
+          "duration": 288.5
+        }
+      ],
+      "measures": [
+        {
+          "name": "pw2:session",
+          "start": 51.900000005960464,
+          "duration": 67.30000001192093
+        },
+        {
+          "name": "pw2:startup-to-screen",
+          "start": 51.900000005960464,
+          "duration": 89.09999999403954
+        },
+        {
+          "name": "pw2:screen",
+          "start": 119.30000001192093,
+          "duration": 21.69999998807907
+        },
+        {
+          "name": "pw2:google-status",
+          "start": 140.59999999403954,
+          "duration": 162.90000000596046
+        },
+        {
+          "name": "pw2:profile",
+          "start": 140.7000000178814,
+          "duration": 147.09999999403954
+        },
+        {
+          "name": "pw2:cosmetics",
+          "start": 140.7000000178814,
+          "duration": 309.39999997615814
+        },
+        {
+          "name": "pw2:profile",
+          "start": 141.09999999403954,
+          "duration": 148.7000000178814
+        },
+        {
+          "name": "pw2:admin",
+          "start": 141.09999999403954,
+          "duration": 188.60000002384186
+        },
+        {
+          "name": "pw2:notifications",
+          "start": 141.2000000178814,
+          "duration": 0.29999998211860657
+        },
+        {
+          "name": "pw2:community",
+          "start": 141.2000000178814,
+          "duration": 232.2999999821186
+        }
+      ],
+      "counts": {
+        "/api/session": 1,
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile/cosmetics": 1,
+        "/api/profile": 1,
+        "/api/admin/context": 1,
+        "/api/community": 1,
+        "/api/notifications": 1
+      }
+    },
+    {
+      "mode": "after",
+      "route": "profile",
+      "sample": 2,
+      "times": {
+        "screen": 141,
+        "profile": 290.39999997615814,
+        "cosmetics": 450.09999999403954
+      },
+      "resources": [
+        {
+          "path": "/api/session",
+          "start": 53.5,
+          "duration": 64.39999997615814
+        },
+        {
+          "path": "/api/auth/google/config",
+          "start": 53.599999994039536,
+          "duration": 3.199999988079071
+        },
+        {
+          "path": "/api/auth/google/pending",
+          "start": 58.29999998211861,
+          "duration": 3.0999999940395355
+        },
+        {
+          "path": "/api/profile",
+          "start": 140,
+          "duration": 146.09999999403954
+        },
+        {
+          "path": "/api/auth/google/status",
+          "start": 140,
+          "duration": 161.39999997615814
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 140,
+          "duration": 307.7999999821186
+        },
+        {
+          "path": "/api/admin/context",
+          "start": 140.39999997615814,
+          "duration": 187.7000000178814
+        },
+        {
+          "path": "/api/community",
+          "start": 140.5,
+          "duration": 231.5
+        },
+        {
+          "path": "/api/notifications",
+          "start": 140.7999999821186,
+          "duration": 287.90000000596046
+        }
+      ],
+      "measures": [
+        {
+          "name": "pw2:session",
+          "start": 52.5,
+          "duration": 66.2999999821186
+        },
+        {
+          "name": "pw2:startup-to-screen",
+          "start": 52.5,
+          "duration": 87.59999999403954
+        },
+        {
+          "name": "pw2:screen",
+          "start": 118.7999999821186,
+          "duration": 21.30000001192093
+        },
+        {
+          "name": "pw2:google-status",
+          "start": 139.59999999403954,
+          "duration": 162.19999998807907
+        },
+        {
+          "name": "pw2:profile",
+          "start": 139.69999998807907,
+          "duration": 147
+        },
+        {
+          "name": "pw2:cosmetics",
+          "start": 139.69999998807907,
+          "duration": 308.69999998807907
+        },
+        {
+          "name": "pw2:profile",
+          "start": 140.09999999403954,
+          "duration": 148.5
+        },
+        {
+          "name": "pw2:admin",
+          "start": 140.09999999403954,
+          "duration": 188.59999999403954
+        },
+        {
+          "name": "pw2:community",
+          "start": 140.19999998807907,
+          "duration": 232.40000000596046
+        },
+        {
+          "name": "pw2:notifications",
+          "start": 140.2999999821186,
+          "duration": 0.4000000059604645
+        }
+      ],
+      "counts": {
+        "/api/session": 1,
+        "/api/auth/google/config": 1,
+        "/api/auth/google/pending": 1,
+        "/api/auth/google/status": 1,
+        "/api/profile/cosmetics": 1,
+        "/api/profile": 1,
+        "/api/admin/context": 1,
+        "/api/community": 1,
+        "/api/notifications": 1
+      }
+    }
+  ],
+  "errors": []
+}

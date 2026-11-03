@@ -188,6 +188,10 @@ export function createBackend({repository,economy,games,google,administration,mo
    if(user&&!accountReads.take(user.nick))fail(429,'too_many_requests');
    if(route==='/api/session'&&req.method==='GET'){send(200,{authenticated:Boolean(user),...(user?{nick:user.nick,sessionPersistence:sessionStore}:{})},user?{'X-CSRF-Token':csrfFor(user.token,csrfSecret)}:{});return}
    if(!user)fail(401,'session_expired');
+   if(route==='/api/profile/cosmetics'&&req.method==='GET'){
+    if(url.searchParams.size)fail(400,'invalid_request');
+    send(200,community?.cosmeticsEnabled?await community.read(user,'cosmetics'):{enabled:false});return;
+   }
    if(['/api/store','/api/raffles','/api/community','/api/store/buy','/api/raffles/register'].includes(route)){
     if(url.searchParams.size)fail(400,'invalid_request');
     if(!community?.enabled){if(req.method==='GET'){send(200,{enabled:false});return}fail(403,'operation_disabled')}
@@ -214,7 +218,7 @@ export function createBackend({repository,economy,games,google,administration,mo
    }
    if(route==='/api/games/context'){if(url.searchParams.size)fail(400,'invalid_request');const [inventory,readiness]=await Promise.all([repository.inventory(user.nick),games?.availability?games.availability(user):Promise.resolve(games?.availableFor?.(user)).then(available=>({available:available===true}))]);send(200,{...readiness,available:inventory!==null&&readiness.available===true,nick:user.nick,sessionToken:'cookie-session',inventory:Object.fromEntries(Object.entries(inventory??{}).filter(([k])=>!['nick','updated_at'].includes(k)).map(([k,v])=>[k.replace(/_([a-z0-9])/g,(_,c)=>c.toUpperCase()),v]))},{'X-CSRF-Token':csrfFor(user.token,csrfSecret)});return}
    // La identidad siempre deriva de la cookie; los parámetros privados ajenos se rechazan.
-   for(const field of url.searchParams.keys())if(!(route==='/api/inventory/open/status'?['id','itemId']:route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:route==='/api/notifications'?['limit','cursor','state']:['limit','cursor']).includes(field))fail(400,'invalid_request');
+   for(const field of url.searchParams.keys())if(!(route==='/api/inventory/open/status'?['id','itemId']:route==='/api/shop/receipt'?['id']:route==='/api/shop/random-key'?['limit','ticketCursor','claimCursor']:route==='/api/notifications'?['limit','cursor','state']:route==='/api/profile'?['deferCosmetics']:['limit','cursor']).includes(field))fail(400,'invalid_request');
    if(route==='/api/inventory/open/status'){
     if(req.method!=='GET')fail(405,'method_not_allowed');if(!games?.containerReceipt)fail(503,'games_not_configured');
     send(200,await games.containerReceipt(user,{itemId:url.searchParams.get('itemId'),idempotencyKey:url.searchParams.get('id')}));return;
@@ -260,10 +264,11 @@ export function createBackend({repository,economy,games,google,administration,mo
     if(!record||!['random-redeem','raffle-buy'].includes(record.action)||String(result?.operationId).toLowerCase()!==id.toLowerCase())fail(404,'not_found');send(200,result);return;
    }
    if(route==='/api/profile'){
+    if(url.searchParams.has('deferCosmetics')&&url.searchParams.get('deferCosmetics')!=='1')fail(400,'invalid_request');
     const [profile,logos,inventory]=await Promise.all([repository.profile(user.nick),repository.logos(),repository.inventory(user.nick)]);
     const owned=Array.isArray(profile?.owned_logo_ids)?profile.owned_logo_ids.filter(id=>typeof id==='string'):[];
     // No se concede propiedad implícita por is_default ni se confía en rutas de assets de BD.
-    send(200,{nick:user.nick,balances:inventory?{pc:inventory.pc,gemas:inventory.polvo_gema,monedas:inventory.monedas}:null,profile:profile?{selectedLogoId:owned.includes(profile.selected_logo_id)?profile.selected_logo_id:null,selectedLogoAssetId:owned.includes(profile.selected_logo_id)?logoAsset(logos.find(l=>l.logo_id===profile.selected_logo_id)):null,ownedLogoIds:owned,karma:profile.karma,achievements:profile.achievements,selectedTitleId:profile.selected_title_id}:null,logos:logos.map(l=>({id:l.logo_id,name:l.name,assetId:logoAsset(l),owned:owned.includes(l.logo_id)})),collectionTruncated:false,...(community?.cosmeticsEnabled?{cosmetics:await community.read(user,'cosmetics')}:{})});return;
+    send(200,{nick:user.nick,balances:inventory?{pc:inventory.pc,gemas:inventory.polvo_gema,monedas:inventory.monedas}:null,profile:profile?{selectedLogoId:owned.includes(profile.selected_logo_id)?profile.selected_logo_id:null,selectedLogoAssetId:owned.includes(profile.selected_logo_id)?logoAsset(logos.find(l=>l.logo_id===profile.selected_logo_id)):null,ownedLogoIds:owned,karma:profile.karma,achievements:profile.achievements,selectedTitleId:profile.selected_title_id}:null,logos:logos.map(l=>({id:l.logo_id,name:l.name,assetId:logoAsset(l),owned:owned.includes(l.logo_id)})),collectionTruncated:false,cosmeticsEnabled:community?.cosmeticsEnabled===true,...(community?.cosmeticsEnabled&&!url.searchParams.has('deferCosmetics')?{cosmetics:await community.read(user,'cosmetics')}:{})});return;
    }
    if(route==='/api/inventory'){
     const [row,state]=await Promise.all([repository.inventory(user.nick),games?.containerState?.(user)??Promise.resolve({available:false})]);

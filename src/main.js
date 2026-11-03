@@ -1,3 +1,4 @@
+import {startAuthenticatedUI,measuredLoad} from './services/startup.js';
 import {renderPerrilogo,renderCosmeticCollection} from './services/perrilogo.js';
 import {createAdminTools} from './services/admin-ui.js';
 import {initializeGlobalScale,designRect,designHeight,desktopScaleActive} from './global-scale.js';
@@ -12,7 +13,7 @@ const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expire
 const adminTools=createAdminTools({api,open:type=>openModal(type),repaint:()=>{if(modalKind?.startsWith('admin:')){const card=overlay.querySelector('.modal-card');if(card){card.innerHTML=adminTools.markup();card.querySelector('.modal-close')?.focus({preventScroll:true})}}},onChange:()=>{void refreshCommunity(true);void loadCurrentRoute(normalizeRoute(location.hash));void notificationCenter.refresh()}});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,logoutError=null,gameBootstrap=null;
 let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='',googleUntil=null;
-let communityState={enabled:false},selectedRaffleTab='buy';
+let communityState={enabled:false},communityLastCheck=0,selectedRaffleTab='buy';
 let openingGame=false,gameLaunchEpoch=0;
 const containerOperations=new Map();
 let inventoryObserver=null;
@@ -20,11 +21,11 @@ const openableContainers=['perri_cofres','perri_cofres_minijuego','bolsa_gemas',
 const remoteStates={};
 let notificationObserver=null,notificationReadTimer=null,notificationModalEpoch=0;
 const notificationCenter=createNotificationCenter({api,isActive:()=>Boolean(session)&&document.visibilityState==='visible',onPending:pending=>{
- void refreshCommunity();const bell=document.querySelector('.notification-trigger');bell.classList.toggle('has-unread',pending);bell.setAttribute('aria-label',pending?'Notificaciones nuevas pendientes':'Notificaciones');
+ const bell=document.querySelector('.notification-trigger');bell.classList.toggle('has-unread',pending);bell.setAttribute('aria-label',pending?'Notificaciones nuevas pendientes':'Notificaciones');
 },onViewed:id=>{const state=remoteStates.notifications;if(state?.items)state.items=state.items.map(item=>item.id===id?{...item,read_at:new Date().toISOString()}:item)},onError:()=>{
  const status=overlay.querySelector('.notification-status');if(status){status.innerHTML='No se pudo guardar la lectura. <button type="button" class="textured-button" data-action="retry-notifications">Reintentar</button>';}
 }});
-const refreshNotifications=()=>{if(document.visibilityState==='visible'){void notificationCenter.refresh();if(modalKind==='notifications')observeNotificationCards()}};
+const refreshNotifications=()=>{if(document.visibilityState==='visible'){void refreshCommunity();void notificationCenter.refresh();if(modalKind==='notifications')observeNotificationCards()}};
 document.addEventListener('visibilitychange',refreshNotifications);
 window.addEventListener('focus',refreshNotifications);
 function notificationVisible(element){
@@ -61,13 +62,13 @@ let selectedComposition={},cosmeticTab='logo',cosmeticDraft=null;
 // Solo identificadores del catálogo. Nunca construir una URL de avatar con un valor sin validar.
 const ALLOWED_AVATARS = new Set(['abeja-1','abuela-1','amparo-1','buho-1','cabra-1','cami-1','croqueta-1','esq-1','estresario-1','gato-1','panda-1','pelusa-1','perriweb1','slime-1','slime-2','perrisushi-adm']);
 let selectedAvatar = 'perriweb1';
-function avatarMarkup(id,className='') {return renderPerrilogo({...selectedComposition,logo:'logo-'+id},'perrilogo-preview '+className)}
+function avatarMarkup(id,className='') {if(session&&!profileState.cosmetics&&profileState.cosmeticsEnabled!==false)return `<span class="perrilogo-composition perrilogo-preview ${className}" role="status" aria-label="Cargando Perrilogo" aria-busy="true"></span>`;return renderPerrilogo({...selectedComposition,logo:'logo-'+id},'perrilogo-preview '+className)}
 /** Se llamará después de autenticar la sesión y leer el avatar verificado del usuario. */
 export function setAuthenticatedProfile(profile) {
   const id = profile?.authenticated === true ? (profileState.cosmetics?.selected?.logo?.replace(/^logo-/,'')??profile.avatarId) : null;
   selectedAvatar = ALLOWED_AVATARS.has(id) ? id : 'perriweb1';
   selectedComposition=profile?.authenticated===true?(profileState.cosmetics?.selected??{logo:'logo-'+selectedAvatar}):{logo:'logo-perriweb1'};
-  profileBadge.querySelectorAll('.avatar-image,.avatar-frame,.perrilogo-composition').forEach(el=>el.remove());profileBadge.insertAdjacentHTML('afterbegin',renderPerrilogo(selectedComposition));
+  profileBadge.querySelectorAll('.avatar-image,.avatar-frame,.perrilogo-composition').forEach(el=>el.remove());profileBadge.insertAdjacentHTML('afterbegin',profile?.authenticated===true&&!profileState.cosmetics&&profileState.cosmeticsEnabled!==false?'<span class="perrilogo-composition" role="status" aria-label="Cargando Perrilogo" aria-busy="true"></span>':renderPerrilogo(selectedComposition));
   profileBadge.setAttribute('aria-label', profile?.authenticated === true && profile?.displayName ? 'Perfil de ' + String(profile.displayName).slice(0,80) : 'Entrar en tu cuenta');
   profileBadge.dataset.authenticated = profile?.authenticated === true ? 'true' : 'false';
 }
@@ -262,7 +263,7 @@ function render() {
   document.title = `${routeTitles[route]} | Perrisushi World`;
   closeMenu();
   stage.scrollTop = 0;
-  stage.focus({preventScroll:true});void notificationCenter.refresh();
+  stage.focus({preventScroll:true});
   void loadCurrentRoute(route);
 }
 
@@ -309,7 +310,7 @@ async function confirmContainer(id,op,result,generation){
  if(generation!==sessionEpoch)return;
  op.result={rewards:result.rewards};op.phase='complete';op.busy=false;op.error='';storeContainer(id,op);
  api.clearCache();await loadCurrentRoute(normalizeRoute(location.hash));
- try{const profile=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...profile};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:profile.profile?.selectedLogoAssetId})}catch{}
+ try{const profile=await loadProfileData();if(generation!==sessionEpoch)return;setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:profile.profile?.selectedLogoAssetId})}catch{}
  if(generation===sessionEpoch)paintContainer(id);
 }
 async function recoverContainer(id,op,generation){
@@ -362,6 +363,7 @@ function modalMarkup(type) {
     const state=remoteStates[type]??{status:'loading'};
     return `<div class="modal-head"><h2 id="modal-title">Historial</h2><button data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${state.status==='ready'?`${(state.items??[]).map(item=>`<article class="info-strip"><div><strong>${escapeText(item.title??item.game??'Actividad')}</strong><p>${escapeText(item.message??item.result??'')}</p><p>${escapeText(item.details??'')}</p><small>${escapeText(item.created_at??'')}</small></div></article>`).join('')||stateNotice({status:'empty'})}${pager(state.nextCursor,type)}`:stateNotice(state)}`;
   }
+  if(type==='album'&&(!profileState.cosmetics&&profileState.cosmeticsEnabled!==false))return `<div class="modal-head"><h2 id="modal-title">Perrilogos</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div><p role="status">${profileState.cosmeticsError?'No se pudieron cargar. Cierra y vuelve a abrir para reintentar.':'Cargando…'}</p>`;
   if(type==='album'&&profileState.cosmetics?.enabled)return `<div class="modal-head"><h2 id="modal-title">Perrilogos</h2><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div>${renderCosmeticCollection(profileState.cosmetics,cosmeticTab,cosmeticDraft)}`;
   if(type==='album'){
     const s=profileState,logos=s.logos??[],owned=s.profile?.ownedLogoIds??[];
@@ -380,6 +382,7 @@ function openModal(type,{pending=false,immersive=false}={}) {
   notificationModalEpoch++;notificationObserver?.disconnect();clearTimeout(notificationReadTimer);
   if(!session)type='auth';
   modalKind=type;
+  if(type==='album'&&session&&(!profileState.cosmetics||profileState.cosmeticsError))void loadProfileData().catch(()=>{});
   lastFocus = sessionOptions.contains(document.activeElement) ? menuToggle : document.activeElement;
   closeMenu();
   overlay.innerHTML = `${type==='auth'?'':'<div class="modal-backdrop" data-action="close-modal"></div>'}<section class="modal-card ${type === 'album' ? 'album-card' : type.startsWith('game:') ? 'game-card' : type.startsWith('item:')||type.startsWith('game-help:')?'info-card':''}" role="dialog" aria-modal="true" aria-labelledby="modal-title">${pending&&type.startsWith('game:')?gameMarkup(type.slice(5),true):modalMarkup(type)}</section>`;
@@ -484,7 +487,7 @@ function resetPrivateState(){
   containerOperations.clear();
   gameLaunchEpoch++;openingGame=false;void gameWindow.close();
   communityState={enabled:false};selectedRaffleTab='buy';shopSelection.tab='cosmetics';shopSelection.category='backgrounds';
-  adminTools.reset();session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};cosmeticDraft=null;cosmeticTab='logo';economicOperations.clear();economicReceipt=null;
+  adminTools.reset();communityState={enabled:false};communityLastCheck=0;session=null;gameBootstrap=null;sessionEpoch++;routeEpoch++;api.clearCache();profileState={status:'signedOut'};cosmeticDraft=null;cosmeticTab='logo';economicOperations.clear();economicReceipt=null;
   for(const kind of ['users','inventory','shop','raffles'])setPageData(kind,{status:'signedOut'});
   for(const kind of Object.keys(remoteStates))delete remoteStates[kind];
   setAuthenticatedProfile(null);
@@ -499,13 +502,53 @@ function errorState(error){
   return {status:'error',error:error.code};
 }
 function syncIdentity(){const el=document.querySelector('.identity-chip strong');el.textContent=session?session.nick.slice(0,16):sessionState.status==='error'?'Sin conexión':'Sin sesión';el.title=session?.nick??message(sessionState)}
+function refreshProfilePresentation(){
+ if(!session)return;
+ setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:profileState.profile?.selectedLogoAssetId??profileState.profile?.selectedLogoId?.replace(/^logo-/,'')});
+ if(normalizeRoute(location.hash)==='profile')paintStage();
+ if(normalizeRoute(location.hash)==='shop'&&dataState.shop.status==='ready'){setPageData('shop',{...dataState.shop,cosmetics:profileState.cosmetics});paintStage()}
+ if(modalKind==='album')paintRemote('album');
+}
+let profileRead=null;
+function loadProfileData(){
+ const key=sessionEpoch+':'+api.getCacheEpoch();
+ if(profileRead?.key===key)return profileRead.promise;
+ const promise=readProfileData();profileRead={key,promise};
+ void promise.finally(()=>{if(profileRead?.promise===promise)profileRead=null}).catch(()=>{});return promise;
+}
+async function readProfileData(){
+ const generation=sessionEpoch;
+ // Empezar las dos lecturas independientes juntas; nunca dejar un rechazo sin observar.
+ const composition=measuredLoad('cosmetics',()=>api.getCosmetics()).then(data=>({data}),error=>({error}));
+ const result=await measuredLoad('profile',()=>api.getProfile());
+ if(generation!==sessionEpoch)return result;
+ profileState={...profileState,status:'ready',...result};refreshProfilePresentation();
+ if(result.cosmeticsEnabled){
+  void composition.then(({data:cosmetics,error})=>{
+   if(generation!==sessionEpoch)return;if(error)throw error;
+   if(profileState.cosmetics===cosmetics)return;profileState={...profileState,cosmetics,cosmeticsError:false};refreshProfilePresentation();
+  }).catch(error=>{if(generation===sessionEpoch&&error.code!=='session_changed'){profileState={...profileState,cosmeticsError:true};if(modalKind==='album')paintRemote('album')}});
+ }
+ return {...result,...(profileState.cosmetics?{cosmetics:profileState.cosmetics}:{})};
+}
+async function loadGoogleLink(){
+ if(!session||!googleConfig.enabled||normalizeRoute(location.hash)!=='profile')return;
+ const generation=sessionEpoch;
+ try{const result=await measuredLoad('google-status',()=>api.googleStatus());if(generation!==sessionEpoch)return;googleLinked=result.linked===true;if(normalizeRoute(location.hash)==='profile')paintStage()}catch{}
+}
 async function bootstrapSession(authenticated=null){
-  resetPrivateState();const generation=sessionEpoch;sessionState={status:'loading'};profileState={status:'loading'};
-  try{const result=authenticated??await api.getSession();if(generation!==sessionEpoch)return;session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
-   if(session){await adminTools.recognize();if(generation!==sessionEpoch)return;googlePending=null;if(googleConfig.enabled){try{googleLinked=(await api.googleStatus()).linked}catch{googleLinked=null}}const p=await api.getProfile();try{communityState=await api.getCommunity()}catch{communityState={enabled:false}}if(generation!==sessionEpoch)return;profileState={status:'ready',...p};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:p.profile?.selectedLogoAssetId??p.profile?.selectedLogoId})}
-   else {profileState={status:'signedOut'};if(['login','linked'].includes(googleNotice))googleNotice='google_session_missing'}
-  }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState}
-  syncIdentity();if(session){closeModal();document.body.dataset.access='ready'}render();if(session)notificationCenter.start();
+ resetPrivateState();const generation=sessionEpoch;sessionState={status:'loading'};profileState={status:'loading'};
+ try{
+  await startAuthenticatedUI({authenticated,getSession:()=>api.getSession(),onSession:result=>{
+   if(generation!==sessionEpoch)return false;
+   session=result.authenticated?result:null;sessionState={status:session?'ready':'signedOut'};
+   if(!session){profileState={status:'signedOut'};if(['login','linked'].includes(googleNotice))googleNotice='google_session_missing';syncIdentity();render();return false}
+   googlePending=null;return true;
+  },show:()=>{syncIdentity();closeModal();document.body.dataset.access='ready';setAuthenticatedProfile({authenticated:true,displayName:session.nick});render()},tasks:{
+   profile:()=>loadProfileData(),admin:async()=>{await adminTools.recognize();if(generation!==sessionEpoch)return;const header=stage.querySelector('.content-header');if(header&&!header.querySelector('.admin-entry'))header.insertAdjacentHTML('beforeend',adminTools.entry(normalizeRoute(location.hash)))},
+   community:()=>refreshCommunity(true),notifications:()=>{if(generation===sessionEpoch)notificationCenter.start()}
+  },onError:(error,name)=>{if(generation!==sessionEpoch||error.code==='session_changed')return;if(name==='profile'){profileState={...profileState,...errorState(error)};refreshProfilePresentation()}}});
+ }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState;syncIdentity();render()}
 }
 let sessionRecovery=null;
 function recoverSessionConnection(){
@@ -521,11 +564,12 @@ async function loadCurrentRoute(route){
  if(!['profile','users','inventory','shop','raffles'].includes(route))return;
  if(!session){if(route!=='profile')setPageData(route,sessionState.status!=='ready'?sessionState:{status:'signedOut'});paintStage();return}
  if(route!=='profile')setPageData(route,{status:'loading'});paintStage();
+ if(route==='profile')void loadGoogleLink();
  try{
-  const result=route==='profile'?await api.getProfile():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await Promise.all([api.getStore(),api.getProfile()]):await Promise.all([api.listRaffles(),api.getRaffleEvents()]);
+  const result=route==='profile'?await loadProfileData():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await Promise.all([api.getStore(),loadProfileData()]):await Promise.all([api.listRaffles(),api.getRaffleEvents()]);
   if(sequence!==routeEpoch||generation!==sessionEpoch)return;
-  if(route==='profile'){profileState={status:'ready',...result};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId??result.profile?.selectedLogoId})}
-  else {if(route==='shop'){profileState={status:'ready',...result[1]};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result[1].profile?.selectedLogoAssetId})}setPageData(route,{status:'ready',...(route==='shop'?{catalog:result[0],balances:result[1].balances,ownedLogoIds:result[1].profile?.ownedLogoIds??[],cosmetics:result[1].cosmetics}:route==='raffles'?{raffles:result[0],events:result[1]}:result)});}
+  if(route==='profile'){setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId??result.profile?.selectedLogoId})}
+  else {setPageData(route,{status:'ready',...(route==='shop'?{catalog:result[0],balances:result[1].balances,ownedLogoIds:result[1].profile?.ownedLogoIds??[],cosmetics:profileState.cosmetics}:route==='raffles'?{raffles:result[0],events:result[1]}:result)});}
  }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
@@ -576,8 +620,8 @@ async function savePersonalChange(kind,id,button){
  pendingPersonalChanges.add(kind);button.disabled=true;const generation=sessionEpoch;
  try{
   if(kind==='avatar'){
-   await api.updateAvatar(id);const result=await api.getProfile();if(generation!==sessionEpoch)return;
-   profileState={status:'ready',...result};setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album');
+   await api.updateAvatar(id);const result=await loadProfileData();if(generation!==sessionEpoch)return;
+   setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album');
   }
  }catch(error){if(generation===sessionEpoch){errorState(error);if(button.isConnected){button.textContent=message({error:error.code});button.disabled=false}}}
  finally{pendingPersonalChanges.delete(kind)}
@@ -630,8 +674,9 @@ async function initializeGoogleAccess(){
  const query=new URLSearchParams(location.search);googleNotice=query.get('google')??'';googleUntil=query.get('until');query.delete('until');
  if(query.has('google')){query.delete('google');history.replaceState(null,'',location.pathname+(query.size?'?'+query:'')+location.hash)}
  googlePending=null;googleLinked=null;
- try{googleConfig=await api.googleConfig();if(googleConfig.enabled){const pending=await api.googlePending();if(pending.pending)googlePending=pending}}catch{googleConfig={enabled:false,legalPublished:false}}
- await bootstrapSession();
+ const boot=bootstrapSession(),generation=sessionEpoch;
+ void (async()=>{try{googleConfig=await api.googleConfig();if(googleConfig.enabled&&!session){const pending=await api.googlePending();if(generation===sessionEpoch&&pending.pending)googlePending=pending}}catch{googleConfig={enabled:false,legalPublished:false}}if(generation!==sessionEpoch)return;if(!session&&sessionState.status!=='loading'){const form=overlay.querySelector('#traditional-login');if(!form||(!form.elements.nick.value&&!form.elements.password.value))showLogin()}else void loadGoogleLink()})();
+ await boot;
  if(session&&googleErrorNotice())openModal('google-error');
 }
 async function beginGoogle(button,password){
@@ -696,11 +741,10 @@ document.addEventListener('submit',event=>{
  void runCommunityOperation('raffle',{id:form.dataset.raffleRegister,quantity},form.querySelector('button'),form.querySelector('[role=status]'));
 });
 
-let communityLastCheck=0;
 async function refreshCommunity(force=false){
  if(!session||document.visibilityState!=='visible'||!force&&Date.now()-communityLastCheck<30000)return;
  communityLastCheck=Date.now();const generation=sessionEpoch;
- try{const fresh=await api.getCommunity();if(generation!==sessionEpoch)return;const changed=fresh.announcement!==communityState.announcement;communityState=fresh;if(changed&&normalizeRoute(location.hash)==='home')paintStage()}catch{}
+ try{const fresh=await api.getCommunity({force});if(generation!==sessionEpoch)return;const changed=fresh.announcement!==communityState.announcement;communityState=fresh;if(changed&&normalizeRoute(location.hash)==='home')paintStage()}catch{}
 }
 
 
@@ -709,7 +753,7 @@ document.addEventListener('click',async event=>{
  const preview=event.target.closest('[data-cosmetic-preview]');if(preview){cosmeticDraft={...profileState.cosmetics.selected,[preview.dataset.layer]:preview.dataset.cosmeticPreview};paintRemote('album');return}
  const equip=event.target.closest('[data-cosmetic-equip]');if(!equip||!session||pendingPersonalChanges.has('cosmetic'))return;
  const generation=sessionEpoch;pendingPersonalChanges.add('cosmetic');equip.disabled=true;
- try{await api.equipCosmetic(equip.dataset.layer,equip.dataset.cosmeticEquip);const result=await api.getProfile();if(generation!==sessionEpoch)return;profileState={status:'ready',...result};cosmeticDraft=null;setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album')}
+ try{await api.equipCosmetic(equip.dataset.layer,equip.dataset.cosmeticEquip);const result=await loadProfileData();if(generation!==sessionEpoch)return;cosmeticDraft=null;setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album')}
  catch(error){if(generation===sessionEpoch){const status=overlay.querySelector('.cosmetic-status');if(status)status.textContent=message({error:error.code});equip.disabled=false}}
  finally{pendingPersonalChanges.delete('cosmetic')}
 });

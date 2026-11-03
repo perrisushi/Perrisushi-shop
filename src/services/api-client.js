@@ -40,14 +40,14 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
     }
     const q=query.toString();return base+path+(q ? '?' + q:'');
   }
-  async function request(path, {method='GET', params, body, cacheMs=0}={}) {
+  async function request(path, {method='GET', params, body, cacheMs=0, force=false}={}) {
     if(!['GET','POST'].includes(method)) throw new TypeError('Método no permitido');
     if(method==='GET' && body!==undefined) throw new TypeError('GET sin cuerpo');
     // Toda mutación separa la caché y las lecturas pendientes del estado anterior,
     // también si login/logout falla o se pierde su respuesta.
     if(method==='POST') clearCache();
     const target=url(path,params), generation=epoch;
-    if(method==='GET' && cacheMs>0) {
+    if(method==='GET' && cacheMs>0 && !force) {
       const cached=cache.get(target);
       if(cached && cached.expires>now()) return cached.data;
     }
@@ -101,7 +101,8 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
   return Object.freeze({
     clearCache,
     getCsrfToken:()=>csrfToken,
-    getStore:()=>request('/store'),getRaffleEvents:()=>request('/raffles'),getCommunity:()=>request('/community'),
+    getCacheEpoch:()=>epoch,
+    getStore:()=>request('/store'),getRaffleEvents:()=>request('/raffles'),getCommunity:({force=false}={})=>request('/community',{cacheMs:30_000,force}),
     buyProduct:body=>request('/store/buy',{method:'POST',body}),registerRaffle:body=>request('/raffles/register',{method:'POST',body}),
     adminContext:()=>request('/admin/context'),
     adminRead:(section,params={})=>{if(!['users','account','sanctions','controls','records','store','raffles'].includes(section))throw new TypeError('Sección incorrecta');return request('/admin/'+section,{params})},
@@ -109,14 +110,15 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
     getSession: ()=>request(ENDPOINTS.session,{cacheMs:0}),
     googleConfig: ()=>request('/auth/google/config'),
     googlePending: ()=>request('/auth/google/pending'),
-    googleStatus: ()=>request('/auth/google/status'),
+    googleStatus: ()=>request('/auth/google/status',{cacheMs:30_000}),
     startGoogle: (mode='login',password)=>request('/auth/google/start',{method:'POST',body:{mode,...(password!==undefined?{password}:{})}}),
     registerGoogle: (nick,csrf,acceptedTerms,termsVersion)=>request('/auth/google/register',{method:'POST',body:{nick,csrf,acceptedTerms,termsVersion}}),
     cancelGoogle: ()=>request('/auth/google/cancel',{method:'POST',body:{}}),
     login: (nick,password)=>request('/auth/login',{method:'POST',body:{nick,password}}),
     logout: ()=>request('/auth/logout',{method:'POST',body:{}}),
     equipCosmetic:(layer,id)=>request('/profile/cosmetics',{method:'POST',body:{layer,id}}),
-    getProfile: ()=>request(ENDPOINTS.profile,{cacheMs:30_000}),
+    getProfile: ()=>request(ENDPOINTS.profile,{params:{deferCosmetics:1},cacheMs:30_000}),
+    getCosmetics: ()=>request('/profile/cosmetics',{cacheMs:30_000}),
     updateAvatar: (avatarId)=>request('/profile/avatar',{method:'POST',body:{avatarId}}),
     getHistory: ({cursor,limit=20}={})=>request(ENDPOINTS.history,{params:{cursor,limit:pageLimit(limit)},cacheMs:10_000}),
     listUsers: ({cursor,limit=20}={})=>request(ENDPOINTS.users,{params:{cursor,limit:pageLimit(limit)},cacheMs:60_000}),
