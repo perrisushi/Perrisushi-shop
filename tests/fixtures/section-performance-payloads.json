@@ -1,0 +1,295 @@
+{
+  "_notice": "Datos ficticios generados por los fixtures locales; no son datos de Supabase.",
+  "/inventory": {
+    "inventory": {
+      "monedas": 5,
+      "llaves": 2,
+      "polvo_gema": 25,
+      "fragmento_key": 0,
+      "perri_cofres": 0,
+      "perri_cofres_minijuego": 0,
+      "duelo": 0,
+      "perricita": 0,
+      "pc": 10000,
+      "chatarra": 3,
+      "espada": 0,
+      "espada_lv2": 0,
+      "espada_lv3": 0,
+      "escudo": 0,
+      "cuchillo": 0,
+      "collar": 0,
+      "random_key": 0,
+      "espada_legendaria": 0,
+      "escudo_madera": 0,
+      "escudo_metal": 0,
+      "escudo_legendario": 0,
+      "casco_sushi": 0,
+      "guantes_sushi": 0,
+      "pechera_sushi": 0,
+      "pantalones_sushi": 0,
+      "botas_sushi": 0,
+      "boleto_sorteo2": 0,
+      "mini_sorteo": 0,
+      "pinza_real": 0,
+      "agua_divina": 0,
+      "espada_sagrada": 0,
+      "gema_experiencia": 0,
+      "incubadora_mejorada": 0,
+      "pocion_divina": 0,
+      "reloj_cronotiempo": 0,
+      "bolsa_gemas": 0,
+      "bolsa_especial": 0,
+      "bolsa_chatarra": 0,
+      "cajita_armas": 0,
+      "revivir_pet": 0,
+      "updated_at": "2026-11-03T21:04:36.851Z"
+    },
+    "canOpenContainers": true,
+    "containerOpeningReason": "ready"
+  },
+  "/store": {
+    "enabled": true,
+    "maintenance": false,
+    "message": "",
+    "items": [
+      {
+        "id": "3214e233-911c-5d25-aba4-20827e6984fb",
+        "name": "Marco metálico",
+        "category": "frames",
+        "reward_type": "frame",
+        "reward_id": "marco-logo-metalico",
+        "quantity": 1,
+        "currency": "pc",
+        "price": 1500,
+        "stock": null,
+        "enabled": true,
+        "version": 1
+      },
+      {
+        "id": "3249e82a-b4cb-5ada-85be-936f3fb9d574",
+        "name": "Fondo básico",
+        "category": "backgrounds",
+        "reward_type": "background",
+        "reward_id": "fondo-logo-basico",
+        "quantity": 1,
+        "currency": "pc",
+        "price": 500,
+        "stock": null,
+        "enabled": true,
+        "version": 1
+      },
+      {
+        "id": "559b83d7-a591-5d03-b6ee-8fc714aad9bb",
+        "name": "Marco planta",
+        "category": "frames",
+        "reward_type": "frame",
+        "reward_id": "marco-logo-planta",
+        "quantity": 1,
+        "currency": "pc",
+        "price": 1500,
+        "stock": null,
+        "enabled": true,
+        "version": 1
+      },
+      {
+        "id": "58e06399-87c1-5526-a186-d4a951f10103",
+        "name": "Fondo piedra",
+        "category": "backgrounds",
+        "reward_type": "background",
+        "reward_id": "fondo-logo-piedra",
+        "quantity": 1,
+        "currency": "pc",
+        "price": 500,
+        "stock": null,
+        "enabled": true,
+        "version": 1
+      },
+      {
+        "id": "b2dc1bf6-e552-51ac-bee7-921b4607ecc0",
+        "name": "Fondo cuadrícula",
+        "category": "backgrounds",
+        "reward_type": "background",
+        "reward_id": "fondo-logo-cuadricula",
+        "quantity": 1,
+        "currency": "pc",
+        "price": 500,
+        "stock": null,
+        "enabled": true,
+        "version": 1
+      },
+      {
+        "id": "e7b224c8-7d91-58ea-b601-f89386cab6f6",
+        "name": "Marco morado gema",
+        "category": "frames",
+        "reward_type": "frame",
+        "reward_id": "marco-logo-morado-gema",
+        "quantity": 1,
+        "currency": "pc",
+        "price": 1500,
+        "stock": null,
+        "enabled": true,
+        "version": 1
+      }
+    ]
+  },
+  "/profile?deferCosmetics=1": {
+    "nick": "Usuario",
+    "balances": {
+      "pc": 10000,
+      "gemas": 25,
+      "monedas": 5
+    },
+    "profile": {
+      "selectedLogoId": "logo-pelusa-1",
+      "selectedLogoAssetId": "pelusa-1",
+      "ownedLogoIds": [
+        "logo-pelusa-1"
+      ],
+      "karma": "",
+      "achievements": [],
+      "selectedTitleId": ""
+    },
+    "logos": [
+      {
+        "id": "logo-pelusa-1",
+        "name": "Pelusa",
+        "assetId": "pelusa-1",
+        "owned": true
+      },
+      {
+        "id": "logo-abeja-1",
+        "name": "Abeja",
+        "assetId": "abeja-1",
+        "owned": false
+      },
+      {
+        "id": "logo-abuela-1",
+        "name": "Abuela",
+        "assetId": "abuela-1",
+        "owned": false
+      },
+      {
+        "id": "logo-amparo-1",
+        "name": "Amparo",
+        "assetId": "amparo-1",
+        "owned": false
+      },
+      {
+        "id": "logo-cabra-1",
+        "name": "Cabra",
+        "assetId": "cabra-1",
+        "owned": false
+      },
+      {
+        "id": "logo-cami-1",
+        "name": "Cami",
+        "assetId": "cami-1",
+        "owned": false
+      },
+      {
+        "id": "logo-croqueta-1",
+        "name": "Croqueta",
+        "assetId": "croqueta-1",
+        "owned": false
+      },
+      {
+        "id": "logo-esq-1",
+        "name": "Esqueleto",
+        "assetId": "esq-1",
+        "owned": false
+      },
+      {
+        "id": "logo-estresario-1",
+        "name": "Estresario",
+        "assetId": "estresario-1",
+        "owned": false
+      },
+      {
+        "id": "logo-gato-1",
+        "name": "Gato",
+        "assetId": "gato-1",
+        "owned": false
+      },
+      {
+        "id": "logo-panda-1",
+        "name": "Panda",
+        "assetId": "panda-1",
+        "owned": false
+      },
+      {
+        "id": "logo-slime-1",
+        "name": "Slime 1",
+        "assetId": "slime-1",
+        "owned": false
+      },
+      {
+        "id": "logo-slime-2",
+        "name": "Slime 2",
+        "assetId": "slime-2",
+        "owned": false
+      },
+      {
+        "id": "logo-buho-1",
+        "name": "Búho",
+        "assetId": "buho-1",
+        "owned": false
+      },
+      {
+        "id": "logo-perrisushi-adm",
+        "name": "Perrisushi · Administración",
+        "assetId": "perrisushi-adm",
+        "owned": false
+      }
+    ],
+    "collectionTruncated": false,
+    "cosmeticsEnabled": true
+  },
+  "/profile/cosmetics": {
+    "enabled": true,
+    "selected": {
+      "background": "fondo-logo-negro",
+      "logo": "logo-pelusa-1",
+      "frame": "marco-basico"
+    },
+    "owned": {
+      "background": [
+        "fondo-logo-negro"
+      ],
+      "logo": [
+        "logo-pelusa-1"
+      ],
+      "frame": [
+        "marco-basico"
+      ]
+    },
+    "items": [
+      {
+        "id": "fondo-logo-negro",
+        "layer": "background",
+        "name": "Fondo negro",
+        "src": "/public/assets/perrilogos/fondo-logo/fondo-logo-negro.png",
+        "origin": "default",
+        "price": null,
+        "active": true
+      },
+      {
+        "id": "logo-pelusa-1",
+        "layer": "logo",
+        "name": "Pelusa",
+        "src": "/public/assets/perrilogos/logo/logo-pelusa-1.png",
+        "origin": "chest",
+        "price": null,
+        "active": true
+      },
+      {
+        "id": "marco-basico",
+        "layer": "frame",
+        "name": "Marco básico",
+        "src": "/public/assets/perrilogos/marco-basico/marco-basico.png",
+        "origin": "default",
+        "price": null,
+        "active": true
+      }
+    ]
+  }
+}

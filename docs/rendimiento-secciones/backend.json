@@ -1,0 +1,685 @@
+{
+  "mode": "PGlite y REST locales; 25 ms artificiales por operación; sin producción",
+  "before": [
+    {
+      "path": "/inventory-before",
+      "sample": 0,
+      "ms": 304.58310000000006,
+      "rest": 2,
+      "sql": 8,
+      "serverTiming": "app;dur=303.5, rest;dur=80.6, sql;dur=252.1, pool;dur=0.1, lock;dur=0.0, sqlq;desc=\"8\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=clock_timestamp())::int quantity,count(*) FILTER (WHERE status<>'opened' AND NOT (status='available' AND expires_at>=clock_timestamp()))::int unavailable FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type"
+        }
+      ]
+    },
+    {
+      "path": "/inventory-before",
+      "sample": 1,
+      "ms": 278.3315,
+      "rest": 2,
+      "sql": 8,
+      "serverTiming": "app;dur=278.3, rest;dur=59.2, sql;dur=249.0, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"8\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=clock_timestamp())::int quantity,count(*) FILTER (WHERE status<>'opened' AND NOT (status='available' AND expires_at>=clock_timestamp()))::int unavailable FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type"
+        }
+      ]
+    },
+    {
+      "path": "/inventory-before",
+      "sample": 2,
+      "ms": 283.43259999999987,
+      "rest": 2,
+      "sql": 8,
+      "serverTiming": "app;dur=283.4, rest;dur=61.7, sql;dur=252.5, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"8\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=clock_timestamp())::int quantity,count(*) FILTER (WHERE status<>'opened' AND NOT (status='available' AND expires_at>=clock_timestamp()))::int unavailable FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type"
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "path": "/inventory-before",
+      "sample": 0,
+      "ms": 304.58310000000006,
+      "rest": 2,
+      "sql": 8,
+      "serverTiming": "app;dur=303.5, rest;dur=80.6, sql;dur=252.1, pool;dur=0.1, lock;dur=0.0, sqlq;desc=\"8\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=clock_timestamp())::int quantity,count(*) FILTER (WHERE status<>'opened' AND NOT (status='available' AND expires_at>=clock_timestamp()))::int unavailable FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type"
+        }
+      ]
+    },
+    {
+      "path": "/inventory-before",
+      "sample": 1,
+      "ms": 278.3315,
+      "rest": 2,
+      "sql": 8,
+      "serverTiming": "app;dur=278.3, rest;dur=59.2, sql;dur=249.0, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"8\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=clock_timestamp())::int quantity,count(*) FILTER (WHERE status<>'opened' AND NOT (status='available' AND expires_at>=clock_timestamp()))::int unavailable FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type"
+        }
+      ]
+    },
+    {
+      "path": "/inventory-before",
+      "sample": 2,
+      "ms": 283.43259999999987,
+      "rest": 2,
+      "sql": 8,
+      "serverTiming": "app;dur=283.4, rest;dur=61.7, sql;dur=252.5, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"8\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT chest_type,count(*)::int total,count(*) FILTER (WHERE status='available' AND expires_at>=clock_timestamp())::int quantity,count(*) FILTER (WHERE status<>'opened' AND NOT (status='available' AND expires_at>=clock_timestamp()))::int unavailable FROM public.shop_inventory_chests WHERE nick=$1 GROUP BY chest_type"
+        }
+      ]
+    },
+    {
+      "path": "/inventory?deferReadiness=1",
+      "sample": 0,
+      "ms": 122.35499999999979,
+      "rest": 2,
+      "sql": 2,
+      "serverTiming": "app;dur=121.2, rest;dur=59.4, sql;dur=61.2, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"2\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        }
+      ]
+    },
+    {
+      "path": "/inventory?deferReadiness=1",
+      "sample": 1,
+      "ms": 122.18159999999989,
+      "rest": 2,
+      "sql": 2,
+      "serverTiming": "app;dur=122.1, rest;dur=60.8, sql;dur=61.2, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"2\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        }
+      ]
+    },
+    {
+      "path": "/inventory?deferReadiness=1",
+      "sample": 2,
+      "ms": 122.05169999999998,
+      "rest": 2,
+      "sql": 2,
+      "serverTiming": "app;dur=122.0, rest;dur=61.5, sql;dur=60.3, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"2\", restq;desc=\"2\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "REST",
+          "table": "shop_inventories"
+        }
+      ]
+    },
+    {
+      "path": "/inventory/readiness",
+      "sample": 0,
+      "ms": 246.53990000000022,
+      "rest": 1,
+      "sql": 7,
+      "serverTiming": "app;dur=246.5, rest;dur=29.8, sql;dur=216.4, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"7\", restq;desc=\"1\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered,has_table_privilege('public.shop_inventory_chests','SELECT') AS allowed"
+        }
+      ]
+    },
+    {
+      "path": "/inventory/readiness",
+      "sample": 1,
+      "ms": 247.69730000000027,
+      "rest": 1,
+      "sql": 7,
+      "serverTiming": "app;dur=247.7, rest;dur=30.7, sql;dur=216.7, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"7\", restq;desc=\"1\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered,has_table_privilege('public.shop_inventory_chests','SELECT') AS allowed"
+        }
+      ]
+    },
+    {
+      "path": "/inventory/readiness",
+      "sample": 2,
+      "ms": 250.46169999999984,
+      "rest": 1,
+      "sql": 7,
+      "serverTiming": "app;dur=250.4, rest;dur=31.6, sql;dur=218.5, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"7\", restq;desc=\"1\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_to_json(s) AS session,row_to_json(a) AS access FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered,has_table_privilege('public.shop_inventory_chests','SELECT') AS allowed"
+        }
+      ]
+    },
+    {
+      "path": "/store",
+      "sample": 0,
+      "ms": 371.03909999999996,
+      "rest": 1,
+      "sql": 11,
+      "serverTiming": "app;dur=371.0, rest;dur=30.1, sql;dur=340.4, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"11\", restq;desc=\"1\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "BEGIN READ ONLY"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT set_config('lock_timeout','5s',true),set_config('statement_timeout','10s',true)"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT bool_or(row_security_active(t::regclass)) AS filtered FROM unnest(ARRAY['public.pw2_store_products','public.pw2_store_purchases','public.pw2_raffles','public.pw2_raffle_entries','public.pw2_raffle_ticket_reservations','public.pw2_community_controls','public.pw2_account_sanctions','public.shop_inventories','public.shop_profiles','public.shop_operations']) t"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT 1 FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT active,message FROM public.pw2_community_controls WHERE scope=$1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,name,category,reward_type,reward_id,quantity,currency,price,stock,enabled,version FROM public.pw2_store_products WHERE hidden=false ORDER BY created_at,id"
+        },
+        {
+          "kind": "SQL",
+          "sql": "COMMIT"
+        }
+      ]
+    },
+    {
+      "path": "/store",
+      "sample": 1,
+      "ms": 372.3150999999998,
+      "rest": 1,
+      "sql": 11,
+      "serverTiming": "app;dur=372.3, rest;dur=30.2, sql;dur=341.7, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"11\", restq;desc=\"1\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "BEGIN READ ONLY"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT set_config('lock_timeout','5s',true),set_config('statement_timeout','10s',true)"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT bool_or(row_security_active(t::regclass)) AS filtered FROM unnest(ARRAY['public.pw2_store_products','public.pw2_store_purchases','public.pw2_raffles','public.pw2_raffle_entries','public.pw2_raffle_ticket_reservations','public.pw2_community_controls','public.pw2_account_sanctions','public.shop_inventories','public.shop_profiles','public.shop_operations']) t"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT 1 FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT active,message FROM public.pw2_community_controls WHERE scope=$1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,name,category,reward_type,reward_id,quantity,currency,price,stock,enabled,version FROM public.pw2_store_products WHERE hidden=false ORDER BY created_at,id"
+        },
+        {
+          "kind": "SQL",
+          "sql": "COMMIT"
+        }
+      ]
+    },
+    {
+      "path": "/store",
+      "sample": 2,
+      "ms": 373.6763000000001,
+      "rest": 1,
+      "sql": 11,
+      "serverTiming": "app;dur=373.6, rest;dur=31.5, sql;dur=341.8, pool;dur=0.0, lock;dur=0.0, sqlq;desc=\"11\", restq;desc=\"1\"",
+      "trace": [
+        {
+          "kind": "REST",
+          "table": "shop_sessions"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "BEGIN READ ONLY"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT set_config('lock_timeout','5s',true),set_config('statement_timeout','10s',true)"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT bool_or(row_security_active(t::regclass)) AS filtered FROM unnest(ARRAY['public.pw2_store_products','public.pw2_store_purchases','public.pw2_raffles','public.pw2_raffle_entries','public.pw2_raffle_ticket_reservations','public.pw2_community_controls','public.pw2_account_sanctions','public.shop_inventories','public.shop_profiles','public.shop_operations']) t"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT 1 FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT row_security_active('public.pw2_account_sanctions'::regclass) AS filtered"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,kind,starts_at,expires_at FROM public.pw2_account_sanctions WHERE nick=$1 AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT active,message FROM public.pw2_community_controls WHERE scope=$1"
+        },
+        {
+          "kind": "SQL",
+          "sql": "SELECT id,name,category,reward_type,reward_id,quantity,currency,price,stock,enabled,version FROM public.pw2_store_products WHERE hidden=false ORDER BY created_at,id"
+        },
+        {
+          "kind": "SQL",
+          "sql": "COMMIT"
+        }
+      ]
+    }
+  ]
+}

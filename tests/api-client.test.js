@@ -15,11 +15,11 @@ test('sin polling: consultas deduplicadas y caché temporal',async()=>{
  await api.getInventory();assert.equal(n,1);
  clock+=21000;await api.getInventory();assert.equal(n,2);
 });
-test('una mutación invalida la caché y nunca reintenta',async()=>{
+test('equipar conserva inventario y nunca reintenta la mutación',async()=>{
  let n=0;const api=createApiClient({fetchImpl:async()=>json({n:++n})});
  await api.getInventory();await api.getInventory();assert.equal(n,1);
  await api.updateAvatar('gato-1');assert.equal(n,2);
- await api.getInventory();assert.equal(n,3);
+ await api.getInventory();assert.equal(n,2);
 });
 test('401 invalida la sesión temporal',async()=>{
  const api=createApiClient({fetchImpl:async()=>json({},401)});
@@ -42,7 +42,7 @@ test('errores de transporte síncronos se normalizan y no bloquean solicitudes p
 test('invalida lecturas pendientes antes de comenzar login y logout, incluso si fallan',async()=>{
  for(const action of ['login','logout']){
   let resolveOld;
-  const api=createApiClient({fetchImpl:(url)=>url.endsWith('/inventory')?new Promise(resolve=>{resolveOld=resolve;}):Promise.resolve(json({},403))});
+  const api=createApiClient({fetchImpl:(url)=>new URL(url,'http://local').pathname.endsWith('/inventory')?new Promise(resolve=>{resolveOld=resolve;}):Promise.resolve(json({},403))});
   const pending=api.getInventory();
   await Promise.resolve();
   await assert.rejects(action==='login'?api.login('demo','no-real-password'):api.logout(),e=>e.code==='forbidden');

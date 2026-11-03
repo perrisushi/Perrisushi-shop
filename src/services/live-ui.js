@@ -23,7 +23,7 @@ function renderRandomKey(){const s=dataState.shop,key=s.randomKey;return `<secti
 export const shopSelection={tab:'cosmetics',category:'backgrounds'};
 const cosmeticCategories=[['backgrounds','Fondos de logo'],['frames','Marcos']];
 const shopEmpty=()=>'<div class="store-empty"><span>Sin artículos</span></div>';
-const storeProducts=(items,s)=>items.length?`<div class="store-products">${items.map(p=>{
+const storeProducts=(items,s)=>!s.catalog?stateNotice(s):items.length?`<div class="store-products">${items.map(p=>{
  const cosmetic=['background','frame'].includes(p.reward_type),owned=cosmetic&&s.cosmetics?.owned?.[p.reward_type]?.includes(p.reward_id),insufficient=cosmetic&&Number(s.balances?.pc)<p.price;
  return `<article class="store-product">${cosmetic?renderPerrilogo({...s.cosmetics?.selected,[p.reward_type]:p.reward_id}):itemImage(p.reward_id)}<h3>${escapeText(p.name)}</h3><p>${escapeText(p.price)} ${p.currency==='pc'?'PC':'Gemas'}</p>${p.stock===null?'':`<p>Disponibles: ${escapeText(p.stock)}</p>`}${owned?'<p>ADQUIRIDO</p>':s.catalog?.maintenance?'<p>En mantenimiento</p>':!p.enabled||p.stock===0?'<p>No disponible</p>':insufficient?'<p>PC insuficientes</p>':`<button type="button" class="textured-button" data-store-buy="${p.id}" data-version="${p.version}">Comprar${cosmetic?' — '+escapeText(p.price)+' PC':''}</button>`}<p data-store-status="${p.id}" role="status"></p></article>`}).join('')}</div>`:shopEmpty();
 export function renderLiveShop(){

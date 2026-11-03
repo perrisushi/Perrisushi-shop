@@ -23,8 +23,8 @@ test('error secundario no impide que perfil o interfaz terminen',async()=>{
 test('community y perfil: lecturas simultáneas compartidas, caché corta, force actualiza y mutación invalida',async()=>{
  let value=1,calls=0;const api=createApiClient({fetchImpl:async(path,options)=>{calls++;await tick();return Response.json({value:options.method==='POST'?++value:value})}});
  const [a,b]=await Promise.all([api.getCommunity(),api.getCommunity()]);assert.equal(calls,1);assert.equal(a,b);await api.getCommunity();assert.equal(calls,1);await api.getCommunity({force:true});assert.equal(calls,2);await api.getCommunity();assert.equal(calls,2);
- await api.markNotificationRead('local');assert.equal(calls,3);assert.equal((await api.getCommunity()).value,2);assert.equal(calls,4);
- await Promise.all([api.getProfile(),api.getProfile()]);assert.equal(calls,5);await api.equipCosmetic('frame','marco-basico');await api.getProfile();assert.equal(calls,7);
+ await api.markNotificationRead('local');assert.equal(calls,3);assert.equal((await api.getCommunity()).value,1);assert.equal(calls,3);
+ await Promise.all([api.getProfile(),api.getProfile()]);assert.equal(calls,4);await api.equipCosmetic('frame','marco-basico');await api.getProfile();assert.equal(calls,6);
 });
 test('cosméticos pendientes anteriores a una mutación nunca repueblan caché ni seleccionan capas antiguas',async()=>{
  const old=deferred();let first=true;const api=createApiClient({fetchImpl:async(path,options)=>path.endsWith('/cosmetics')&&options.method==='GET'&&first?(first=false,old.promise):Response.json({selected:{frame:'nuevo'}})});

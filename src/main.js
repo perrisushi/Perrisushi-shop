@@ -9,8 +9,8 @@ import {createApiClient,oauthCallbackPath} from './services/api-client.js';
 import {escapeText,logoId,message,stateNotice,pager,dataState,setPageData,renderUserRows,renderLiveUsers,renderLiveInventory,renderLiveShop,renderLiveRaffles,shopSelection,renderSelectedAchievement,renderProfileAchievements} from './services/live-ui.js';
 import {itemDetails,gameDescriptions} from './services/help-content.js';
 initializeGlobalScale();
-const api=createApiClient({onSessionExpired:()=>errorState({code:'session_expired'})});
-const adminTools=createAdminTools({api,open:type=>openModal(type),repaint:()=>{if(modalKind?.startsWith('admin:')){const card=overlay.querySelector('.modal-card');if(card){card.innerHTML=adminTools.markup();card.querySelector('.modal-close')?.focus({preventScroll:true})}}},onChange:()=>{void refreshCommunity(true);void loadCurrentRoute(normalizeRoute(location.hash));void notificationCenter.refresh()}});
+const api=createApiClient({onSessionExpired:error=>errorState(error??{code:'session_expired'})});
+const adminTools=createAdminTools({api,open:type=>openModal(type),repaint:()=>{if(modalKind?.startsWith('admin:')){const card=overlay.querySelector('.modal-card');if(card){card.innerHTML=adminTools.markup();card.querySelector('.modal-close')?.focus({preventScroll:true})}}},onChange:operation=>{if(operation.action==='control')void refreshCommunity(true);if(operation.action==='notice')void notificationCenter.refresh();else void loadCurrentRoute(normalizeRoute(location.hash))}});
 let session=null,sessionState={status:'loading'},profileState={status:'loading'},sessionEpoch=0,routeEpoch=0,modalKind=null,logoutPending=false,logoutError=null,gameBootstrap=null;
 let googleConfig={enabled:false,legalPublished:false},googlePending=null,googleLinked=null,googleNotice='',googleUntil=null;
 let communityState={enabled:false},communityLastCheck=0,selectedRaffleTab='buy';
@@ -25,7 +25,7 @@ const notificationCenter=createNotificationCenter({api,isActive:()=>Boolean(sess
 },onViewed:id=>{const state=remoteStates.notifications;if(state?.items)state.items=state.items.map(item=>item.id===id?{...item,read_at:new Date().toISOString()}:item)},onError:()=>{
  const status=overlay.querySelector('.notification-status');if(status){status.innerHTML='No se pudo guardar la lectura. <button type="button" class="textured-button" data-action="retry-notifications">Reintentar</button>';}
 }});
-const refreshNotifications=()=>{if(document.visibilityState==='visible'){void refreshCommunity();void notificationCenter.refresh();if(modalKind==='notifications')observeNotificationCards()}};
+const refreshNotifications=()=>{if(document.visibilityState==='visible'){if(session&&['inventory','shop'].includes(normalizeRoute(location.hash)))void loadCurrentRoute(normalizeRoute(location.hash));void refreshCommunity();void notificationCenter.refresh();if(modalKind==='notifications')observeNotificationCards()}};
 document.addEventListener('visibilitychange',refreshNotifications);
 window.addEventListener('focus',refreshNotifications);
 function notificationVisible(element){
@@ -309,7 +309,7 @@ function paintContainer(id){
 async function confirmContainer(id,op,result,generation){
  if(generation!==sessionEpoch)return;
  op.result={rewards:result.rewards};op.phase='complete';op.busy=false;op.error='';storeContainer(id,op);
- api.clearCache();await loadCurrentRoute(normalizeRoute(location.hash));
+ api.invalidate(['inventory','profile','cosmetics','history','notifications','users']);await loadCurrentRoute(normalizeRoute(location.hash));
  try{const profile=await loadProfileData();if(generation!==sessionEpoch)return;setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:profile.profile?.selectedLogoAssetId})}catch{}
  if(generation===sessionEpoch)paintContainer(id);
 }
@@ -396,7 +396,7 @@ function closeModal() {
   if(!session)return;
   if (overlay.hidden) return;
   if(modalKind?.startsWith('game:')){
-   const card=overlay.querySelector('.game-card'),mobile=gameWindow.isMobile();gameLaunchEpoch++;openingGame=false;api.clearCache();gameBootstrap=null;
+   const card=overlay.querySelector('.game-card'),mobile=gameWindow.isMobile();gameLaunchEpoch++;openingGame=false;api.invalidate(['inventory','profile','cosmetics','history','notifications','users']);gameBootstrap=null;
    stage.querySelectorAll('[data-game][aria-busy="true"]').forEach(el=>{el.disabled=false;el.removeAttribute('aria-busy')});
    void gameWindow.close().then(()=>{if(overlay.querySelector('.game-card')!==card)return;finishCloseModal();if(mobile&&session&&normalizeRoute(location.hash)!=='games')navigate('games')});return;
   }
@@ -469,7 +469,7 @@ document.addEventListener('keydown', e => {
   }
 });
 window.addEventListener('hashchange',render);
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.clearCache();if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.invalidate(['inventory','profile','cosmetics','history','notifications','users']);if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
 window.addEventListener('pageshow',event=>{if(event.persisted)void initializeGoogleAccess()});
 renderMusicOption();
 overlay.innerHTML='<section class="modal-card" role="status">Comprobando sesión…</section>';overlay.hidden=false;
@@ -495,23 +495,46 @@ function resetPrivateState(){
   modalKind=null;overlay.innerHTML='<section class="modal-card" role="status">Comprobando sesión…</section>';overlay.hidden=false;
 }
 function errorState(error){
-  if(error.code==='session_expired'){
+  if(['session_expired','account_banned','account_suspended','account_inactive'].includes(error.code)){
     resetPrivateState();sessionState={status:'signedOut'};syncIdentity();paintStage();
-    showLogin('session_expired');
+    showLogin(error.code);
   }
   return {status:'error',error:error.code};
 }
 function syncIdentity(){const el=document.querySelector('.identity-chip strong');el.textContent=session?session.nick.slice(0,16):sessionState.status==='error'?'Sin conexión':'Sin sesión';el.title=session?.nick??message(sessionState)}
+function syncShopSnapshot(){
+ const catalog=api.peek('store')??dataState.shop.catalog,profile={...api.peek('profile'),...profileState},cosmetics=api.peek('cosmetics')??profileState.cosmetics;
+ if(catalog)setPageData('shop',{...dataState.shop,status:'ready',catalog,balances:profile.balances,ownedLogoIds:profile.profile?.ownedLogoIds??[],cosmetics});
+}
+function applyInventorySnapshot(value){
+ if(!value?.inventory)return;
+ setPageData('inventory',{status:'ready',...value});
+ const row=value.inventory;profileState={...profileState,balances:{...profileState.balances,pc:row.pc,gemas:row.polvo_gema,monedas:row.monedas}};
+ syncShopSnapshot();
+}
+let inventoryRead=null;
+function loadInventoryData(){
+ const key=sessionEpoch+':'+api.getCacheEpoch('inventory');
+ if(inventoryRead?.key===key)return inventoryRead.promise;
+ const promise=readInventoryData();inventoryRead={key,promise};void promise.finally(()=>{if(inventoryRead?.promise===promise)inventoryRead=null}).catch(()=>{});return promise;
+}
+async function readInventoryData(){
+ const generation=sessionEpoch;
+ if(!api.peek('inventory')){try{await loadProfileData()}catch{}}
+ const result=await api.getInventory();if(generation!==sessionEpoch)return result;
+ applyInventorySnapshot(result);
+ if(normalizeRoute(location.hash)==='inventory')paintStage();return result;
+}
 function refreshProfilePresentation(){
  if(!session)return;
  setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:profileState.profile?.selectedLogoAssetId??profileState.profile?.selectedLogoId?.replace(/^logo-/,'')});
  if(normalizeRoute(location.hash)==='profile')paintStage();
- if(normalizeRoute(location.hash)==='shop'&&dataState.shop.status==='ready'){setPageData('shop',{...dataState.shop,cosmetics:profileState.cosmetics});paintStage()}
+ syncShopSnapshot();if(normalizeRoute(location.hash)==='shop'&&dataState.shop.status==='ready')paintStage();
  if(modalKind==='album')paintRemote('album');
 }
 let profileRead=null;
 function loadProfileData(){
- const key=sessionEpoch+':'+api.getCacheEpoch();
+ const key=sessionEpoch+':'+api.getCacheEpoch('profile','cosmetics');
  if(profileRead?.key===key)return profileRead.promise;
  const promise=readProfileData();profileRead={key,promise};
  void promise.finally(()=>{if(profileRead?.promise===promise)profileRead=null}).catch(()=>{});return promise;
@@ -522,7 +545,7 @@ async function readProfileData(){
  const composition=measuredLoad('cosmetics',()=>api.getCosmetics()).then(data=>({data}),error=>({error}));
  const result=await measuredLoad('profile',()=>api.getProfile());
  if(generation!==sessionEpoch)return result;
- profileState={...profileState,status:'ready',...result};refreshProfilePresentation();
+ profileState={...profileState,status:'ready',...result};applyInventorySnapshot(api.peek('inventory'));refreshProfilePresentation();
  if(result.cosmeticsEnabled){
   void composition.then(({data:cosmetics,error})=>{
    if(generation!==sessionEpoch)return;if(error)throw error;
@@ -545,7 +568,7 @@ async function bootstrapSession(authenticated=null){
    if(!session){profileState={status:'signedOut'};if(['login','linked'].includes(googleNotice))googleNotice='google_session_missing';syncIdentity();render();return false}
    googlePending=null;return true;
   },show:()=>{syncIdentity();closeModal();document.body.dataset.access='ready';setAuthenticatedProfile({authenticated:true,displayName:session.nick});render()},tasks:{
-   profile:()=>loadProfileData(),admin:async()=>{await adminTools.recognize();if(generation!==sessionEpoch)return;const header=stage.querySelector('.content-header');if(header&&!header.querySelector('.admin-entry'))header.insertAdjacentHTML('beforeend',adminTools.entry(normalizeRoute(location.hash)))},
+   profile:()=>loadProfileData(),inventory:()=>loadInventoryData(),admin:async()=>{await adminTools.recognize();if(generation!==sessionEpoch)return;const header=stage.querySelector('.content-header');if(header&&!header.querySelector('.admin-entry'))header.insertAdjacentHTML('beforeend',adminTools.entry(normalizeRoute(location.hash)))},
    community:()=>refreshCommunity(true),notifications:()=>{if(generation===sessionEpoch)notificationCenter.start()}
   },onError:(error,name)=>{if(generation!==sessionEpoch||error.code==='session_changed')return;if(name==='profile'){profileState={...profileState,...errorState(error)};refreshProfilePresentation()}}});
  }catch(error){if(generation!==sessionEpoch)return;sessionState=errorState(error);profileState=sessionState;syncIdentity();render()}
@@ -563,14 +586,16 @@ async function loadCurrentRoute(route){
  const sequence=++routeEpoch,generation=sessionEpoch;
  if(!['profile','users','inventory','shop','raffles'].includes(route))return;
  if(!session){if(route!=='profile')setPageData(route,sessionState.status!=='ready'?sessionState:{status:'signedOut'});paintStage();return}
- if(route!=='profile')setPageData(route,{status:'loading'});paintStage();
+ if(route==='inventory')applyInventorySnapshot(api.peek('inventory'));
+ if(route==='shop')syncShopSnapshot();
+ if(route!=='profile'&&dataState[route].status!=='ready')setPageData(route,{status:'loading'});paintStage();
  if(route==='profile')void loadGoogleLink();
  try{
-  const result=route==='profile'?await loadProfileData():route==='users'?await api.listUsers():route==='inventory'?await api.getInventory():route==='shop'?await Promise.all([api.getStore(),loadProfileData()]):await Promise.all([api.listRaffles(),api.getRaffleEvents()]);
+  const result=route==='profile'?await loadProfileData():route==='users'?await api.listUsers():route==='inventory'?await loadInventoryData():route==='shop'?await Promise.all([api.getStore(),loadProfileData()]):await Promise.all([api.listRaffles(),api.getRaffleEvents()]);
   if(sequence!==routeEpoch||generation!==sessionEpoch)return;
   if(route==='profile'){setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId??result.profile?.selectedLogoId})}
   else {setPageData(route,{status:'ready',...(route==='shop'?{catalog:result[0],balances:result[1].balances,ownedLogoIds:result[1].profile?.ownedLogoIds??[],cosmetics:profileState.cosmetics}:route==='raffles'?{raffles:result[0],events:result[1]}:result)});}
- }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;const state=errorState(error);if(route==='profile')profileState=state;else setPageData(route,state);syncIdentity()}
+ }catch(error){if(sequence!==routeEpoch||generation!==sessionEpoch)return;if(error.code==='session_changed')return;const state=errorState(error);if(route==='profile'){if(profileState.status!=='ready')profileState=state}else if(session&&dataState[route].status!=='ready')setPageData(route,state);syncIdentity()}
  if(sequence===routeEpoch&&generation===sessionEpoch)paintStage();
 }
 function fitNotificationPanel(){
@@ -727,7 +752,7 @@ async function runCommunityOperation(kind,body,button,status){
   if(!operation){operation={...body,idempotencyKey:crypto.randomUUID()};sessionStorage.setItem(key,JSON.stringify(operation))}
   const result=await (kind==='store'?api.buyProduct(operation):api.registerRaffle(operation));if(generation!==sessionEpoch)return;
   sessionStorage.removeItem(key);await loadCurrentRoute(normalizeRoute(location.hash));if(kind==='store'&&result.acquired){const message=stage.querySelector('[data-store-status="'+body.id+'"]');if(message)message.textContent='¡COSMÉTICO ADQUIRIDO!';}
- }catch(error){if(generation!==sessionEpoch)return;if([400,403,404,409].includes(error.status)&&error.code!=='operation_conflict')sessionStorage.removeItem(key);status.textContent=message({error:error.code,expiresAt:error.expiresAt});button.disabled=false}
+ }catch(error){if(generation!==sessionEpoch)return;if([400,403,404,409].includes(error.status)&&error.code!=='operation_conflict')sessionStorage.removeItem(key);status.textContent=message({error:error.code,expiresAt:error.expiresAt});button.disabled=false;if(kind==='store'&&['product_changed','product_unavailable','already_owned'].includes(error.code))void loadCurrentRoute(normalizeRoute(location.hash))}
 }
 document.addEventListener('click',event=>{
  const b=event.target.closest('[data-store-buy]');if(!b||!session)return;
@@ -753,7 +778,7 @@ document.addEventListener('click',async event=>{
  const preview=event.target.closest('[data-cosmetic-preview]');if(preview){cosmeticDraft={...profileState.cosmetics.selected,[preview.dataset.layer]:preview.dataset.cosmeticPreview};paintRemote('album');return}
  const equip=event.target.closest('[data-cosmetic-equip]');if(!equip||!session||pendingPersonalChanges.has('cosmetic'))return;
  const generation=sessionEpoch;pendingPersonalChanges.add('cosmetic');equip.disabled=true;
- try{await api.equipCosmetic(equip.dataset.layer,equip.dataset.cosmeticEquip);const result=await loadProfileData();if(generation!==sessionEpoch)return;cosmeticDraft=null;setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album')}
+ try{const saved=await api.equipCosmetic(equip.dataset.layer,equip.dataset.cosmeticEquip);const result=saved.cosmetics?{...profileState,cosmetics:saved.cosmetics}:await loadProfileData();if(generation!==sessionEpoch)return;profileState=result;cosmeticDraft=null;setAuthenticatedProfile({authenticated:true,displayName:session.nick,avatarId:result.profile?.selectedLogoAssetId});paintStage();paintRemote('album')}
  catch(error){if(generation===sessionEpoch){const status=overlay.querySelector('.cosmetic-status');if(status)status.textContent=message({error:error.code});equip.disabled=false}}
  finally{pendingPersonalChanges.delete('cosmetic')}
 });

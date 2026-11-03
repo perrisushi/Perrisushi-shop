@@ -28,11 +28,16 @@ export function createGames({pool,legacy,enabled=false,sourceCompatible=true,mod
   const counts=Object.fromEntries(rows.filter(r=>r.quantity>0).map(r=>[r.chest_type,r.quantity]));
   return {counts,unavailable:Object.fromEntries(rows.map(r=>[r.chest_type,r.unavailable]))};
  };
- const runtime={configured:Boolean(enabled&&pool&&legacy&&sourceCompatible),async containerState(user){
+ const runtime={configured:Boolean(enabled&&pool&&legacy&&sourceCompatible),async containerState(user,{counts=true}={}){
   if(!runtime.configured||typeof legacy?.handleShopAction!=='function'){const reason=!enabled?'games_disabled':!pool?'database_not_configured':!sourceCompatible?'database_project_mismatch':'original_backend_missing';emit('container_unavailable',{reason});return {available:false,reason}}let client;
   try{
    client=measuredClient(await timed('poolMs',()=>pool.connect()));if(!await sharedSession(client,user)){emit('container_unavailable',{reason:'session_not_shared'});return {available:false,reason:'session_not_shared'}}
    const catalog=await client.query('SELECT logo_id FROM public.shop_logo_catalog WHERE enabled=true LIMIT 1');if(!catalog.rows.length){emit('container_unavailable',{reason:'catalog_unavailable'});return {available:false,reason:'catalog_unavailable'}}
+   if(!counts){
+    const guard=(await client.query("SELECT row_security_active('public.shop_inventory_chests'::regclass) AS filtered,has_table_privilege('public.shop_inventory_chests','SELECT') AS allowed")).rows[0];
+    if(guard?.filtered||guard?.allowed!==true)throw new BackendError(503,'operation_disabled');
+    return {available:true,reason:'ready'};
+   }
    const storage=await chestStorage(client,user.nick);
    return {available:true,counts:storage.counts,reason:'ready'};
   }catch(error){emit('container_read_failed',{failure:gameFailure(error)});return {available:false,reason:error.code==='42501'||error instanceof BackendError&&error.code==='operation_disabled'?'storage_permissions':error.code==='42P01'?'storage_schema_missing':['28P01','28000'].includes(error.code)?'database_credentials':'database_unavailable'}}finally{client?.release()}

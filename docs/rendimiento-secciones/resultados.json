@@ -1,0 +1,2130 @@
+{
+  "mode": "Edge local; todas las respuestas API simulan 500 ms; sin producción",
+  "reference": "8d34ca9e49a045489012c5af1e18d78765e58d63",
+  "samples": 90,
+  "stalePriceRejectedAndReloaded": true,
+  "crossTabPrivacyPassed": true,
+  "errors": [],
+  "external": [],
+  "summary": [
+    {
+      "mode": "before",
+      "scenario": "first",
+      "section": "inventory",
+      "screen": 11,
+      "data": 521,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "first",
+      "section": "shop",
+      "screen": 8,
+      "data": 520,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "section": "inventory",
+      "screen": 25,
+      "data": 25,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "section": "shop",
+      "screen": 9,
+      "data": 534,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "section": "inventory",
+      "screen": 6,
+      "data": 526,
+      "updated": 526,
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "section": "shop",
+      "screen": 9,
+      "data": 522,
+      "updated": 522,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "section": "inventory",
+      "screen": 9,
+      "data": 516,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "section": "shop",
+      "screen": 10,
+      "data": 526,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "section": "inventory",
+      "screen": 12,
+      "data": 521,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "section": "shop",
+      "screen": 12,
+      "data": 528,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "section": "inventory",
+      "screen": 8,
+      "data": 8,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "section": "shop",
+      "screen": 10,
+      "data": 532,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "section": "inventory",
+      "screen": 7,
+      "data": 524,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "section": "shop",
+      "screen": 12,
+      "data": 533,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "cold-login",
+      "section": "inventory",
+      "screen": 7,
+      "data": 528,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "section": "inventory",
+      "screen": 14,
+      "data": 14,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "section": "shop",
+      "screen": 9,
+      "data": 519,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "section": "inventory",
+      "screen": 21,
+      "data": 21,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "section": "shop",
+      "screen": 8,
+      "data": 8,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "section": "inventory",
+      "screen": 6,
+      "data": 6,
+      "updated": 528,
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "section": "shop",
+      "screen": 9,
+      "data": 9,
+      "updated": 523,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "section": "inventory",
+      "screen": 8,
+      "data": 8,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "section": "shop",
+      "screen": 8,
+      "data": 8,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "section": "inventory",
+      "screen": 11,
+      "data": 11,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "section": "shop",
+      "screen": 10,
+      "data": 10,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "section": "inventory",
+      "screen": 8,
+      "data": 8,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "section": "shop",
+      "screen": 9,
+      "data": 9,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "section": "inventory",
+      "screen": 12,
+      "data": 12,
+      "updated": null,
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "section": "shop",
+      "screen": 9,
+      "data": 519,
+      "updated": null,
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "cold-login",
+      "section": "inventory",
+      "screen": 7,
+      "data": 512,
+      "updated": null,
+      "requests": []
+    }
+  ],
+  "results": [
+    {
+      "mode": "before",
+      "scenario": "first",
+      "sample": 0,
+      "section": "inventory",
+      "window": 14.600000023841858,
+      "data": 524.5,
+      "images": 589,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 14.400000005960464,
+          "end": 520.2000000178814
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "sample": 0,
+      "section": "inventory",
+      "window": 5.9000000059604645,
+      "data": 5.9000000059604645,
+      "images": 5.9000000059604645,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "first",
+      "sample": 0,
+      "section": "shop",
+      "window": 7.5,
+      "data": 520.4000000059605,
+      "images": 531,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 7.199999988079071,
+          "end": 516.4000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "sample": 0,
+      "section": "shop",
+      "window": 28.5,
+      "data": 540.3000000119209,
+      "images": 540.3000000119209,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 21.900000005960464,
+          "end": 537.9000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "sample": 0,
+      "section": "inventory",
+      "window": 8.700000017881393,
+      "data": 529.9000000059605,
+      "updated": 530,
+      "images": 538.2000000178814,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 8,
+          "end": 526.3000000119209
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "sample": 0,
+      "section": "shop",
+      "window": 9.199999988079071,
+      "data": 517.8999999761581,
+      "updated": 517.8999999761581,
+      "images": 529.5999999940395,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 6.399999976158142,
+          "end": 513.6999999880791
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 6.5,
+          "end": 514
+        },
+        {
+          "path": "/api/profile",
+          "start": 6.5999999940395355,
+          "end": 514.5
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "sample": 0,
+      "section": "inventory",
+      "window": 16,
+      "data": 523.4000000059605,
+      "images": 531.2000000178814,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 15.700000017881393,
+          "end": 520.1000000238419
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "sample": 0,
+      "section": "shop",
+      "window": 5.300000011920929,
+      "data": 526.1999999880791,
+      "images": 526.1999999880791,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 3.300000011920929,
+          "end": 523.1999999880791
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 3.4000000059604645,
+          "end": 523.3000000119209
+        },
+        {
+          "path": "/api/profile",
+          "start": 3.4000000059604645,
+          "end": 523.5999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "sample": 0,
+      "section": "inventory",
+      "window": 13.599999994039536,
+      "data": 543.4000000059605,
+      "images": 563.6999999880791,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 12,
+          "end": 535.1999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "sample": 0,
+      "section": "shop",
+      "window": 15.199999988079071,
+      "data": 528.4000000059605,
+      "images": 549.4000000059605,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 13.5,
+          "end": 523
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "sample": 0,
+      "section": "inventory",
+      "window": 28.700000017881393,
+      "data": 28.700000017881393,
+      "images": 28.700000017881393,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "sample": 0,
+      "section": "shop",
+      "window": 14.400000005960464,
+      "data": 542.5,
+      "images": 542.5,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 12.300000011920929,
+          "end": 537.1999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "sample": 0,
+      "section": "inventory",
+      "window": 9.900000005960464,
+      "data": 532.9000000059605,
+      "images": 532.9000000059605,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 9,
+          "end": 527.4000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "sample": 0,
+      "section": "shop",
+      "window": 12.200000017881393,
+      "data": 526.2000000178814,
+      "images": 546.4000000059605,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 11,
+          "end": 520.4000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "cold-login",
+      "sample": 0,
+      "section": "inventory",
+      "window": 7.100000023841858,
+      "data": 532.7000000178814,
+      "images": 532.7000000178814,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 6.300000011920929,
+          "end": 527.8000000119209
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "first",
+      "sample": 1,
+      "section": "inventory",
+      "window": 10.599999994039536,
+      "data": 520.5999999940395,
+      "images": 531.2000000178814,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 10.5,
+          "end": 516.0999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "sample": 1,
+      "section": "inventory",
+      "window": 33.900000005960464,
+      "data": 34.599999994039536,
+      "images": 34.599999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "first",
+      "sample": 1,
+      "section": "shop",
+      "window": 11.900000005960464,
+      "data": 527.8000000119209,
+      "images": 540.3000000119209,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 11.200000017881393,
+          "end": 522.5999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "sample": 1,
+      "section": "shop",
+      "window": 8.699999988079071,
+      "data": 534.0999999940395,
+      "images": 534.0999999940395,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 8,
+          "end": 531.6999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "sample": 1,
+      "section": "inventory",
+      "window": 6.199999988079071,
+      "data": 523.1999999880791,
+      "updated": 523.1999999880791,
+      "images": 531.5,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 5.0999999940395355,
+          "end": 519.1999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "sample": 1,
+      "section": "shop",
+      "window": 12.800000011920929,
+      "data": 522.4000000059605,
+      "updated": 522.4000000059605,
+      "images": 522.4000000059605,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 11.199999988079071,
+          "end": 519.5
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 11.300000011920929,
+          "end": 519.6999999880791
+        },
+        {
+          "path": "/api/profile",
+          "start": 11.300000011920929,
+          "end": 519.6999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "sample": 1,
+      "section": "inventory",
+      "window": 9,
+      "data": 516,
+      "images": 516,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 6.4000000059604645,
+          "end": 510.80000001192093
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "sample": 1,
+      "section": "shop",
+      "window": 9.5,
+      "data": 525.5999999940395,
+      "images": 525.5999999940395,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 7.5999999940395355,
+          "end": 523.1999999880791
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 7.699999988079071,
+          "end": 523.5
+        },
+        {
+          "path": "/api/profile",
+          "start": 7.899999976158142,
+          "end": 523.5999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "sample": 1,
+      "section": "inventory",
+      "window": 11.599999994039536,
+      "data": 520.1999999880791,
+      "images": 528.4000000059605,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 10.400000005960464,
+          "end": 517.5
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "sample": 1,
+      "section": "shop",
+      "window": 7.9000000059604645,
+      "data": 524.7000000178814,
+      "images": 524.7000000178814,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 6.300000011920929,
+          "end": 522.7000000178814
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "sample": 1,
+      "section": "inventory",
+      "window": 8.300000011920929,
+      "data": 8.300000011920929,
+      "images": 8.300000011920929,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "sample": 1,
+      "section": "shop",
+      "window": 7.300000011920929,
+      "data": 532.1999999880791,
+      "images": 532.1999999880791,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 5.800000011920929,
+          "end": 527.4000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "sample": 1,
+      "section": "inventory",
+      "window": 6.700000017881393,
+      "data": 523.5,
+      "images": 531.8000000119209,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 4.300000011920929,
+          "end": 521.3000000119209
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "sample": 1,
+      "section": "shop",
+      "window": 9.300000011920929,
+      "data": 533,
+      "images": 541.5999999940395,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 8.700000017881393,
+          "end": 528.3000000119209
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "cold-login",
+      "sample": 1,
+      "section": "inventory",
+      "window": 6.800000011920929,
+      "data": 528.4000000059605,
+      "images": 528.4000000059605,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 4.300000011920929,
+          "end": 526
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "first",
+      "sample": 2,
+      "section": "inventory",
+      "window": 7.5,
+      "data": 519,
+      "images": 526.5999999940395,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 7.199999988079071,
+          "end": 514.5
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "sample": 2,
+      "section": "inventory",
+      "window": 24.80000001192093,
+      "data": 25,
+      "images": 25,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "first",
+      "sample": 2,
+      "section": "shop",
+      "window": 7,
+      "data": 518.6000000238419,
+      "images": 526.4000000059605,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 6.5,
+          "end": 513.4000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "repeat",
+      "sample": 2,
+      "section": "shop",
+      "window": 5.200000017881393,
+      "data": 522.8000000119209,
+      "images": 522.8000000119209,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 3.7000000178813934,
+          "end": 521.0999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "sample": 2,
+      "section": "inventory",
+      "window": 4.700000017881393,
+      "data": 525.7000000178814,
+      "updated": 525.7000000178814,
+      "images": 533.9000000059605,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 3.300000011920929,
+          "end": 521.0999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "expired-refresh",
+      "sample": 2,
+      "section": "shop",
+      "window": 7.0999999940395355,
+      "data": 528,
+      "updated": 528,
+      "images": 528,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 5.299999982118607,
+          "end": 522.1999999880791
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 5.4000000059604645,
+          "end": 522.4000000059605
+        },
+        {
+          "path": "/api/profile",
+          "start": 5.5,
+          "end": 522.9000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "sample": 2,
+      "section": "inventory",
+      "window": 6.199999988079071,
+      "data": 510.59999999403954,
+      "images": 510.59999999403954,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 4.899999976158142,
+          "end": 508.39999997615814
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-notification",
+      "sample": 2,
+      "section": "shop",
+      "window": 9.5,
+      "data": 525.5,
+      "images": 537.7000000178814,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 6.5999999940395355,
+          "end": 522.0999999940395
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 6.5999999940395355,
+          "end": 522.4000000059605
+        },
+        {
+          "path": "/api/profile",
+          "start": 6.700000017881393,
+          "end": 522.9000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "sample": 2,
+      "section": "inventory",
+      "window": 7.800000011920929,
+      "data": 521.1000000238419,
+      "images": 528.6000000238419,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 6.200000017881393,
+          "end": 518.9000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-purchase",
+      "sample": 2,
+      "section": "shop",
+      "window": 12.300000011920929,
+      "data": 529.5,
+      "images": 540.6000000238419,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 9.300000011920929,
+          "end": 526.1000000238419
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "sample": 2,
+      "section": "inventory",
+      "window": 7.399999976158142,
+      "data": 7.5,
+      "images": 7.5,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "before",
+      "scenario": "after-reward",
+      "sample": 2,
+      "section": "shop",
+      "window": 10.099999994039536,
+      "data": 524.3999999761581,
+      "images": 532.7999999821186,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 9.5,
+          "end": 522.1999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "sample": 2,
+      "section": "inventory",
+      "window": 5.899999976158142,
+      "data": 523.2999999821186,
+      "images": 523.2999999821186,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 3.399999976158142,
+          "end": 521
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "account-change",
+      "sample": 2,
+      "section": "shop",
+      "window": 24.19999998807907,
+      "data": 536.0999999940395,
+      "images": 545.9000000059605,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 16.5,
+          "end": 533.4000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "before",
+      "scenario": "cold-login",
+      "sample": 2,
+      "section": "inventory",
+      "window": 12.599999994039536,
+      "data": 522.4000000059605,
+      "images": 528.0999999940395,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 12.099999994039536,
+          "end": 519.0999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/notifications",
+          "method": "GET"
+        },
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "sample": 0,
+      "section": "inventory",
+      "window": 13.099999994039536,
+      "data": 13.199999988079071,
+      "images": 27.19999998807907,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "sample": 0,
+      "section": "inventory",
+      "window": 8.5,
+      "data": 8.599999994039536,
+      "images": 8.599999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "sample": 0,
+      "section": "shop",
+      "window": 8.400000005960464,
+      "data": 519.2000000178814,
+      "images": 550.8000000119209,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 7.9000000059604645,
+          "end": 515
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "sample": 0,
+      "section": "shop",
+      "window": 9.100000023841858,
+      "data": 9.100000023841858,
+      "images": 9.100000023841858,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "sample": 0,
+      "section": "inventory",
+      "window": 14.299999982118607,
+      "data": 14.299999982118607,
+      "images": 27.799999982118607,
+      "updated": 536.5999999940395,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 14,
+          "end": 530.6999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "sample": 0,
+      "section": "shop",
+      "window": 11.600000023841858,
+      "data": 11.600000023841858,
+      "images": 11.600000023841858,
+      "updated": 522.5,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 10.100000023841858,
+          "end": 516.2000000178814
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 10.100000023841858,
+          "end": 518.7000000178814
+        },
+        {
+          "path": "/api/profile",
+          "start": 10.200000017881393,
+          "end": 518.8000000119209
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "sample": 0,
+      "section": "inventory",
+      "window": 7.700000017881393,
+      "data": 7.700000017881393,
+      "images": 7.700000017881393,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "sample": 0,
+      "section": "shop",
+      "window": 6.899999976158142,
+      "data": 7,
+      "images": 23.899999976158142,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "sample": 0,
+      "section": "inventory",
+      "window": 13.399999976158142,
+      "data": 13.399999976158142,
+      "images": 27.69999998807907,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "sample": 0,
+      "section": "shop",
+      "window": 6,
+      "data": 6,
+      "images": 18.400000005960464,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "sample": 0,
+      "section": "inventory",
+      "window": 7.9000000059604645,
+      "data": 7.9000000059604645,
+      "images": 7.9000000059604645,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "sample": 0,
+      "section": "shop",
+      "window": 9,
+      "data": 9,
+      "images": 9.099999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "sample": 0,
+      "section": "inventory",
+      "window": 7.199999988079071,
+      "data": 7.199999988079071,
+      "images": 21.099999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "sample": 0,
+      "section": "shop",
+      "window": 6.700000017881393,
+      "data": 524.0999999940395,
+      "images": 532.4000000059605,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 4.5,
+          "end": 522
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "cold-login",
+      "sample": 0,
+      "section": "inventory",
+      "window": 5.300000011920929,
+      "data": 512.2000000178814,
+      "images": 512.2000000178814,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "sample": 1,
+      "section": "inventory",
+      "window": 18.099999994039536,
+      "data": 18.400000005960464,
+      "images": 33.599999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "sample": 1,
+      "section": "inventory",
+      "window": 23.299999982118607,
+      "data": 23.599999994039536,
+      "images": 23.599999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "sample": 1,
+      "section": "shop",
+      "window": 9,
+      "data": 516.1999999880791,
+      "images": 527.0999999940395,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 8.5,
+          "end": 510.89999997615814
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "sample": 1,
+      "section": "shop",
+      "window": 8.300000011920929,
+      "data": 8.300000011920929,
+      "images": 8.300000011920929,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "sample": 1,
+      "section": "inventory",
+      "window": 5.100000023841858,
+      "data": 5.100000023841858,
+      "images": 5.100000023841858,
+      "updated": 528.3000000119209,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 4.5,
+          "end": 523.9000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "sample": 1,
+      "section": "shop",
+      "window": 8.5,
+      "data": 8.599999994039536,
+      "images": 8.599999994039536,
+      "updated": 530.8999999761581,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 6.799999982118607,
+          "end": 526.0999999940395
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 6.899999976158142,
+          "end": 526.2999999821186
+        },
+        {
+          "path": "/api/profile",
+          "start": 6.899999976158142,
+          "end": 526.5999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "sample": 1,
+      "section": "inventory",
+      "window": 6.5,
+      "data": 6.5,
+      "images": 6.5,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "sample": 1,
+      "section": "shop",
+      "window": 7.5,
+      "data": 7.5,
+      "images": 19.30000001192093,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "sample": 1,
+      "section": "inventory",
+      "window": 11,
+      "data": 11,
+      "images": 22.099999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "sample": 1,
+      "section": "shop",
+      "window": 10,
+      "data": 10,
+      "images": 10,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "sample": 1,
+      "section": "inventory",
+      "window": 7.5999999940395355,
+      "data": 7.5999999940395355,
+      "images": 7.5999999940395355,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "sample": 1,
+      "section": "shop",
+      "window": 5.5,
+      "data": 5.5,
+      "images": 24.69999998807907,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "sample": 1,
+      "section": "inventory",
+      "window": 12.299999982118607,
+      "data": 12.299999982118607,
+      "images": 12.299999982118607,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "sample": 1,
+      "section": "shop",
+      "window": 9.300000011920929,
+      "data": 516,
+      "images": 532.2000000178814,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 8.700000017881393,
+          "end": 512.9000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "cold-login",
+      "sample": 1,
+      "section": "inventory",
+      "window": 7.0999999940395355,
+      "data": 515.7000000178814,
+      "images": 523.9000000059605,
+      "resources": [],
+      "requests": [
+        {
+          "path": "/api/community",
+          "method": "GET"
+        },
+        {
+          "path": "/api/notifications",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "sample": 2,
+      "section": "inventory",
+      "window": 13.600000023841858,
+      "data": 13.700000017881393,
+      "images": 29.400000005960464,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "sample": 2,
+      "section": "inventory",
+      "window": 21.299999982118607,
+      "data": 21.400000005960464,
+      "images": 21.400000005960464,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "first",
+      "sample": 2,
+      "section": "shop",
+      "window": 13.799999982118607,
+      "data": 527.1999999880791,
+      "images": 543.0999999940395,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 13.5,
+          "end": 521.6999999880791
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "repeat",
+      "sample": 2,
+      "section": "shop",
+      "window": 8.299999982118607,
+      "data": 8.299999982118607,
+      "images": 8.299999982118607,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "sample": 2,
+      "section": "inventory",
+      "window": 6,
+      "data": 6.200000017881393,
+      "images": 24.80000001192093,
+      "updated": 518.7000000178814,
+      "resources": [
+        {
+          "path": "/api/inventory",
+          "start": 5.9000000059604645,
+          "end": 515.4000000059605
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/inventory",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "expired-refresh",
+      "sample": 2,
+      "section": "shop",
+      "window": 8.599999994039536,
+      "data": 8.599999994039536,
+      "images": 8.700000017881393,
+      "updated": 515.5,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 6.9000000059604645,
+          "end": 511.30000001192093
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "start": 7.0999999940395355,
+          "end": 511.5
+        },
+        {
+          "path": "/api/profile",
+          "start": 7.0999999940395355,
+          "end": 511.7000000178814
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile/cosmetics",
+          "method": "GET"
+        },
+        {
+          "path": "/api/profile",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "sample": 2,
+      "section": "inventory",
+      "window": 7.5,
+      "data": 7.600000023841858,
+      "images": 7.600000023841858,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-notification",
+      "sample": 2,
+      "section": "shop",
+      "window": 8.199999988079071,
+      "data": 8.199999988079071,
+      "images": 25.19999998807907,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "sample": 2,
+      "section": "inventory",
+      "window": 10.900000005960464,
+      "data": 10.900000005960464,
+      "images": 10.900000005960464,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-purchase",
+      "sample": 2,
+      "section": "shop",
+      "window": 9.599999994039536,
+      "data": 9.599999994039536,
+      "images": 9.599999994039536,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "sample": 2,
+      "section": "inventory",
+      "window": 7.899999976158142,
+      "data": 7.899999976158142,
+      "images": 7.899999976158142,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "after-reward",
+      "sample": 2,
+      "section": "shop",
+      "window": 27.400000005960464,
+      "data": 27.400000005960464,
+      "images": 27.400000005960464,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "sample": 2,
+      "section": "inventory",
+      "window": 11.900000005960464,
+      "data": 11.900000005960464,
+      "images": 24.200000017881393,
+      "resources": [],
+      "requests": []
+    },
+    {
+      "mode": "after",
+      "scenario": "account-change",
+      "sample": 2,
+      "section": "shop",
+      "window": 9.200000017881393,
+      "data": 519,
+      "images": 529.4000000059605,
+      "resources": [
+        {
+          "path": "/api/store",
+          "start": 8.599999994039536,
+          "end": 515.0999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/store",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "mode": "after",
+      "scenario": "cold-login",
+      "sample": 2,
+      "section": "inventory",
+      "window": 7.9000000059604645,
+      "data": 508.2000000178814,
+      "images": 516.4000000059605,
+      "resources": [],
+      "requests": []
+    }
+  ]
+}

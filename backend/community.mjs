@@ -1,3 +1,4 @@
+import {timed,measuredClient} from './metrics.mjs';
 import {cosmeticState,equipCosmetic,normalizedComposition,saleCosmetics} from './cosmetics.mjs';
 import {verifiedRaffleEntries} from './raffle-integrity.mjs';
 import {createHash} from 'node:crypto';import {sessionKey} from './security.mjs';import {BackendError} from './repository.mjs';import {fail} from './moderation.mjs';
@@ -6,7 +7,7 @@ export function createCommunity({pool,moderation,resources=[],cosmeticsEnabled=f
  const enabled=moderation?.enabled===true;
  async function tx(user,write,scope,work){
   if(!enabled)fail(403,'operation_disabled');let c;
-  try{c=await pool.connect();await c.query(write?'BEGIN':'BEGIN READ ONLY');await c.query("SELECT set_config('lock_timeout','5s',true),set_config('statement_timeout','10s',true)");if(write)await c.query("SELECT pg_advisory_xact_lock(hashtextextended('pw2:shared-games-economy',0))");
+  try{c=measuredClient(await timed('poolMs',()=>pool.connect()));await c.query(write?'BEGIN':'BEGIN READ ONLY');await c.query("SELECT set_config('lock_timeout','5s',true),set_config('statement_timeout','10s',true)");if(write)await c.query("SELECT pg_advisory_xact_lock(hashtextextended('pw2:shared-games-economy',0))");
    const rls=(await c.query("SELECT bool_or(row_security_active(t::regclass)) AS filtered FROM unnest(ARRAY['public.pw2_store_products','public.pw2_store_purchases','public.pw2_raffles','public.pw2_raffle_entries','public.pw2_raffle_ticket_reservations','public.pw2_community_controls','public.pw2_account_sanctions','public.shop_inventories','public.shop_profiles','public.shop_operations']) t")).rows[0];if(rls?.filtered)fail(503,'community_unavailable');
    if(!(await c.query('SELECT 1 FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>now() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE',[sessionKey(user.token),user.nick])).rows.length)fail(401,'session_expired');
    await moderation.enforceWithClient(c,user.nick);if(write&&scope)await moderation.serviceWithClient(c,scope);
