@@ -11,9 +11,31 @@ export function createPerrilandStore({pool,enabled=false,moderation}={}){
  async function ready(c){const r=(await c.query("SELECT to_regclass('public.pw2_perriland_room') IS NOT NULL AND to_regclass('public.pw2_perriland_events') IS NOT NULL AS ready")).rows[0];if(!r?.ready)fail(503,'perriland_schema_missing');}
  async function identity(c,user){if(!(await c.query('SELECT 1 FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>clock_timestamp() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE',[sessionKey(user.token),user.nick])).rows.length)fail(401,'session_expired');await moderation?.enforceWithClient(c,user.nick);}
  return {configured,
- async access(user){if(!configured)return {configured:false,available:false,isAdmin:false};const c=await pool.connect();try{await ready(c);await identity(c,user);const role=(await c.query('SELECT is_admin FROM public.shop_access WHERE nick=$1',[user.nick])).rows[0];const control=(await c.query("SELECT active,message FROM public.pw2_community_controls WHERE scope='PerriLand'")).rows[0];const isAdmin=user.nick==='Perrisushi'&&role?.is_admin===true;const inv=(await c.query('SELECT pc FROM public.shop_inventories WHERE nick=$1',[user.nick])).rows[0];if(!inv||!Number.isSafeInteger(Number(inv.pc))||Number(inv.pc)<0)fail(409,'inventory_missing');const profile=(await c.query('SELECT * FROM public.shop_profiles WHERE nick=$1',[user.nick])).rows[0];return {configured:true,available:control?.active===false,isAdmin,message:control?.message??'',pc:Number(inv.pc),composition:normalizedComposition({...profile,nick:user.nick},isAdmin)};}catch(e){if(e instanceof BackendError)throw e;throw new BackendError(503,'perriland_unavailable');}finally{c.release();}},
+ async access(user){if(!configured)return {configured:false,available:false,isAdmin:false};const c=await pool.connect();try{await ready(c);
+ // Una lectura reúne sesión, rol, disponibilidad, saldo y apariencia; no se cachean permisos.
+ const info=(await c.query(`SELECT a.is_admin,i.pc,to_jsonb(pf) AS profile,ctl.active AS maintenance,ctl.message
+ FROM public.shop_sessions s JOIN public.shop_access a ON a.nick=s.nick JOIN public.shop_players p ON p.nick=s.nick
+ LEFT JOIN public.shop_inventories i ON i.nick=s.nick LEFT JOIN public.shop_profiles pf ON pf.nick=s.nick
+ LEFT JOIN public.pw2_community_controls ctl ON ctl.scope='PerriLand'
+ WHERE s.token=$1 AND s.nick=$2 AND s.expires_at>clock_timestamp() AND a.active IS DISTINCT FROM FALSE AND p.active IS DISTINCT FROM FALSE`,[sessionKey(user.token),user.nick])).rows[0];
+ if(!info)fail(401,'session_expired');await moderation?.enforceWithClient(c,user.nick);
+ const isAdmin=user.nick==='Perrisushi'&&info.is_admin===true;
+ if(info.pc===null||info.pc===undefined||!Number.isSafeInteger(Number(info.pc))||Number(info.pc)<0)fail(409,'inventory_missing');
+ return {configured:true,available:info.maintenance===false,isAdmin,message:info.message??'',pc:Number(info.pc),composition:normalizedComposition({...info.profile,nick:user.nick},isAdmin)};
+ }catch(e){if(e instanceof BackendError)throw e;throw new BackendError(503,'perriland_unavailable');}finally{c.release();}},
  async open(){if(leader)return leader;const c=await pool.connect();try{await ready(c);const lock=(await c.query("SELECT pg_try_advisory_lock(hashtextextended('pw2:perriland:main',0)) AS acquired")).rows[0];if(!lock?.acquired)fail(503,'perriland_room_on_other_instance');leader=c;broken=false;c.on?.('error',()=>{broken=true;});const row=(await c.query("SELECT revision,state FROM public.pw2_perriland_room WHERE id='main'")).rows[0];if(!row)fail(503,'perriland_schema_missing');revision=Number(row.revision);return {state:row.state};}catch(e){leader=null;c.release();throw e;}},
- async save({commitId,state,events,nicks,audits=[]}){if(!leader||broken)fail(503,'perriland_unavailable');const c=leader,rejected=new Set();try{await c.query('BEGIN');await c.query("SET LOCAL lock_timeout='5s'");await c.query("SET LOCAL statement_timeout='8s'");await c.query("SELECT pg_advisory_xact_lock(hashtextextended('pw2:shared-games-economy',0))");const row=(await c.query("SELECT revision,commit_id FROM public.pw2_perriland_room WHERE id='main' FOR UPDATE")).rows[0];if(row.commit_id===commitId){await c.query('COMMIT');return {balances:{},replayed:true};}if(Number(row.revision)!==revision)fail(409,'perriland_revision_conflict');
+ async save({commitId,state,events,nicks,audits=[]}){if(!leader||broken)fail(503,'perriland_unavailable');const c=leader,rejected=new Set();
+ // Sin dinero ni acciones administrativas, el checkpoint es una única escritura atómica.
+ // La sala serializa save y el lease de líder excluye otras instancias. La revisión evita pisar cambios ajenos.
+ if(events.length===0&&audits.length===0){
+ const row=(await c.query(`UPDATE public.pw2_perriland_room SET
+ state=CASE WHEN commit_id=$2::uuid THEN state ELSE $1::jsonb END,
+ revision=CASE WHEN commit_id=$2::uuid THEN revision ELSE revision+1 END,
+ updated_at=CASE WHEN commit_id=$2::uuid THEN updated_at ELSE now() END,commit_id=$2
+ WHERE id='main' AND (revision=$3 OR commit_id=$2::uuid) RETURNING revision`,[JSON.stringify(state),commitId,revision])).rows[0];
+ if(!row)fail(409,'perriland_revision_conflict');const replayed=Number(row.revision)===revision;revision=Number(row.revision);return {balances:{},rejected:[],...(replayed?{replayed:true}:{})};
+ }
+ try{await c.query('BEGIN');await c.query("SET LOCAL lock_timeout='5s'");await c.query("SET LOCAL statement_timeout='8s'");await c.query("SELECT pg_advisory_xact_lock(hashtextextended('pw2:shared-games-economy',0))");const row=(await c.query("SELECT revision,commit_id FROM public.pw2_perriland_room WHERE id='main' FOR UPDATE")).rows[0];if(row.commit_id===commitId){await c.query('COMMIT');return {balances:{},replayed:true};}if(Number(row.revision)!==revision)fail(409,'perriland_revision_conflict');
 
  for(const audit of audits){await identity(c,audit.user);const role=(await c.query('SELECT is_admin FROM public.shop_access WHERE nick=$1 FOR SHARE',[audit.user.nick])).rows[0];if(audit.user.nick!=='Perrisushi'||role?.is_admin!==true)fail(403,'admin_required');await c.query('INSERT INTO public.shop_operations(operation_id,nick,action,response,created_at) VALUES($1,$2,$3,$4,now())',['pw2:perriland-admin:'+audit.id,audit.user.nick,'admin:perriland',JSON.stringify({audit:{actor:audit.user.nick,action:audit.action,details:audit.details}})]);}
  const control=(await c.query("SELECT active FROM public.pw2_community_controls WHERE scope='PerriLand'")).rows[0];

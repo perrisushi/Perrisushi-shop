@@ -1,5 +1,5 @@
 'use strict';
-const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d',{alpha:true}),terrain=new Image();canvas.width=OverlayScene.width;canvas.height=OverlayScene.height;terrain.src=OverlayScene.image.src;let state=null,frameCount=0,lastFrame=performance.now(),rendered=null;const frameTimes=[],timeline=new OverlayTimeline.Timeline();let starvedFrames=0,drawCostMs=0;
+const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d',{alpha:true}),terrain=new Image();canvas.width=OverlayScene.width;canvas.height=OverlayScene.height;terrain.src=OverlayScene.image.src;let state=null,frameCount=0,lastFrame=performance.now(),rendered=null;const frameTimes=[],timeline=new OverlayTimeline.Timeline({delayMs:50});let starvedFrames=0,drawCostMs=0;
 window.addEventListener('perriland-state',e=>{state=e.detail;timeline.push(state,performance.now());});
 function line(x1,y1,x2,y2){ctx.strokeStyle='#141b20';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
 function draw(now){const started=performance.now(),dt=now-lastFrame;lastFrame=now;if(frameTimes.length<600)frameTimes.push(dt);frameCount++;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;if(terrain.complete&&terrain.naturalWidth)ctx.drawImage(terrain,0,0,canvas.width,canvas.height);

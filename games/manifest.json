@@ -1575,7 +1575,7 @@
     },
     {
       "path": "games/perriland/index.html",
-      "sha256": "fa193b112da1186babdcb5d31225c0b6bed689844f2455d34e471f4ac266695e"
+      "sha256": "319f9bfa2a16d6d15b778125883b06f3c9c7e2cd0fb922eddcabf934aad67962"
     },
     {
       "path": "games/perriland/jetpack-render.js",
@@ -1587,7 +1587,7 @@
     },
     {
       "path": "games/perriland/overlay.js",
-      "sha256": "9f392485dfefabb7e45344219ca50647527670b8674a9703409e5dd9f6e2e2cf"
+      "sha256": "8da65286ca213c7795bbbc1bbb9b0ef643528ab1b2c518481c1630cafa252f91"
     },
     {
       "path": "games/perriland/perriland.css",
@@ -1595,7 +1595,7 @@
     },
     {
       "path": "games/perriland/perriland.js",
-      "sha256": "a6ba634962f0eb488e81ab6932258c5a0f6dc49bcf4b825a40ee91ee8c9003f2"
+      "sha256": "f7a725afbfe8936097c336ac2812b91c85800f02cedbeda499da9190c0ceb6c5"
     },
     {
       "path": "games/perriland/perrilogo-catalog.js",
