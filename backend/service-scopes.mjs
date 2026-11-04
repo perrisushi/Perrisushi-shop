@@ -6,6 +6,7 @@ export function gameScopeFromAction(action){
  return null;
 }
 export function gameScopeFromPath(path){
+ if(path.startsWith('/games/perriland/'))return 'PerriLand';
  if(path.includes('/perripet-app/'))return 'PerriPet';
  if(path.includes('/perriduelos-app/'))return 'PerriDuelos';
  if(path.includes('perricasillas')||path.endsWith('/index-production.html'))return 'PerriCasillas';

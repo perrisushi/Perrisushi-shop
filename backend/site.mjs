@@ -28,7 +28,9 @@ export function serveSite({root=resolve(import.meta.dirname,'../dist'),authentic
   if(path==='/')path='/index.html';
   path=gamePath(path);const isGame=(await manifest).has(path);
   if(!publicPattern.test(path)&&!isGame){res.writeHead(404);res.end();return}
-  if(isGame){
+  // Los recursos de PERRILAND son estáticos y no contienen identidad ni saldos.
+  // Solo su documento necesita sesión aquí; API y WebSocket la comprueban aparte.
+  if(isGame&&!(path.startsWith('/games/perriland/')&&extname(path)!=='.html')){
    try{if(!await authenticate(req)){res.writeHead(303,{'Location':'/','Cache-Control':'no-store'});res.end();return}}
    catch(error){res.writeHead(503,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(error?.code==='service_maintenance'?'Este minijuego está en mantenimiento. Inténtalo más tarde.':'No se pudo comprobar tu sesión. Vuelve a intentarlo.');return}
   }

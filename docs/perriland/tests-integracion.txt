@@ -1,0 +1,43 @@
+▶ PERRILAND HTTP/WebSocket: sesión real, permisos, dos usuarios y reconexión
+  ✔ Documento exige sesión; recursos gráficos y scripts no repiten lecturas privadas (4.2846ms)
+  ✔ Acceso cerrado de inicio, autenticación/CSRF e identidad inyectada (25.6841ms)
+  ✔ Una sala para dos identidades y mensajes sin secretos (39.6421ms)
+  ✔ Cliente normal no puede generar ni controlar otra identidad (45.2693ms)
+  ✔ Admin puede generar; revocar el rol bloquea la operación siguiente (14.6876ms)
+  ✔ Otra pestaña no duplica ni roba el control; ticket gastado no se reutiliza (40.8549ms)
+  ✔ Servidor dev reenvía upgrade WebSocket, cookie y protocolo al backend loopback (95.4799ms)
+  ✔ Cerrar la última pestaña retira el cuerpo sin tocar el saldo (55.6039ms)
+  ✔ Logout revoca conexión abierta y desactivar cierra usuarios normales (80.9074ms)
+✔ PERRILAND HTTP/WebSocket: sesión real, permisos, dos usuarios y reconexión (1406.2509ms)
+▶ PERRILAND SQL: migración, permisos, economía real, idempotencia y rollback
+  ✔ Migración idempotente, juego apagado y tablas privadas (11.5165ms)
+  ✔ Monedas +5/+20 y caída −2 se aplican al inventario, público e historial (17.6584ms)
+  ✔ Evento repetido no duplica PC; commit repetido no duplica nada (9.114ms)
+  ✔ Penalización con mínimo cero y saldos ajenos intactos (11.0978ms)
+  ✔ Fallo después del cambio de saldo revierte evento, saldo y checkpoint (7.6349ms)
+  ✔ Identidad revocada y cuenta sancionada no reciben nuevos PC (7.639ms)
+  ✔ Cerrar disponibilidad bloquea acreditaciones aunque quede un socket antiguo (3.1835ms)
+  ✔ Otra instancia no inicia otra simulación mientras existe líder (0.5428ms)
+✔ PERRILAND SQL: migración, permisos, economía real, idempotencia y rollback (995.6153ms)
+▶ PERRILAND sala: usuarios, control, persistencia, reinicio y datos reales
+  ✔ Cada personaje utiliza las capas validadas de su propia cuenta (0.3336ms)
+  ✔ Dos sesiones del mismo nick no duplican personaje; cada uno controla el suyo (4.4202ms)
+  ✔ Usuario normal y cliente con admin falsificado no pueden generar ni pausar (8.6378ms)
+  ✔ Banderas independientes por usuario conservan duración y cambio pendiente (2.316ms)
+  ✔ Recogida física se acredita una sola vez y reset no cambia PC reales (20.6731ms)
+  ✔ Generación admin conserva Slimes, bombas y propulsores del prototipo (15.8354ms)
+  ✔ Un acceso cerrado no muestra premios que no se acreditaron (5.0737ms)
+  ✔ Checkpoint reconstruye entidades/Set/Map y no contiene cookies (0.6644ms)
+  ✔ Reiniciar backend recupera checkpoint e IDs sin volver a acreditar (11.8945ms)
+✔ PERRILAND sala: usuarios, control, persistencia, reinicio y datos reales (717.4757ms)
+✔ PERRILAND no impone el antiguo grupo de cuatro jugadores: ocho cuentas (666.9366ms)
+✔ PERRILAND conserva el motor original copiado y sus parámetros recientes (4.1538ms)
+✔ PERRILAND se activa solo con el mismo proyecto, sesiones compartidas y conexión de sesión (0.4222ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2501.5749

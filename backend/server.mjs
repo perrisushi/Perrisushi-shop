@@ -1,3 +1,5 @@
+import {assertPerrilandConfiguration} from './perriland/configuration.mjs';
+import {createPerriland} from './perriland/index.mjs';
 import {installedCosmetics} from './cosmetics.mjs';
 import {gameScopeFromPath} from './service-scopes.mjs';
 import {createCommunity} from './community.mjs';
@@ -50,9 +52,11 @@ if(process.env.PW2_GOOGLE_ENABLED==='true'){
 }
 const administration=createAdministration({pool:gamePool,moderation,cosmeticsEnabled,sourceCompatible:sources.projectMatch!=='different',onDiagnostic:event=>console.log(JSON.stringify(event))});
 const community=createCommunity({pool:gamePool,moderation,cosmeticsEnabled,resources:EDITABLE_RESOURCES});
-const handler=createBackend({repository,economy,games,google,administration,moderation,community,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
+assertPerrilandConfiguration({enabled:process.env.PW2_PERRILAND_ENABLED==='true',projectMatch:sources.projectMatch,keyProjectMatch:sources.keyProjectMatch,databaseUrl:process.env.DATABASE_URL,sessionStore:process.env.SESSION_STORE,allowSessionWrites});
+const perriland=createPerriland({pool:gamePool,moderation,enabled:process.env.PW2_PERRILAND_ENABLED==='true'&&sources.projectMatch!=='different'&&sources.keyProjectMatch!=='different'});
+const handler=createBackend({repository,economy,games,perriland,google,administration,moderation,community,legalPublished:legal.enabled,publicOrigin:configuredOrigin,sessionStore:process.env.SESSION_STORE??'memory',production,allowSessionWrites,proxySecret:process.env.PERRIWEB_PROXY_SECRET, ...(production?{csrfSecret:process.env.CSRF_SECRET}:{csrfSecret:authSecret}),onAuthDiagnostic:event=>console.log(JSON.stringify(event)),onMetric:metric=>{if(process.env.BACKEND_METRICS==='true')console.log(JSON.stringify(metric))}});
 const site=serveSite({authenticate:async req=>{
- const user=await handler.authenticate(req);if(user&&moderation.enabled){const path=new URL(req.url,'http://local').pathname;const scope=gameScopeFromPath(path);if(scope)await moderation.service(scope)}return user;
+ const user=await handler.authenticate(req);if(user&&moderation.enabled){const path=new URL(req.url,'http://local').pathname;const scope=gameScopeFromPath(path);if(scope){const role=scope==='PerriLand'&&user.nick==='Perrisushi'?await repository.adminAccess(user.nick):null;if(role?.is_admin!==true)await moderation.service(scope)}}return user;
 }});
 const server=http.createServer((req,res)=>{
  if(req.url==='/healthz'){res.writeHead(repository.configured?200:503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ready:repository.configured}));return}
@@ -62,5 +66,8 @@ const server=http.createServer((req,res)=>{
  if(canonical){res.writeHead(307,{'Location':canonical,'Cache-Control':'no-store'});res.end();return}
  return site(req,res);
 });
+perriland.attach(server,{authenticate:handler.authenticate,origin:configuredOrigin,proxySecret:process.env.PERRIWEB_PROXY_SECRET});
 server.requestTimeout=15000;server.headersTimeout=10000;server.maxHeadersCount=32;
 server.listen(Number(process.env.PORT??process.env.BACKEND_PORT??4177),production?'0.0.0.0':'127.0.0.1',()=>{console.log(JSON.stringify({event:'auth_connection_configuration',...connectionDiagnostics({supabaseUrl:process.env.SUPABASE_URL,databaseUrl:process.env.DATABASE_URL,serviceKey:process.env.SUPABASE_SERVICE_ROLE_KEY})}));console.log(`PerriWeb: ${repository.configured?'configurado':'backend no configurado'}; sesiones ${process.env.SESSION_STORE??'memory'}`)});
+
+for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>{server.close();perriland.close().then(()=>{server.closeAllConnections();process.exit(0);},()=>{server.closeAllConnections();process.exit(1);});});

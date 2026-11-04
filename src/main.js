@@ -219,7 +219,7 @@ function gamesView() {
   const games = [
     ['menu-duelos','PerriDuelos'],['boton-perripet','PerriPet'],['boton-perricasilla','PerriCasillas'],['boton-perrirpg','PerriRPG']
   ];
-  return shellView('games', `<div class="games-grid">${games.map(([file,name])=>`<article class="game-tile" data-game="${name}"><button type="button" class="game-launch" aria-label="Abrir ${name}"><img src="${ASSETS}${file}.webp" alt="${name}" loading="lazy"/></button><button type="button" class="game-help" data-game-help="${name}" aria-label="Información de ${name}" aria-haspopup="dialog">?</button></article>`).join('')}</div>`);
+  return shellView('games', `<div class="games-grid">${games.map(([file,name])=>`<article class="game-tile" data-game="${name}"><button type="button" class="game-launch" aria-label="Abrir ${name}"><img src="${ASSETS}${file}.webp" alt="${name}" loading="lazy"/></button><button type="button" class="game-help" data-game-help="${name}" aria-label="Información de ${name}" aria-haspopup="dialog">?</button></article>`).join('')}<article class="game-tile" data-game="PerriLand"><button type="button" class="game-launch textured-button" aria-label="Abrir PERRILAND">PERRILAND</button></article></div>`);
 }
 
 function shopView() {
@@ -273,9 +273,9 @@ function navigate(route) {
   else location.hash = safe;
 }
 
-const gameRoutes={PerriDuelos:'/perriduelos-app/index.html',PerriPet:'/perripet-app/index.html',PerriCasillas:'/perricasillas',PerriRPG:'/perrirpg.html'};
+const gameRoutes={PerriDuelos:'/perriduelos-app/index.html',PerriPet:'/perripet-app/index.html',PerriCasillas:'/perricasillas',PerriRPG:'/perrirpg.html',PerriLand:'/games/perriland/index.html'};
 const economicOperations=new Map();let economicReceipt=null;
-function gameMarkup(name,pending=false){return `<div class="modal-head"><h2 id="modal-title">${escapeText(name)}</h2><div class="game-window-actions"><button type="button" data-action="game-fullscreen" aria-label="Pantalla completa" aria-pressed="false">⛶</button><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div></div>${pending?'<div class="game-opening" role="status">Abriendo juego…</div>':`<iframe class="original-game" src="${gameRoutes[name]}" title="${escapeText(name)}" sandbox="allow-scripts allow-same-origin" allow="autoplay; fullscreen"></iframe>`}<p class="game-rotate-hint" role="status">Gira el móvil para jugar en horizontal.</p>`}
+function gameMarkup(name,pending=false){return `<div class="modal-head"><h2 id="modal-title">${escapeText(name==='PerriLand'?'PERRILAND':name)}</h2><div class="game-window-actions"><button type="button" data-action="game-fullscreen" aria-label="Pantalla completa" aria-pressed="false">⛶</button><button type="button" data-action="close-modal" class="modal-close" aria-label="Cerrar">×</button></div></div>${pending?'<div class="game-opening" role="status">Abriendo juego…</div>':`<iframe class="original-game" src="${gameRoutes[name]}" title="${escapeText(name)}" sandbox="allow-scripts allow-same-origin" allow="autoplay; fullscreen"></iframe>`}<p class="game-rotate-hint" role="status">Gira el móvil para jugar en horizontal.</p>`}
 function containerStorageKey(id){return 'pw2:container:'+session?.nick+':'+id}
 function storedContainer(id){
  try{const raw=sessionStorage.getItem(containerStorageKey(id));if(!raw)return null;
@@ -664,9 +664,9 @@ async function launchOriginalGame(name){
  if(!session){openModal('auth');return}if(openingGame)return;openingGame=true;const generation=sessionEpoch,attempt=++gameLaunchEpoch,immersive=mobileGameView(),button=stage.querySelector(`[data-game="${name}"]`);if(button){button.disabled=true;button.setAttribute('aria-busy','true')}
  // Solicitar fullscreen en la misma pulsación, antes de esperar a la red.
  if(immersive)openModal('game:'+name,{pending:true,immersive:true});
- try{const context=await api.getGameContext();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;
-  if(context.nick!==session.nick){await bootstrapSession();return}
-  const available=context.available&&context.games?.[name]!==false;gameBootstrap={...context,csrfToken:api.getCsrfToken()};
+ try{const context=name==='PerriLand'?await api.getPerrilandContext():await api.getGameContext();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;
+  if(name!=='PerriLand'&&context.nick!==session.nick){await bootstrapSession();return}
+  const available=name==='PerriLand'?(context.available||context.isAdmin&&context.configured):context.available&&context.games?.[name]!==false;gameBootstrap={...context,csrfToken:api.getCsrfToken()};
   if(immersive&&available){const card=overlay.querySelector('.game-card');if(!card)return;card.innerHTML=gameMarkup(name);gameWindow.sync();card.querySelector('.modal-close')?.focus()}
   else {if(immersive)await gameWindow.close();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;openModal(available?'game:'+name:'game-unavailable')}
  }catch(error){if(generation===sessionEpoch&&attempt===gameLaunchEpoch){if(immersive)await gameWindow.close();if(generation!==sessionEpoch||attempt!==gameLaunchEpoch)return;errorState(error);openModal('game-unavailable')}}finally{if(attempt===gameLaunchEpoch){openingGame=false;if(button){button.disabled=false;button.removeAttribute('aria-busy')}}}

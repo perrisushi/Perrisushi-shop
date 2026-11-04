@@ -1,3 +1,5 @@
+import {updatePerrilandManifest} from './perriland-manifest.mjs';
+await updatePerrilandManifest();
 import {buildFixedLayout} from './fixed-layout.mjs';
 await buildFixedLayout();
 import {mkdir,copyFile,readdir} from 'node:fs/promises';

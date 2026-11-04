@@ -8,6 +8,7 @@ export function gamePath(path){
  return path;
 }
 export function gameHtml(html,casillas){
+ if(html.includes('data-perriland'))return html;
  html=html.replace(/<script src="\.\/ui-layout-editor\.js[^\"]*"><\/script>/g,'');
  if(!html.includes('data-pw2-game'))html=html.replace(/<html\b/i,'<html data-pw2-game');
  if(!html.includes('src="/src/game-bridge.js"'))html=html.replace('</head>','<script src="/src/game-bridge.js"></script></head>');

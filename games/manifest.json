@@ -1556,6 +1556,126 @@
     {
       "path": "games/original/assets/logo-chat/saludo.png",
       "sha256": "05e702503e107f48321e11033f5eff9011802d7f500e9662ab3d92cdd4e58a91"
+    },
+    {
+      "path": "games/perriland/bomb-render.js",
+      "sha256": "08bc3b065885fa65f40b115c0441d1033c4250b399621a6da8d6bb95549d14a3"
+    },
+    {
+      "path": "games/perriland/bomb-shared.js",
+      "sha256": "3873a67ff7f5cc1fe9fdc75120b1301eb23f095e0616616ac54d462af4a92376"
+    },
+    {
+      "path": "games/perriland/extras-catalog.js",
+      "sha256": "4e467c0c0b9ec890d7c9cbb4e459da285636cda5ddac0998ca65d53ed5513d14"
+    },
+    {
+      "path": "games/perriland/extras-view.js",
+      "sha256": "105e524921bce9132cc913c42c9c4b0e51870c3beee4204ae9c6a3b012786aaa"
+    },
+    {
+      "path": "games/perriland/index.html",
+      "sha256": "fa193b112da1186babdcb5d31225c0b6bed689844f2455d34e471f4ac266695e"
+    },
+    {
+      "path": "games/perriland/jetpack-render.js",
+      "sha256": "cb1c24362efc3474b7ea1e83fd45e578516b50f3543f69bf20a0be92d6737b39"
+    },
+    {
+      "path": "games/perriland/jetpack-shared.js",
+      "sha256": "5d45a1eee8c7bd1ee5dfcdc2f6e2afc981f1105ec77d37e1aa737b58829a1d2e"
+    },
+    {
+      "path": "games/perriland/overlay.js",
+      "sha256": "9f392485dfefabb7e45344219ca50647527670b8674a9703409e5dd9f6e2e2cf"
+    },
+    {
+      "path": "games/perriland/perriland.css",
+      "sha256": "acfbec762e93c5eca56e5ccb70b1d9c44771542a0dd4a375ef9cfbae56636767"
+    },
+    {
+      "path": "games/perriland/perriland.js",
+      "sha256": "a6ba634962f0eb488e81ab6932258c5a0f6dc49bcf4b825a40ee91ee8c9003f2"
+    },
+    {
+      "path": "games/perriland/perrilogo-catalog.js",
+      "sha256": "f0ae58d4b4dd56142aa4d370f6f675b8da7b673775dd0390cd4c8dffa0a903bd"
+    },
+    {
+      "path": "games/perriland/perrilogos.js",
+      "sha256": "7bb878824651a06630aec47fa3e37146f1237c700cf70bb51f73905c1365cfe4"
+    },
+    {
+      "path": "games/perriland/render-timeline.js",
+      "sha256": "07ecd2524453ab6f6ea2744a8feb39bed382cd7b0a11e9a8880144ea068bb033"
+    },
+    {
+      "path": "games/perriland/scene-config.js",
+      "sha256": "fa445ebdcafceacef9b1422b3c583ea0efd3afbf887ed31827d31bdb4429387c"
+    },
+    {
+      "path": "games/perriland/slime-render.js",
+      "sha256": "3361b792f2e16518274bbaaad6b78e80b982718d24c506c8fd12796ff3b7deee"
+    },
+    {
+      "path": "games/perriland/slime-shared.js",
+      "sha256": "72378751e36e4d305bbe2f10babcca438eda116fc0d9efa6130048cc5c788357"
+    },
+    {
+      "path": "games/perriland/weapons-view.js",
+      "sha256": "a0652ebe25d859443a6849ea10e00e8529c214740e561b0ebc95e23376569675"
+    },
+    {
+      "path": "games/perriland/assets/terreno/plataformas.png",
+      "sha256": "7857dcc98ac6ecfb92465c3a19be24c8073e2053145f066c5400148b8146456a"
+    },
+    {
+      "path": "games/perriland/assets/slime/slime-bomba-salto.png",
+      "sha256": "d77f330b24e08ab96579eb97b7b2b1e0f8cf0c34e7acac5dea52bb28461854ea"
+    },
+    {
+      "path": "games/perriland/assets/slime/slime-bomba.png",
+      "sha256": "40a6f1f5e53d1e675fbd3e8e8e40a535406db373c81a8661d3185f1f1351d5b0"
+    },
+    {
+      "path": "games/perriland/assets/slime/slime-enemigo-daño.png",
+      "sha256": "4846813d80bd39c8680c1f6db3ccd1412594db161f79d2e1897b6a7ef03c5b1e"
+    },
+    {
+      "path": "games/perriland/assets/slime/slime-enemigo-salto.png",
+      "sha256": "6365ce230d63383cad5636dfcbb018f6e029b19283a0b7f93ba25759caf5809d"
+    },
+    {
+      "path": "games/perriland/assets/slime/slime-enemigo.png",
+      "sha256": "ad3082707d3a571dd2f055f7e05112bdb7f797ea317289d033c2c0839dd9c524"
+    },
+    {
+      "path": "games/perriland/assets/slime/smile-enemigo-ataque.png",
+      "sha256": "ebc11a4c55b69629dbf2669e248117c2b25d5587d82979c162e68cb55bec7897"
+    },
+    {
+      "path": "games/perriland/assets/objetos/objeto-propulsor.png",
+      "sha256": "607ff05e849400fae0934226629431ea52cbd92bec9e55969d308193475c6288"
+    },
+    {
+      "path": "games/perriland/assets/extras/bandera-corazon.png",
+      "sha256": "b7ac1799ca5c95595f8abecead58690b847a355f2712144f714c6abcd6c28bf4"
+    },
+    {
+      "path": "games/perriland/assets/extras/bandera-hi.png",
+      "sha256": "2538aea86a6ecbda57c2d9e98e94b4195b032ac15b3f38f8b1b071f4182661b2"
+    },
+    {
+      "path": "games/perriland/assets/extras/bandera-no.png",
+      "sha256": "10050fe77ae65f0c038f190c70e42b5bb2d31a4bf5128babda557984399e386c"
+    },
+    {
+      "path": "games/perriland/assets/extras/bandera-si.png",
+      "sha256": "3bf62d423938057d793ef16f45d6af424b68acbb7cdf8dc117c2eee6f975627e"
+    },
+    {
+      "path": "games/perriland/assets/extras/moneda-pc.png",
+      "sha256": "5173ed0547fff3c5e1391ebaa56aad4d9aa7f01e1d5cf441d66c8e895776cf02"
     }
   ]
 }

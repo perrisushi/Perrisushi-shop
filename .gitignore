@@ -23,3 +23,6 @@ secrets/
 
 # Exportaciones y copias privadas de la fusión de usuarios
 /private-merge/
+
+# Copias locales previas a integrar PERRILAND
+/local-backups/

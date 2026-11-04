@@ -22,6 +22,7 @@
     "@electric-sql/pglite": "^0.5.12"
   },
   "dependencies": {
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "ws": "^8.22.1"
   }
 }

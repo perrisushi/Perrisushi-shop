@@ -1,0 +1,42 @@
+[
+  {
+    "file": "src/bombs.cjs",
+    "sha256": "4178880bcf68cbb772acdd6a09086c290450b17e96a5ea8492c33cab30af86da"
+  },
+  {
+    "file": "src/jetpacks.cjs",
+    "sha256": "bb9a172ea94057aa7e2925efbaa0dd08d273824ee5832555b3e493ff575944bd"
+  },
+  {
+    "file": "src/slimes.cjs",
+    "sha256": "5816b27391bb69a0dc5362deb1fcc141527fa2d75118dacadb5037fb1a632e75"
+  },
+  {
+    "file": "src/world.cjs",
+    "sha256": "4608772988271666cc60b0a5dfe488665f4734fdc8b9df686f010c5ade72c802"
+  },
+  {
+    "file": "src/config/participants.cjs",
+    "sha256": "030325b2023ecf4613409923dc1d01f0b25a8dd931abe9b9b150b150146dba7b"
+  },
+  {
+    "file": "src/config/scene.cjs",
+    "sha256": "36e88816929cc13d27058bd3ce6c26431bf5d31797ce4553208a2fee50abb1e7"
+  },
+  {
+    "file": "src/reused/engine.cjs",
+    "sha256": "d6651af3f25afe02d93f13a2df128c0a971f93e248f968e9f8537bc22f26c801"
+  },
+  {
+    "file": "src/reused/extras.cjs",
+    "sha256": "fc7e7eae9515f4a74a98b8432789c706e51527e5e80db654e80f44be1d44cd11"
+  },
+  {
+    "file": "src/reused/scene.js",
+    "sha256": "77a33dc0e669b679e62171140b55f3d31441b1c9f28330b32b1fe90a7d735879"
+  },
+  {
+    "file": "src/reused/weapons.js",
+    "sha256": "b0ba146b39efb94bcc1a0f5e206b44e5460c3e3615b36f95f77f13d5e607a337"
+  }
+]

@@ -162,6 +162,7 @@ export function createApiClient({fetchImpl = globalThis.fetch, base = '/api', no
     getInventoryReadiness:()=>request('/inventory/readiness',{cacheMs:20_000}),
     getReceipt: id=>request('/shop/receipt',{params:{id}}),
     getGameContext: ()=>request('/games/context'),
+    getPerrilandContext: ()=>request('/perriland/context'),
     getNotifications: ({cursor,limit=20,state='unread'}={})=>request(ENDPOINTS.notifications,{params:{cursor,limit:pageLimit(limit),state},cacheMs:0}),
     markNotificationRead: (id)=>request('/notifications/read',{method:'POST',body:{id}}),
     listRandomKeys: ({ticketCursor,claimCursor,limit=20}={})=>request(ENDPOINTS.randomKey,{params:{ticketCursor,claimCursor,limit:pageLimit(limit)},cacheMs:20_000}),

@@ -1,5 +1,7 @@
 # PerriWeb 2.0
 
+PERRILAND: integración local preparada y documentada en [docs/perriland/README.md](docs/perriland/README.md), con capturas y pruebas. La migración 006 y su activación remota están pendientes de revisión; no se han ejecutado ni publicado.
+
 Interfaz aprobada PC/móvil, backend de cuentas existentes, economía transaccional y cuatro minijuegos originales recuperados.
 
 **Código integrado y probado localmente. Falta la comprobación del propietario contra sus datos reales.** No se ha accedido a GitHub, Railway ni Supabase, ni publicado ni modificado datos remotos.

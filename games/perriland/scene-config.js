@@ -1,0 +1,1 @@
+window.OverlayScene={"width":1920,"height":1080,"characterScale":1.5,"targetFps":60,"snapshotFps":30,"image":{"width":1920,"height":1080,"src":"/games/perriland/assets/terreno/plataformas.png"}};

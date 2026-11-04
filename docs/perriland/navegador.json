@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "Tres sesiones autenticadas: una sala, personajes propios y controles admin exclusivos de Perrisushi",
+    "A/D mueve solo al usuario de esa sesión y el otro navegador ve su desplazamiento",
+    "Dos sesiones mueven sus personajes simultáneamente sin compartir controles",
+    "Recogidas simultáneas de Alpha y Beta acreditan +5 y +20 en sus inventarios respectivos",
+    "Moneda +5 acreditada a PC del inventario SQL; recarga conserva identidad y no repite premio",
+    "Especial +20 y caída −2 acreditadas/deducidas en SQL; respawn normal de 3 s",
+    "Pausa única y colocación real desde admin de Slime, bomba de 8 s y mochila; estado igual en usuarios",
+    "Reinicio compartido borra objetos de partida y conserva PC reales",
+    {
+      "test": "Móvil 844×390: dos toques simultáneos (derecha + salto), sin duplicar a Beta, sin desbordamiento y sin admin",
+      "fullscreen": true
+    },
+    "Móvil 390×844 conserva controles legibles y no produce scroll horizontal",
+    "Entrada PERRILAND desde Minijuegos de PerriWeb y carga en su ventana existente"
+  ],
+  "render": {
+    "frames": 346,
+    "averageFrameMs": 4.166964285714287,
+    "compositions": 3,
+    "starvedFrames": 0,
+    "averageDrawMs": 0.07947976882381073,
+    "visualDelayMs": 100
+  },
+  "errors": [],
+  "assetsFailed": [],
+  "external": [],
+  "economy": "Inventarios PostgreSQL locales aislados; no se accedió a Supabase ni se cambiaron saldos de producción.",
+  "limitations": "Móvil emulado con eventos táctiles reales del navegador, no teléfono físico. No despliegue Railway ni pruebas de latencia de producción."
+}

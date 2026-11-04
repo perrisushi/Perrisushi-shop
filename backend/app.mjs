@@ -11,7 +11,7 @@ import {authenticateTraditional,authDiagnostic} from './traditional-auth.mjs';
 import {oauthToken} from './google-auth.mjs';
 import {matchesPassword} from './security.mjs';
 import {digest,sessionKey,cookieToken,csrfFor,equalText,RateLimiter} from './security.mjs';
-export function createBackend({repository,economy,games,google,administration,moderation,community,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=SESSION_TTL_MS,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
+export function createBackend({repository,economy,games,perriland,google,administration,moderation,community,legalPublished=false,publicOrigin='http://127.0.0.1:4173',sessionStore='memory',allowSessionWrites=false,production=false,now=Date.now,sessionTtlMs=SESSION_TTL_MS,csrfSecret,proxySecret,onMetric=()=>{},onAuthDiagnostic=()=>{}}={}){
  if(proxySecret&&proxySecret.length<32)throw Error('Proxy secret too short');
  const origin=validatePublicOrigin(publicOrigin);
  if(production&&(new URL(origin).protocol!=='https:'||sessionStore!=='supabase'||!allowSessionWrites))throw Error('Production requires HTTPS and approved persistent sessions');
@@ -90,7 +90,7 @@ export function createBackend({repository,economy,games,google,administration,mo
    const url=new URL(req.url,'http://local');route=url.pathname;
    if(proxySecret&&!equalText(req.headers['x-perriweb-proxy-secret'],proxySecret))fail(403,'proxy_auth_required');
    const forwarded=req.headers['x-perriweb-client-ip'];const clientIP=proxySecret&&typeof forwarded==='string'&&isIP(forwarded)?forwarded:req.socket.remoteAddress??'local';
-   const known=[...ADMIN_ROUTES,'/api/store','/api/store/buy','/api/raffles','/api/raffles/register','/api/community','/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/readiness','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/cosmetics','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
+   const known=['/api/perriland/context','/api/perriland/join',...ADMIN_ROUTES,'/api/store','/api/store/buy','/api/raffles','/api/raffles/register','/api/community','/api/auth/google/config','/api/auth/google/start','/api/auth/google/callback','/api/auth/google/pending','/api/auth/google/register','/api/auth/google/cancel','/api/auth/google/status','/api/session','/api/auth/login','/api/auth/logout','/api/profile','/api/history','/api/users','/api/inventory','/api/inventory/readiness','/api/inventory/open','/api/inventory/open/status','/api/notifications','/api/shop/random-key','/api/shop/raffles','/api/profile/cosmetics','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action','/api/games/context','/api/shop/receipt'];
    if(!known.includes(route)){route='unknown';fail(404,'not_found')}
    if(!['GET','POST'].includes(req.method))fail(405,'method_not_allowed');
    if(!reads.take(clientIP))fail(429,'too_many_requests');
@@ -143,6 +143,8 @@ export function createBackend({repository,economy,games,google,administration,mo
      const mode=body.mode??'login',user=await identity(req);
      if(mode==='link'){
       if(!user)fail(401,'session_expired');
+
+
       if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
       if(!loginNick.take(digest(user.nick.toLowerCase())))fail(429,'too_many_requests');
       if(typeof body.password!=='string'||body.password.length>1024)fail(400,'invalid_request');
@@ -180,7 +182,7 @@ export function createBackend({repository,economy,games,google,administration,mo
     }});
     detailedTiming=true;send(200,{authenticated:true,nick:row.nick,sessionPersistence:sessionStore},{'Set-Cookie':google?[cookie(token),google.cookie('',true)]:cookie(token),'X-CSRF-Token':csrfFor(token,csrfSecret)});return;
    }
-   if(req.method==='POST'&&!['/api/store/buy','/api/raffles/register'].includes(route)&&!route.startsWith('/api/admin/')&&!['/api/inventory/open','/api/auth/logout','/api/profile/cosmetics','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
+   if(req.method==='POST'&&!['/api/store/buy','/api/raffles/register','/api/perriland/join'].includes(route)&&!route.startsWith('/api/admin/')&&!['/api/inventory/open','/api/auth/logout','/api/profile/cosmetics','/api/profile/avatar','/api/notifications/read','/api/shop/random-key/redeem','/api/shop/raffles/buy','/api/games/action'].includes(route))fail(405,'method_not_allowed');
    if(req.method==='GET'&&route.startsWith('/api/auth/'))fail(405,'method_not_allowed');
    if(!repository.configured)fail(503,'backend_not_configured');
    const user=await identity(req,route==='/api/session');
@@ -188,6 +190,13 @@ export function createBackend({repository,economy,games,google,administration,mo
    if(user&&!accountReads.take(user.nick))fail(429,'too_many_requests');
    if(route==='/api/session'&&req.method==='GET'){send(200,{authenticated:Boolean(user),...(user?{nick:user.nick,sessionPersistence:sessionStore}:{})},user?{'X-CSRF-Token':csrfFor(user.token,csrfSecret)}:{});return}
    if(!user)fail(401,'session_expired');
+   if(route.startsWith('/api/perriland/')){
+    if(url.searchParams.size)fail(400,'invalid_request');if(!perriland)fail(503,'perriland_unavailable');
+    if(route==='/api/perriland/context'&&req.method==='GET'){send(200,await perriland.context(user),{'X-CSRF-Token':csrfFor(user.token,csrfSecret)});return;}
+    if(route!=='/api/perriland/join'||req.method!=='POST')fail(405,'method_not_allowed');
+    if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
+    send(200,await perriland.join(user,await jsonBody(req)));return;
+   }
    if(route==='/api/profile/cosmetics'&&req.method==='GET'){
     if(url.searchParams.size)fail(400,'invalid_request');
     send(200,community?.cosmeticsEnabled?await community.read(user,'cosmetics'):{enabled:false});return;
@@ -211,7 +220,7 @@ export function createBackend({repository,economy,games,google,administration,mo
     if(route==='/api/admin/execute'){
      if(req.method!=='POST'||url.searchParams.size)fail(405,'method_not_allowed');
      if(!equalText(req.headers['x-csrf-token'],csrfFor(user.token,csrfSecret)))fail(403,'csrf_invalid');
-     send(200,await administration.execute(user,await jsonBody(req)));return;
+     const body=await jsonBody(req);if(body.action==='control'&&body.scope==='PerriLand'&&user.nick!=='Perrisushi')fail(403,'admin_required');send(200,await administration.execute(user,body));return;
     }
     if(req.method!=='GET')fail(405,'method_not_allowed');
     send(200,await administration.read(user,route.split('/').pop(),url.searchParams));return;

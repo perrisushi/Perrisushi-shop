@@ -5,7 +5,7 @@ const uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}
 const text=(v,max=100)=>{if(typeof v!=='string'||!v.trim()||v.length>max||/[\x00-\x1f]/.test(v))fail(400,'invalid_request');return v.trim()};
 const int=(v,min,max)=>{if(!Number.isInteger(v)||v<min||v>max)fail(400,'invalid_request');return v};
 const date=v=>{if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(v)||!Number.isFinite(Date.parse(v)))fail(400,'invalid_request');return v};
-export const SCOPES=['announcement','shop','raffles','PerriPet','PerriRPG','PerriCasillas','PerriDuelos'];
+export const SCOPES=['announcement','shop','raffles','PerriPet','PerriRPG','PerriCasillas','PerriDuelos','PerriLand'];
 export function validateManagement(body){
  const allowed={product:['id','expectedVersion','name','category','rewardType','rewardId','quantity','price','stock','enabled','hidden'],raffle:['id','expectedVersion','mode','name','season','ticketField','opensAt','closesAt'],control:['scope','active','message','expectedVersion']};
  if(!Object.hasOwn(allowed,body?.action??''))return null;
