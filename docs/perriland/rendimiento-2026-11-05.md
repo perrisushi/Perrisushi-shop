@@ -35,3 +35,20 @@ Prueba reproducible nueva: tests/perriland-persistence.test.js. Se añade una es
 No se ha medido esta versión en Railway. El movimiento todavía depende del viaje de red al servidor; 172 ms de RTT y el búfer visual siguen existiendo. El saldo de una moneda puede tardar en confirmarse con PostgreSQL lento, pero esa espera ya no debe congelar el movimiento. No se necesita otra migración SQL. Cambios de esta actualización: backend/perriland/room.mjs, tests/perriland-persistence.test.js y este informe.
 
 Validación final de la actualización: npm test, **425/425 correctas**, sin omisiones (incluye las siete pruebas nuevas de persistencia lenta). npm run build correcto, 561 archivos públicos. No se ejecutó SQL remoto ni se hizo commit, push o despliegue.
+
+
+## Respuesta local a las teclas y confirmación del servidor
+
+El usuario confirma 172 ms de RTT y retraso perceptible incluso tras quitar las esperas de persistencia. Esos 172 ms sí se sienten si el personaje espera una respuesta a cada tecla; no demuestran por sí solos el origen de pausas de varios segundos.
+
+Se añade predicción exclusivamente visual para el personaje propio usando un bundle acotado de la misma física pura (motor, terreno, equipamiento físico y propulsor). No incluye sala, persistencia, sesiones, cuentas, transporte ni economía. Se genera en cada build mediante scripts/perriland-prediction.mjs. Las pruebas comparan coordenadas y velocidades con el motor del servidor para caminar, frenar, saltar, embestir y volar.
+
+Cada snapshot confirma inputAck por conexión y aporta el cuerpo propio empaquetado para reconciliar. La predicción descarta órdenes confirmadas, reaplica las pendientes, corrige su posición con la autoridad del servidor y solo reemplaza campos visuales permitidos; conserva los PC confirmados y todos los demás jugadores. Se limita el horizonte a 250 ms al reconciliar y se detiene la extrapolación tras 150 ms sin otro snapshot; a los 500 ms usa directamente el estado recibido. Cola máxima de 64 órdenes; como máximo doce cuerpos cercanos para la física visual. Pausa, muerte, otra pestaña controladora, agarres, reconexión y errores desactivan o reinician la predicción. Agarrar/subir e impactos complejos siguen esperando al servidor; pueden producir correcciones visuales.
+
+Además, el reloj de interpolación de la sala queda limitado a 150 ms detrás del último estado recibido para evitar acumular segundos por deriva de su reloj. Esto no limita ni oculta el tiempo de red o del servidor: limita únicamente la espera añadida al dibujar snapshots ya recibidos.
+
+El encabezado muestra Red (ping/pong) y Control (tiempo entre una orden local y el snapshot que confirma haberla aplicado). El snapshot también incluye inputWaitMs, la espera en la cola del servidor. Esto permite distinguir red, cola y dibujo si el síntoma continúa. No requiere cambios de configuración ni más SQL. Deben desplegarse juntos frontend y backend para recibir confirmaciones compatibles.
+
+Pruebas nuevas: tests/perriland-prediction.test.js (nueve casos), más un caso de confirmación por WebSocket en tests/perriland-gateway.test.js. Con 172 ms simulados el personaje empieza a moverse en el siguiente frame, antes de confirmación; se comprueba que no altera posiciones reales ni PC. Prueba de navegador local con la cuenta ficticia Alpha: carga sin errores, salto mediante el botón visible y confirmación en encabezado (Red 1 ms / Control 21 ms, solo loopback). No se ha medido el resultado en producción; el intento de inspeccionar la ventana real no permitió observarla porque estaba minimizada.
+
+Validación de esta fase: batería completa npm test, 434/434 correctas; tras separar el historial de diagnóstico (hasta 10 s/128 órdenes) de la ventana corta de predicción, 21/21 pruebas afectadas correctas. Build final correcto, 563 archivos públicos. Servidor de prueba local detenido. No hubo SQL remoto, commit, push ni despliegue.

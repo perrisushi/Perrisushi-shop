@@ -12,7 +12,7 @@ function entity(a,b,t){
 function list(a=[],b=[],t){const byId=new Map(b.map(p=>[p.id,p]));return a.map(p=>entity(p,byId.get(p.id),t));}
 function interpolate(a,b,t,time){if(t>=1||a===b)return {...b,time};return {...a,time,players:list(a.players,b.players,t),slimes:list(a.slimes,b.slimes,t),bombs:{...a.bombs,items:list(a.bombs?.items,b.bombs?.items,t)},jetpacks:{...a.jetpacks,items:list(a.jetpacks?.items,b.jetpacks?.items,t)},coin:a.coin&&b.coin?entity(a.coin,b.coin,t):a.coin,specialCoin:a.specialCoin&&b.specialCoin?entity(a.specialCoin,b.specialCoin,t):a.specialCoin};}
 class Timeline{
- constructor({delayMs=100}={}){this.delayMs=delayMs;this.clear();}
+ constructor({delayMs=100,maxBufferMs=150}={}){this.delayMs=delayMs;this.maxBufferMs=maxBufferMs;this.clear();}
  clear(){this.frames=[];this.offset=0;this.targetOffset=0;this.lastNow=null;this.lastTime=null;this.paused=false;}
  push(state,now){
   const last=this.frames.at(-1),reset=!last||state.time<last.state.time-1e-6||now-last.at>500||state.paused!==this.paused;
@@ -28,7 +28,7 @@ class Timeline{
   // Corrige la deriva suavemente (máximo 2 %), sin saltar al llegar un paquete.
   const correction=elapsed*.02;this.offset+=Math.max(-correction,Math.min(correction,this.targetOffset-this.offset));
   const desired=(now-this.offset-this.delayMs)/1000;
-  const time=Math.min(last.state.time,Math.max(first.state.time,this.lastTime??first.state.time,desired));this.lastTime=time;
+  const time=Math.min(last.state.time,Math.max(first.state.time,this.lastTime??first.state.time,desired,last.state.time-this.maxBufferMs/1000));this.lastTime=time;
   let i=0;while(i<this.frames.length-1&&this.frames[i+1].state.time<time)i++;
   const a=this.frames[i].state,b=this.frames[Math.min(i+1,this.frames.length-1)].state;
   const t=b.time>a.time?Math.max(0,Math.min(1,(time-a.time)/(b.time-a.time))):1;

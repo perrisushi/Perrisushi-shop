@@ -17,7 +17,7 @@ export class PerrilandRoom{
  composition(a){return {fondo:a.composition.background,logo:a.composition.logo,marco:a.composition.frame};}
  async connect(user,socket,req,verify){return this.serial(()=>{const a=this.actors.get(user.nick);if(!a)throw Error('join required');if(!this.world.get(a.id)&&a.body){this.world.players.push(a.body);a.body=null;}const connection={user,socket,req,actor:a,lastSeq:0,lastCheck:this.clock(),verify,rateAt:this.clock(),rate:0};this.connections.add(connection);a.lastSeen=this.clock();socket.on('close',()=>{this.connections.delete(connection);this.serial(()=>{const owned=a.owner===connection;if(owned)a.owner=null;const p=this.world.get(a.id);if(p&&owned){p.intent=0;p.flightIntent=0;}if(p&&![...this.connections].some(c=>c.actor===a)){for(const holder of this.world.players)if(holder.action?.target===p.id)this.world.release(holder);this.world.release(p);p.intent=0;p.flightIntent=0;p.grabbedBy=null;a.body=p;this.world.players=this.world.players.filter(q=>q!==p);}a.lastSeen=this.clock();}).catch(()=>{});});this.send(connection);return connection;});}
 
- send(c){if(c.socket.readyState!==1)return;if(c.socket.bufferedAmount>512*1024){c.socket.close(1013,'slow_connection');return;}c.socket.send(JSON.stringify({type:'state',...this.snapshot(),you:c.actor.id}));}
+ send(c){if(c.socket.readyState!==1)return;if(c.socket.bufferedAmount>512*1024){c.socket.close(1013,'slow_connection');return;}c.socket.send(JSON.stringify({type:'state',...this.snapshot(),you:c.actor.id,inputAck:c.appliedSeq??0,inputWaitMs:c.inputWaitMs??0,controller:!c.actor.owner||c.actor.owner===c,prediction:{player:pack(this.world.get(c.actor.id))}}));}
  snapshot(){const state=this.world.snapshot();for(const p of state.players){const a=this.actors.get(p.name);p.pc=this.confirmedBalances.get(p.name)??p.pc;if(a&&p.active&&a.flag!=='none'&&a.flagUntil>this.world.time&&!['grab','climb','ladder'].includes(p.action?.type)){const s=scene.characterScale,hand={x:Math.max(12*s,Math.min(scene.width-92*s,p.x+p.dir*24*s)),y:p.y-48*s};p.pose={item:a.flag,visible:true,flag:true,hands:[hand,{x:p.x-p.dir*38*s,y:p.y+14*s}],shape:{hand},phase:'bandera elevada'};}}const unsettled=new Set(this.unconfirmedEvents.values());const unsettledIds=new Set([...this.actors.values()].filter(a=>unsettled.has(a.nick)).map(a=>a.id));state.popups=state.popups.filter(popup=>!unsettledIds.has(popup.id));return {...state,seq:++this.seq,economyPending:unsettled.size>0};}
  async flush(){
  if(this.error)fail(503,this.error);
@@ -63,10 +63,11 @@ export class PerrilandRoom{
  this.audits.push({id:randomUUID(),user:c.user,action:body.type,details:body});return {persistence:this.flush()};
  }
  if(!['input','action','equip'].includes(body.type)||!Number.isSafeInteger(body.seq)||body.seq<=c.lastSeq)fail(400,'invalid_input');c.lastSeq=body.seq;
- const a=c.actor;if(a.owner&&a.owner!==c&&now-a.lastInput<=scene.inputLease)fail(409,'controller_in_use');a.owner=c;a.lastInput=now;a.lastSeen=now;const p=this.world.get(a.id);if(!p?.active||this.world.paused)return;
+ c.inputWaitMs=Math.max(0,this.clock()-now);const a=c.actor;if(a.owner&&a.owner!==c&&now-a.lastInput<=scene.inputLease)fail(409,'controller_in_use');a.owner=c;a.lastInput=now;a.lastSeen=now;const p=this.world.get(a.id);if(!p?.active||this.world.paused)return;
  if(body.type==='input'){if(![-1,0,1].includes(body.x)||![-1,0,1].includes(body.y))fail(400,'invalid_input');p.intent=body.x;p.flightIntent=body.y;}
  else if(body.type==='equip'){if(!['none',...FLAGS.map(f=>f.id)].includes(body.item))fail(400,'invalid_item');if(a.flagUntil>this.world.time)a.pendingFlag=body.item;else a.flag=body.item;}
  else{if(!['jump','grab','dash','climb','use'].includes(body.action))fail(400,'invalid_action');if(body.action==='use'){if(a.flag!=='none'&&!p.action&&a.flagUntil<=this.world.time)a.flagUntil=this.world.time+scene.flagDuration;}else this.world[body.action](p.id);}
+ c.appliedSeq=body.seq;
  });
  if(result?.persistence){await result.persistence;for(const connection of this.connections)this.send(connection);}
  }

@@ -5,7 +5,7 @@ function line(x1,y1,x2,y2){ctx.strokeStyle='#141b20';ctx.lineWidth=6;ctx.lineCap
 function draw(now){const started=performance.now(),dt=now-lastFrame;lastFrame=now;if(frameTimes.length<600)frameTimes.push(dt);frameCount++;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;if(terrain.complete&&terrain.naturalWidth)ctx.drawImage(terrain,0,0,canvas.width,canvas.height);
  // Terreno a resolución nativa; sprites y escalado de ventana con filtrado suave.
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
- rendered=timeline.sample(now);const view=rendered.state;if(rendered.buffering)starvedFrames++;
+ rendered=timeline.sample(now);rendered={...rendered,state:window.perrilandPrediction.view(rendered.state,now)};const view=rendered.state;if(rendered.buffering)starvedFrames++;
  if(view){const players=view.players,slimes=view.slimes||[];
  for(const item of view.jetpacks?.items||[])JetpackRenderer.dropped(ctx,item);
  for(const enemy of slimes)SlimeRenderer.draw(ctx,enemy);
