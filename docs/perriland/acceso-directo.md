@@ -1,8 +1,8 @@
-# Botón de apertura y cierre desde PERRILAND
+# Botón de apertura y cierre en Minijuegos
 
 5 de noviembre de 2026. Preparado en local, sin commit/push/despliegue ni SQL remoto.
 
-Dentro del juego, al inicio de la barra administrativa, Perrisushi ve el estado Abierta/Cerrada al público y el botón Abrir PERRILAND/Cerrar PERRILAND. Los usuarios normales no ven el botón. Perrisushi conserva el acceso administrativo con la sala cerrada y puede reabrirla allí mismo.
+En Minijuegos, encima del recuadro de PERRILAND, Perrisushi ve el estado Abierta/Cerrada al público y el botón Abrir PERRILAND/Cerrar PERRILAND. Funciona antes de entrar al juego. Se retiró del interior del juego. Solo se muestra tras confirmar isAdmin con el servidor y para la cuenta exacta Perrisushi.
 
 El botón usa GET /api/admin/controls y POST /api/admin/execute existentes, con CSRF, UUID de operación, versión esperada y alcance fijo PerriLand. El servidor existente exige sesión activa, is_admin=true y nick exacto Perrisushi para ese control. La pulsación establece un estado explícito; no se añade otra bandera de disponibilidad. Cerrar usa active=true y mensaje PERRILAND está cerrado temporalmente.; abrir usa active=false y limpia el mensaje. Se conserva la auditoría administrativa de actor, motivo, antes/después y operación.
 
@@ -13,3 +13,5 @@ No hay cambios en los endpoints ni permisos de producción, ni migraciones nueva
 Validación: node --test tests/perriland*.test.js, 84/84 correctas, sin omisiones. Nueve comprobaciones nuevas del botón incluyen usuario normal/otro admin/permisos revocados, CSRF y Origin, apertura/cierre con WebSockets, auditoría sin tocar saldos, conflicto de versión, rollback por fallo de auditoría, doble pulsación y respuesta perdida tras COMMIT. npm run build correcto: 564 archivos públicos.
 
 Prueba visual local en navegador: inicio con cuenta ficticia Perrisushi, entrada desde Minijuegos con sala cerrada, abrir, comprobar Abierta al público/Cerrar PERRILAND, cerrar, comprobar Cerrada al público/Abrir PERRILAND y permanencia del administrador; sin errores de consola. No se han pulsado botones ni modificado estados de producción.
+
+Corrección de ubicación: 14/14 pruebas afectadas correctas y build correcto. Navegador local: botón por encima de la tarjeta (comprobación de rectángulos DOM), apertura y cierre sin crear iframe ni diálogo, acceso al juego sin duplicar el control interior y regreso a Minijuegos; sin errores de consola. No hubo cambios en producción.

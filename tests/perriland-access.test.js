@@ -11,7 +11,7 @@ const source=await readFile('games/perriland/access-control.js','utf8');
 function elements(){return {button:{addEventListener(){},hidden:false,disabled:false,textContent:''},label:{textContent:'',hidden:false}};}
 function deferred(){let resolve;const promise=new Promise(r=>{resolve=r});return {promise,resolve};}
 
-test('PERRILAND: abrir/cerrar desde el juego reutiliza permisos, control y auditoría existentes',async t=>{
+test('PERRILAND: abrir/cerrar desde Minijuegos reutiliza permisos, control y auditoría existentes',async t=>{
  const s=await perrilandServer({autoTick:false}),sockets=[];
  const login=async nick=>{const r=await fetch(s.base+'/api/auth/login',{method:'POST',headers:{Origin:s.base,'Content-Type':'application/json'},body:JSON.stringify({nick,password:'perriland-local-test'})});assert.equal(r.status,200);return {cookie:r.headers.get('set-cookie').split(';')[0],csrf:r.headers.get('x-csrf-token')};};
  const request=(auth,path,options={})=>fetch(s.base+path,{...options,headers:{Origin:s.base,Cookie:auth.cookie,...options.headers}});

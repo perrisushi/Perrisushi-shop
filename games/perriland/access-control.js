@@ -5,7 +5,7 @@ class AccessControl{
   Object.assign(this,{button,label,fetcher,getCsrf,onChange,onError,beforeChange,createId});this.isAdmin=false;this.available=false;this.busy=false;
   button.addEventListener('click',()=>{void this.toggle();});this.render();
  }
- render(){this.button.hidden=this.label.hidden=!this.isAdmin;this.button.disabled=!this.isAdmin||this.busy;this.button.textContent=this.busy?'Guardando…':this.available?'Cerrar PERRILAND':'Abrir PERRILAND';this.label.textContent=this.available?'Abierta al público':'Cerrada al público';}
+ render(){this.button.hidden=this.label.hidden=!this.isAdmin;this.button.disabled=!this.isAdmin||this.busy;this.button.setAttribute?.('aria-label',this.available?'Cerrar PERRILAND al público':'Abrir PERRILAND al público');this.button.textContent=this.busy?'Guardando…':this.available?'Cerrar PERRILAND':'Abrir PERRILAND';this.label.textContent=this.available?'Abierta al público':'Cerrada al público';}
  sync(info){this.isAdmin=info?.isAdmin===true;this.available=info?.available===true;this.render();}
  async request(path,options={}){
   const response=await this.fetcher(path,{credentials:'same-origin',cache:'no-store',...options});let data;
@@ -18,7 +18,7 @@ class AccessControl{
    const controls=await this.request('/api/admin/controls');if(!Array.isArray(controls.items))throw Error('invalid_response');
    const row=controls.items.find(r=>r.scope==='PerriLand');
    if(!row||row.active===open){
-    const result=await this.request('/api/admin/execute',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':this.getCsrf()},body:JSON.stringify({action:'control',scope:'PerriLand',active:!open,message:open?'':'PERRILAND está cerrado temporalmente.',expectedVersion:row?.version??null,operationId:this.createId(),reason:open?'Apertura desde PERRILAND':'Cierre desde PERRILAND',confirmed:true})});
+    const result=await this.request('/api/admin/execute',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':this.getCsrf()},body:JSON.stringify({action:'control',scope:'PerriLand',active:!open,message:open?'':'PERRILAND está cerrado temporalmente.',expectedVersion:row?.version??null,operationId:this.createId(),reason:open?'Apertura desde Minijuegos':'Cierre desde Minijuegos',confirmed:true})});
     if(result.control?.scope!=='PerriLand'||typeof result.control.active!=='boolean')throw Error('invalid_response');
     this.available=!result.control.active;
    }else{this.available=!row.active;}

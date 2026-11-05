@@ -638,6 +638,16 @@ html[data-global-scale="true"] .interior-layout .games-grid .game-launch {height
 html[data-global-scale="true"] .profile-details .profile-wallet {justify-content:flex-start;gap:16px}
 
 
+
+/* Acceso de Perrisushi sobre la tarjeta de PERRILAND, antes de entrar al juego. */
+.perriland-entry {display:grid;gap:8px;min-width:0;align-content:start}
+.perriland-access {display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 4px}
+.perriland-access[hidden] {display:none!important}
+.perriland-access output {color:#ffe2a1;font:700 12px/1.4 system-ui,sans-serif}
+.perriland-access .textured-button {padding:8px 12px;font-size:13px}
+.perriland-access-status {flex-basis:100%;margin:0;color:#632b12;font:600 12px/1.4 system-ui,sans-serif}
+.perriland-access-status:empty {display:none}
+
 /* El tablero usa una sola composición. Sus medidas dependen del espacio
    disponible, nunca de cambios de filas, columnas o del tamaño de los botones. */
 @container global-design (min-width: 701px) and (min-height: 501px) {

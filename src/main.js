@@ -1,3 +1,4 @@
+import '../games/perriland/access-control.js';
 import {startAuthenticatedUI,measuredLoad} from './services/startup.js';
 import {renderPerrilogo,renderCosmeticCollection} from './services/perrilogo.js';
 import {createAdminTools} from './services/admin-ui.js';
@@ -219,7 +220,21 @@ function gamesView() {
   const games = [
     ['menu-duelos','PerriDuelos'],['boton-perripet','PerriPet'],['boton-perricasilla','PerriCasillas'],['boton-perrirpg','PerriRPG']
   ];
-  return shellView('games', `<div class="games-grid">${games.map(([file,name])=>`<article class="game-tile" data-game="${name}"><button type="button" class="game-launch" aria-label="Abrir ${name}"><img src="${ASSETS}${file}.webp" alt="${name}" loading="lazy"/></button><button type="button" class="game-help" data-game-help="${name}" aria-label="Información de ${name}" aria-haspopup="dialog">?</button></article>`).join('')}<article class="game-tile" data-game="PerriLand"><button type="button" class="game-launch textured-button" aria-label="Abrir PERRILAND">PERRILAND</button></article></div>`);
+  return shellView('games', `<div class="games-grid">${games.map(([file,name])=>`<article class="game-tile" data-game="${name}"><button type="button" class="game-launch" aria-label="Abrir ${name}"><img src="${ASSETS}${file}.webp" alt="${name}" loading="lazy"/></button><button type="button" class="game-help" data-game-help="${name}" aria-label="Información de ${name}" aria-haspopup="dialog">?</button></article>`).join('')}<div class="perriland-entry">${session?.nick==='Perrisushi'?'<div class="perriland-access" data-perriland-access hidden><output data-perriland-state aria-live="polite"></output><button type="button" class="textured-button" data-perriland-toggle disabled>Abrir PERRILAND</button><p class="perriland-access-status" data-perriland-access-status role="alert"></p></div>':''}<article class="game-tile" data-game="PerriLand"><button type="button" class="game-launch textured-button" aria-label="Abrir PERRILAND">PERRILAND</button></article></div></div>`);
+}
+
+
+// Control sobre la tarjeta de Minijuegos; la autorización siempre procede del servidor.
+function mountPerrilandAccess(){
+ const slot=stage.querySelector('[data-perriland-access]');if(!slot||session?.nick!=='Perrisushi')return;
+ const generation=sessionEpoch,label=slot.querySelector('[data-perriland-state]'),button=slot.querySelector('[data-perriland-toggle]'),notice=slot.querySelector('[data-perriland-access-status]');
+ const current=()=>generation===sessionEpoch&&slot.isConnected&&session?.nick==='Perrisushi';
+ const control=new window.PerrilandAccessControl({button,label,getCsrf:()=>api.getCsrfToken(),
+  beforeChange:()=>{notice.textContent='';},
+  onError:text=>{if(current())notice.textContent=text;},
+  onChange:()=>{if(current()){api.invalidate(['community','admin']);void refreshCommunity(true);}}
+ });
+ void api.getPerrilandContext().then(info=>{if(!current())return;control.sync(info);slot.hidden=!info.isAdmin;}).catch(()=>{if(current())slot.hidden=true;});
 }
 
 function shopView() {
@@ -257,7 +272,7 @@ function render() {
   if(!session){stage.replaceChildren();if(sessionState.status!=='loading')showLogin();return}
   document.body.dataset.access='ready';
   const route = normalizeRoute(location.hash);
-  stage.innerHTML = views[route]();selectRaffleTab(selectedRaffleTab);
+  stage.innerHTML = views[route]();mountPerrilandAccess();selectRaffleTab(selectedRaffleTab);
   stage.classList.toggle('show-home', route === 'home');
   fitInteriorPanel();fitInventoryGrid();
   document.title = `${routeTitles[route]} | Perrisushi World`;
@@ -469,7 +484,7 @@ document.addEventListener('keydown', e => {
   }
 });
 window.addEventListener('hashchange',render);
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-perriland-access-updated'){api.invalidate(['community','admin']);void refreshCommunity(true);}if(event.data?.type==='pw2-game-updated')api.invalidate(['inventory','profile','cosmetics','history','notifications','users']);if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.invalidate(['inventory','profile','cosmetics','history','notifications','users']);if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
 window.addEventListener('pageshow',event=>{if(event.persisted)void initializeGoogleAccess()});
 renderMusicOption();
 overlay.innerHTML='<section class="modal-card" role="status">Comprobando sesión…</section>';overlay.hidden=false;
@@ -480,7 +495,7 @@ function showLogin(error){
  const status=overlay.querySelector('#login-status');status.textContent=error?message({error}):sessionState.status==='error'?message(sessionState):googleErrorNotice();
  document.title='Entrar | Perrisushi World';
 }
-function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();selectRaffleTab(selectedRaffleTab);fitMobileProfile();fitInteriorPanel();fitInventoryGrid()}
+function paintStage(){if(!session){if(sessionState.status!=='loading')showLogin();return}stage.innerHTML=views[normalizeRoute(location.hash)]();mountPerrilandAccess();selectRaffleTab(selectedRaffleTab);fitMobileProfile();fitInteriorPanel();fitInventoryGrid()}
 function resetPrivateState(){
   notificationCenter.stop();notificationObserver?.disconnect();clearTimeout(notificationReadTimer);notificationModalEpoch++;
   inventoryObserver?.disconnect();inventoryObserver=null;

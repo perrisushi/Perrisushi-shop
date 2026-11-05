@@ -1559,7 +1559,7 @@
     },
     {
       "path": "games/perriland/access-control.js",
-      "sha256": "9799c54bcc48a6a6480a2c47951187f627a545c9a1f0cd46c7239da4add876d3"
+      "sha256": "c8e2b4cde75814fdf4e061129325e477f79f8657a3aa8e09b3d050471f6e25d3"
     },
     {
       "path": "games/perriland/bomb-render.js",
@@ -1579,7 +1579,7 @@
     },
     {
       "path": "games/perriland/index.html",
-      "sha256": "30d3b901efc739f8f75b59078c6d7c79ec1e6537b33c8dc916df9f2d076b17c8"
+      "sha256": "f498d235420ffe438b6c83b8f86e5128e7193c710f311b47667b90a94ae680bb"
     },
     {
       "path": "games/perriland/jetpack-render.js",
@@ -1595,11 +1595,11 @@
     },
     {
       "path": "games/perriland/perriland.css",
-      "sha256": "af9023ff7a20e4f91e3812851e7de3e1b706b51494893838db85b65f1bc334c6"
+      "sha256": "b774b6a655b722fbbb051b79ecac74a86919370f975535c2239fea4cbd8f90a2"
     },
     {
       "path": "games/perriland/perriland.js",
-      "sha256": "cd2f10c4a5c92241f6da2ae6d16c78be9b528e6d75d425d02e63c08cfa2195ba"
+      "sha256": "49e6132248cb0440afeedbdc879654be0c9230fba9bba03e1791d2f75ea4db02"
     },
     {
       "path": "games/perriland/perrilogo-catalog.js",

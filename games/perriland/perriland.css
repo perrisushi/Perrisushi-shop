@@ -2,4 +2,3 @@
 
 .actions button{touch-action:none}
 
-#availability{font:600 13px system-ui;margin-right:4px}#availability-toggle{border-color:#e8c369;font-weight:bold}#availability-toggle:disabled{opacity:.65;cursor:wait}
