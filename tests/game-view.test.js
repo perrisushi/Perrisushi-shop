@@ -29,3 +29,20 @@ test('orientación concedida se desbloquea después de salir de fullscreen y el 
  await viewer.close();assert.equal(doc.fullscreenElement,null);assert.equal(portalled,false);assert.equal(classes.size,0);assert.ok(events.lastIndexOf('unlock')>events.lastIndexOf('exit'));
  viewer.open(card,{immersive:true});await Promise.resolve();await viewer.close();assert.equal(portalled,false);assert.equal(classes.size,0);
 });
+
+
+test('PERRILAND en ventana sale del lienzo escalado sin pedir fullscreen y restaura el portal',async()=>{
+ const classes=new Set(),moves=[],button={setAttribute(){},focus(){}};
+ const doc=new EventTarget();doc.fullscreenElement=null;doc.fullscreenEnabled=true;
+ doc.body={classList:{add:v=>classes.add(v),remove:v=>classes.delete(v)},append:node=>moves.push(['body',node])};
+ const overlay={before:marker=>moves.push(['marker',marker])};
+ doc.createComment=()=>({replaceWith:node=>moves.push(['restore',node])});
+ let requests=0;const card={querySelector:()=>button,requestFullscreen:async()=>{requests++;doc.fullscreenElement=card;doc.dispatchEvent(new Event('fullscreenchange'))}};
+ doc.exitFullscreen=async()=>{doc.fullscreenElement=null;doc.dispatchEvent(new Event('fullscreenchange'))};
+ const win={performance:{now:()=>0},screen:{orientation:{lock(){throw Error('No debe bloquear orientación en PC')},unlock(){}}}};
+ const viewer=createGameWindow({overlay,doc,win});viewer.open(card,{unscaled:true});
+ assert.ok(classes.has('perriland-windowed'));assert.equal(viewer.isMobile(),false);assert.equal(requests,0);assert.equal(moves[1][1],overlay);
+ await viewer.toggle();assert.equal(viewer.isFullscreen(),true);await viewer.toggle();assert.equal(viewer.isFullscreen(),false);
+ await viewer.close();assert.equal(classes.size,0);assert.equal(moves.at(-1)[0],'restore');assert.equal(moves.at(-1)[1],overlay);
+ const count=moves.length;viewer.open(card);assert.equal(moves.length,count);assert.equal(classes.size,0);await viewer.close();
+});

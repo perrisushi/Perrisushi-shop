@@ -390,7 +390,7 @@ function openModal(type,{pending=false,immersive=false}={}) {
   [...document.querySelector('#app').children].forEach(el => { if (el !== overlay) el.inert = true; });
   document.body.style.overflow = 'hidden';
   overlay.querySelector('input,.modal-close')?.focus();
-  if(type.startsWith('game:'))gameWindow.open(overlay.querySelector('.game-card'),{immersive});
+  if(type.startsWith('game:'))gameWindow.open(overlay.querySelector('.game-card'),{immersive,unscaled:type==='game:PerriLand'});
 }
 function closeModal() {
   if(!session)return;

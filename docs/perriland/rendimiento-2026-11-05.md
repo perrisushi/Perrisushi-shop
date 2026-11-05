@@ -52,3 +52,12 @@ El encabezado muestra Red (ping/pong) y Control (tiempo entre una orden local y 
 Pruebas nuevas: tests/perriland-prediction.test.js (nueve casos), más un caso de confirmación por WebSocket en tests/perriland-gateway.test.js. Con 172 ms simulados el personaje empieza a moverse en el siguiente frame, antes de confirmación; se comprueba que no altera posiciones reales ni PC. Prueba de navegador local con la cuenta ficticia Alpha: carga sin errores, salto mediante el botón visible y confirmación en encabezado (Red 1 ms / Control 21 ms, solo loopback). No se ha medido el resultado en producción; el intento de inspeccionar la ventana real no permitió observarla porque estaba minimizada.
 
 Validación de esta fase: batería completa npm test, 434/434 correctas; tras separar el historial de diagnóstico (hasta 10 s/128 órdenes) de la ventana corta de predicción, 21/21 pruebas afectadas correctas. Build final correcto, 563 archivos públicos. Servidor de prueba local detenido. No hubo SQL remoto, commit, push ni despliegue.
+
+
+## Modo ventana frente a pantalla completa
+
+El usuario informa de mejora tras cambiar la región, pero de lag en ventana que no aparece en pantalla completa. La presentación normal colocaba el iframe bajo #design-viewport (transformación CSS de toda la interfaz) y un backdrop-filter blur. Se cambia exclusivamente la apertura de PERRILAND en PC: su overlay se mueve al body, utiliza medidas del viewport nativo y no aplica desenfoque. Continúa siendo una ventana con sus botones; no se fuerza fullscreen. Al cerrar, el overlay vuelve a su posición original y se retira la clase específica. Los demás juegos usan el comportamiento anterior por defecto; móvil mantiene su presentación inmersiva existente.
+
+Archivos: src/main.js (opción solo para game:PerriLand), src/game-window.js (portal opcional y limpieza), src/global-scale.css (reglas solo bajo body.perriland-windowed), tests/game-view.test.js (ciclo de apertura/fullscreen/cierre y restauración), este informe.
+
+Validación: 14/14 pruebas afectadas correctas y npm run build correcto (563 archivos públicos). Navegador local con Alpha: abrir desde Minijuegos, iframe fuera del contenedor escalado, backdrop-filter none, salto (Control 37 ms en loopback), fullscreen de tarjeta y vuelta a ventana, cierre que restaura el portal y reapertura; sin errores de consola. No se ha comparado FPS en la máquina real del usuario ni verificado producción, por lo que el efecto sobre su lag queda por comprobar. Sin SQL remoto, commit, push ni despliegue.

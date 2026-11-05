@@ -12,3 +12,21 @@ html[data-global-scale="true"] #design-viewport {visibility:visible}
 /* Reserva lógica fija para que los scrollbars superpuestos del móvil no cambien las casillas. */
 html[data-global-scale="true"] #design-viewport .pw04-inventory-grid {grid-template-columns:repeat(var(--inventory-columns),var(--inventory-cell));scrollbar-gutter:auto}
 html[data-global-scale="true"] #design-viewport .pw04-inventory-grid::-webkit-scrollbar {width:16px}
+
+
+/* PERRILAND en ventana: viewport nativo, fuera del lienzo escalado de la web.
+   Estas medidas no pasan por el generador de unidades del diseño fijo. */
+body.perriland-windowed #overlay-layer {
+ position:fixed;inset:0;z-index:10000;width:100%;height:100dvh;
+ display:grid;place-items:center;padding:12px;isolation:isolate
+}
+body.perriland-windowed #overlay-layer > .modal-backdrop {
+ backdrop-filter:none;-webkit-backdrop-filter:none;background:#090605df
+}
+body.perriland-windowed #overlay-layer > .game-card:not(:fullscreen) {
+ width:min(1300px,96vw);height:min(1000px,94dvh);max-width:none;max-height:94dvh;
+ display:flex;flex-direction:column;min-height:0;overflow:hidden
+}
+body.perriland-windowed #overlay-layer > .game-card:not(:fullscreen) > .original-game {
+ flex:1 1 0%;width:100%;height:100%;min-height:0;max-height:none;aspect-ratio:auto
+}

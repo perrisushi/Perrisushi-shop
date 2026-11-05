@@ -20,15 +20,17 @@ export function createGameWindow({overlay,doc=document,win=window}){
    sync();landscape(current,version);return fullscreen();
   }).catch(()=>{landscape(current,version);sync();return false})}catch{landscape(current,version);sync();return Promise.resolve(false)}
  }
- function open(current,{immersive=false}={}){
+ function open(current,{immersive=false,unscaled=false}={}){
   card=current;mobile=immersive;epoch++;wasFullscreen=false;
-  if(mobile){if(!marker){marker=doc.createComment('game-overlay-position');overlay.before(marker);doc.body.append(overlay)}doc.body.classList.add('game-immersive')}
+  if(mobile||unscaled){if(!marker){marker=doc.createComment('game-overlay-position');overlay.before(marker);doc.body.append(overlay)}}
+  if(mobile)doc.body.classList.add('game-immersive');
+  if(unscaled&&!mobile){doc.body.classList.add('perriland-windowed');current.querySelector('.modal-close')?.focus?.({preventScroll:true});}
   sync();if(mobile)void request(current);
  }
  async function close(){
   if(closing)return closing;const old=card,wasMobile=mobile;card=null;mobile=false;epoch++;
   closing=(async()=>{try{if(old&&doc.fullscreenElement===old)await doc.exitFullscreen?.()}catch{}finally{
-   if(wasMobile&&!card)unlock();if(!card){doc.body.classList.remove('game-immersive');if(marker){marker.replaceWith(overlay);marker=null}}wasFullscreen=false;
+   if(wasMobile&&!card)unlock();if(!card){doc.body.classList.remove('game-immersive');doc.body.classList.remove('perriland-windowed');if(marker){marker.replaceWith(overlay);marker=null}}wasFullscreen=false;
   }})();const work=closing;work.finally(()=>{if(closing===work)closing=null});return work;
  }
  async function toggle(){if(fullscreen()){try{await doc.exitFullscreen()}catch{}sync()}else await request()}
