@@ -10,7 +10,10 @@ CREATE TABLE shop_public_users(nick text PRIMARY KEY,pc integer,updated_at times
 CREATE TABLE shop_profiles(nick text PRIMARY KEY,selected_logo_id text,owned_logo_ids jsonb,cosmetics jsonb);
 CREATE TABLE shop_activity(id bigserial PRIMARY KEY,nick text,game text,result text,details text,created_at timestamptz);
 CREATE TABLE shop_operations(operation_id text PRIMARY KEY,nick text,action text,response jsonb,created_at timestamptz);
-CREATE TABLE pw2_community_controls(scope text PRIMARY KEY CHECK(scope IN ('announcement','shop','raffles','PerriPet','PerriRPG','PerriCasillas','PerriDuelos')),active boolean NOT NULL,message text DEFAULT '',version integer DEFAULT 1);
+-- Catálogos vacíos para los controles administrativos reales en las pruebas HTTP.
+CREATE TABLE shop_notifications(id bigint PRIMARY KEY);
+CREATE TABLE shop_logo_catalog(logo_id text PRIMARY KEY);
+CREATE TABLE pw2_community_controls(scope text PRIMARY KEY CHECK(scope IN ('announcement','shop','raffles','PerriPet','PerriRPG','PerriCasillas','PerriDuelos')),active boolean NOT NULL,message text DEFAULT '',version integer DEFAULT 1,updated_at timestamptz NOT NULL DEFAULT now());
 CREATE TABLE test_bans(nick text PRIMARY KEY);
 CREATE FUNCTION pw2_assert_account_available(n text) RETURNS void LANGUAGE plpgsql AS $$ BEGIN IF EXISTS(SELECT 1 FROM test_bans WHERE nick=n) THEN RAISE EXCEPTION 'account_banned';END IF;END $$;
 `);await db.exec(await readFile(new URL('../sql/006-perriland.sql',import.meta.url),'utf8'));

@@ -469,7 +469,7 @@ document.addEventListener('keydown', e => {
   }
 });
 window.addEventListener('hashchange',render);
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-game-updated')api.invalidate(['inventory','profile','cosmetics','history','notifications','users']);if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==overlay.querySelector('.original-game')?.contentWindow)return;if(['perriduelos-exit','perripet-exit'].includes(event.data?.type)){closeModal();return}if(event.data?.type==='pw2-game-context-request'&&gameBootstrap&&typeof event.data.id==='string')event.source.postMessage({type:'pw2-game-context',id:event.data.id,context:gameBootstrap},location.origin);if(event.data?.type==='pw2-perriland-access-updated'){api.invalidate(['community','admin']);void refreshCommunity(true);}if(event.data?.type==='pw2-game-updated')api.invalidate(['inventory','profile','cosmetics','history','notifications','users']);if(event.data?.type==='pw2-session-expired')errorState({code:'session_expired'})});
 window.addEventListener('pageshow',event=>{if(event.persisted)void initializeGoogleAccess()});
 renderMusicOption();
 overlay.innerHTML='<section class="modal-card" role="status">Comprobando sesión…</section>';overlay.hidden=false;
